@@ -710,7 +710,10 @@ def _run_stage(run_id, stage, units):
                        hold_usd=sum(held.values()) - _charge(attempt), validate=lambda: complete(plan)), [], plan)
 
 
-@app.function(image=coord_image, max_containers=1, **resources("coordinator"))
+# Non-preemptible so that a preempted coordinator cannot take its GPU workers down with it (the workers resume per
+# group, the coordinator does not). Added on 2026-11-23 while diagnosing a stalled census; the actual cause of that
+# stall was the Modal workspace reaching its billing-cycle spend limit, which stops every container.
+@app.function(image=coord_image, max_containers=1, nonpreemptible=True, **resources("coordinator"))
 def coordinator(run_id: str, stage: str, approve_stage_b: bool = False):
     """Run even after the caller exits; reserve attempts durably before dispatch."""
     units = _stage_units(stage, approve_stage_b)

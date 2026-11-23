@@ -1,22 +1,18 @@
-// Live charts in Experiments entries: <figure class="live" data-live="lines|heatmap|bars|dots|hist"
-// data-src="assets/x/<id>.json#<key>" [data-height="280"]><div class="live-body"></div><figcaption>…</figcaption></figure>.
-// The payload at #key (a dotted path) is a chart object (field lists in charts.js and site/xsite/AUTHORING.md), or
-// {"panels": [{"title": …, …chart…}, …], "shared": true} for small multiples (shared: one value range for all).
-import { h, lineChart, heatmap, barChart, dotChart, histChart } from "./charts.js";
+// Live charts: <figure class="live" data-live="lines|heatmap|stack|points|table|bars|dots|hist"
+// data-src="assets/x/<id>.json#<key>" [data-height="240"]><div class="live-body"></div><figcaption>…</figcaption></figure>.
+// The payload is one chart object, or {"panels": [{title, sub, …chart…}], cols, shared} for small multiples, which share
+// one legend drawn above them. Colours are named by role and read from tokens.css, so both themes work:
+// other / far / near (where neighbours come from), corpus / own (the centring), ink / mute (neutral series).
+import { h, lineChart, heatmap, barChart, dotChart, histChart, stackChart, pointChart, tableChart } from "./charts.js";
 
 const css = (v, d) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || d;
+const ROLE = { other: "--o-other", far: "--o-far", near: "--o-near", corpus: "--c-corpus", own: "--c-own", ink: "--fg", mute: "--mute", mute2: "--mute-2", accent: "--accent" };
+const colour = (name, i = 0) => name && ROLE[name] ? css(ROLE[name], "#888") : name && name.startsWith("#") ? name : css(["--fg", "--mute", "--mute-2"][i % 3], "#555");
 const hexRgb = x => { const v = parseInt(x.replace("#", ""), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; };
 const mix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
 const rgb = c => `rgb(${c.map(Math.round).join(",")})`;
 function ramp(stops, t) { const x = Math.max(0, Math.min(1, t)) * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(x)); return rgb(mix(stops[i], stops[i + 1], x - i)); }
-const P = {
-  set: i => css(`--c-set-${i % 8}`, "#2a78d6"),
-  cls: i => css(`--c-class-${i % 10}`, "#2a78d6"),
-  ord: t => ramp([...Array(8).keys()].map(i => hexRgb(css(`--c-ord-${i}`, "#2a78d6"))), t),
-  seq: t => ramp([...Array(8).keys()].map(i => hexRgb(css(`--c-seq-${i}`, "#2a78d6"))), t),
-  div: v => { const neg = hexRgb(css("--c-neg", "#2166ac")), mid = hexRgb(css("--c-mid", "#d3d2cc")), pos = hexRgb(css("--c-pos", "#b2182b")), a = Math.max(-1, Math.min(1, v)); return rgb(a < 0 ? mix(mid, neg, Math.pow(-a, .8)) : mix(mid, pos, Math.pow(a, .8))); },
-  mute: () => css("--mute", "#6b6b70"),
-};
+const seq = t => ramp([...Array(8).keys()].map(i => hexRgb(css(`--seq-${i}`, "#2a78d6"))), t);
 
 const jsonCache = new Map();
 function getJSON(url) {
@@ -29,41 +25,44 @@ async function fromSrc(src) {
   if (obj == null) throw new Error(`${src}: not found`);
   return obj;
 }
-function colourSeries(o, list) {
-  const n = list.length;
-  return list.map((s, i) => ({ ...s, color: s.color || (s.control ? P.mute() : o.colors === "ordinal" ? P.ord(n > 1 ? i / (n - 1) : 1) : o.colors === "classes" ? P.cls(i) : P.set(i)) }));
-}
-
-// categorical x labels (e.g. sites): the first and last are always labelled; the rest are thinned evenly so that no
-// two labels collide, dropping any that would crowd the last one. An explicit o.xticks (x values) wins.
-function categoricalTicks(x, lab, W) {
-  const n = x.length; if (n < 2) return x.slice();
-  const lw = Math.max(...lab.map(t => String(t).length)) * 6.6 + 10, gap = (Math.max(160, W) - 70) / (n - 1);
-  const step = Math.max(1, Math.ceil(lw / gap));
-  return x.filter((_, i) => i === 0 || i === n - 1 || (i % step === 0 && n - 1 - i >= step));
-}
+const paint = list => list.map((s, i) => ({ ...s, color: colour(s.color, i) }));
 
 const RENDER = {
   lines(box, o, H) {
-    const lab = o.xticklabels, W = box.clientWidth || 600;
-    return lineChart(box, { x: o.x, xscale: o.xscale, xfmt: lab ? (v => lab[o.x.indexOf(v)] ?? String(v)) : (v => (+(+v).toPrecision(4)).toString()),
-      xticks: o.xticks || (lab ? categoricalTicks(o.x, lab, W) : undefined), xname: o.xname || o.xlabel || "", xlabel: o.xlabel, ytitle: o.ylabel || o.ytitle,
-      yrange: o.yrange, fmt: o.fmt, height: H || o.height || 260, refline: o.refline, shade: o.shade, band: o.band, bandLabel: o.band_label || o.bandLabel,
-      cursor: o.cursor, legend: o.legend, series: colourSeries(o, o.series).map(s => ({ ...s, dash: s.dash ?? (s.control ? true : undefined), width: s.width || 2 })) });
+    const lab = o.xticklabels;
+    return lineChart(box, { ...o, xfmt: lab ? (v => lab[o.x.indexOf(v)] ?? String(v)) : undefined, xticks: o.xticks || (lab ? o.x : undefined),
+      ytitle: o.ylabel, height: H || o.height || 230, series: paint(o.series).map(s => ({ ...s, width: s.width || 2 })), legend: false });
   },
-  heatmap(box, o, H) {
-    return heatmap(box, { ...o, height: H, color: o.diverging ? (t => P.div(2 * t - 1)) : (t => P.seq(t)) });
-  },
-  bars(box, o, H) {
-    return barChart(box, { ...o, ytitle: o.ylabel || o.ytitle, height: H || o.height || 220, series: colourSeries(o, o.series) });
-  },
-  dots(box, o) {
-    return dotChart(box, { ...o, series: colourSeries(o, o.series) });
-  },
-  hist(box, o, H) {
-    return histChart(box, { ...o, ytitle: o.ylabel || o.ytitle, height: H || o.height || 200, series: colourSeries(o, o.series) });
-  },
+  heatmap(box, o, H) { return heatmap(box, { ...o, height: H, zfmt: o.fmt === "pct" ? (v => `${Math.round(100 * v)}%`) : undefined, color: t => seq(t) }); },
+  stack(box, o, H) { return stackChart(box, { ...o, height: H || o.height || 210, colors: (o.segcolors || []).map(c => colour(c)) }); },
+  points(box, o, H) { return pointChart(box, { ...o, height: H || o.height || 230, series: paint(o.series) }); },
+  table(box, o) { return tableChart(box, o); },
+  bars(box, o, H) { return barChart(box, { ...o, ytitle: o.ylabel, height: H || o.height || 220, series: paint(o.series) }); },
+  dots(box, o) { return dotChart(box, { ...o, series: paint(o.series) }); },
+  hist(box, o, H) { return histChart(box, { ...o, ytitle: o.ylabel, height: H || o.height || 200, series: paint(o.series) }); },
 };
+
+// one legend for a whole figure: segments (stack), series (lines, points)
+function legendFor(kind, o) {
+  const first = o.panels ? o.panels[0] : o, items = [];
+  if (kind === "stack") {
+    const segs = o.segments || first.segments || [], cols = o.segcolors || first.segcolors || [];
+    segs.forEach((s, i) => items.push(h("span", { class: "k" }, h("i", { class: "box", style: { background: colour(cols[i]) } }), s)));
+    if ((o.panels || [o]).some(p => p.whisker && p.whisker.some(Boolean))) items.push(h("span", { class: "k" }, h("i", { class: "whisk" }), `5–95% over documents (${segs[0]})`));
+    if ((o.panels || [o]).some(p => p.zero_near)) items.push(h("span", { class: "k" }, h("i", { class: "hatch", style: { "--c": colour(cols[cols.length - 1]) } }), `${segs[segs.length - 1]}: zero by rule`));
+  } else if (kind === "lines" || kind === "points") {
+    (first.series || []).forEach((s, i) => {
+      const c = colour(s.color, i);
+      const key = kind === "points" ? h("i", { class: `mk ${s.marker || "circle"}`, style: { "--c": c } })
+        : h("i", { class: "ln", style: { background: s.dash ? `repeating-linear-gradient(90deg, ${c} 0 ${s.dash === "dot" ? 2 : 4}px, transparent ${s.dash === "dot" ? 2 : 4}px ${s.dash === "dot" ? 5 : 7}px)` : c } });
+      items.push(h("span", { class: "k" }, key, s.name));
+    });
+    if (kind === "points" && (o.panels || [o]).some(p => p.series.some(s => (s.hollow || []).some(Boolean)))) items.push(h("span", { class: "k" }, h("i", { class: "mk circle hollow", style: { "--c": colour("mute") } }), "hollow: ineligible (coverage rule)"));
+    if (kind === "points") items.push(h("span", { class: "k" }, h("i", { class: "whisk" }), "5–95% over documents"));
+    if ((first.series || []).some(s => s.band)) items.push(h("span", { class: "k" }, h("i", { class: "band" }), "band: middle half over heads"));
+  }
+  return items.length ? h("div", { class: "chart-legend fig-legend" }, ...items) : null;
+}
 
 const onResize = (elm, fn) => { let w = elm.clientWidth; new ResizeObserver(() => { if (Math.abs(elm.clientWidth - w) > 4) { w = elm.clientWidth; fn(); } }).observe(elm); };
 
@@ -75,28 +74,32 @@ export async function render(fig) {
   try {
     const fn = RENDER[kind];
     if (!fn) throw new Error(`unknown live chart type “${kind}”`);
-    if (!src) throw new Error("no data-src");
     const o = await fromSrc(src);
     body.replaceChildren();
+    const lg = kind === "table" ? null : legendFor(kind, o);
+    if (lg) body.append(lg);
     if (Array.isArray(o.panels)) {
-      const grid = h("div", { class: "chart-panels", style: { "--n": o.panels.length } });
+      if (!o.panels.length) { body.append(h("p", { class: "chart-sub", text: "No data in this build." })); return; }
+      const grid = h("div", { class: "chart-panels", style: { "--cols": o.cols || Math.min(o.panels.length, 2) } });
       body.append(grid);
       const boxes = o.panels.map(p => { const b = h("div", { class: "chart-box" }); grid.append(h("div", { class: "chart-panel" }, p.title ? h("p", { class: "chart-title", text: p.title }) : null, p.sub ? h("p", { class: "chart-sub", text: p.sub }) : null, b)); return b; });
-      // shared ranges: one y (or x for dot plots) range over all panels
-      if (o.shared) {
-        const vals = o.panels.flatMap(p => (p.series || []).flatMap(s => [...(s.y || s.values || []), ...(s.lo || []), ...(s.hi || [])])).filter(Number.isFinite);
-        const lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo) * .06 || .05;
-        o.panels.forEach(p => { if (kind === "dots") p.xrange ??= [lo - pad, hi + pad]; else if (kind !== "heatmap") p.yrange ??= [Math.min(0, lo - pad), hi + pad]; });
-      }
-      const draw = () => o.panels.forEach((p, i) => fn(boxes[i], { ...p, colors: p.colors || o.colors }, H));
+      const shared = k => ({ categories: o.categories, segments: o.segments, segcolors: o.segcolors, ylabel: o.ylabel, xlabel: o.xlabel, short: o.short })[k];
+      const reserveTop = o.panels.some(p => p.notes || p.zero_near);
+      const draw = () => o.panels.forEach((p, i) => { const q = { ...p, reserveTop }; for (const k of ["categories", "segments", "segcolors", "ylabel", "xlabel", "short"]) if (q[k] == null && shared(k) != null) q[k] = shared(k); fn(boxes[i], q, H); });
       draw(); onResize(body, draw);
     } else {
       const box = h("div", { class: "chart-box" }); body.append(box);
       const draw = () => fn(box, o, H);
-      draw(); onResize(body, draw);
+      draw(); if (kind !== "table") onResize(body, draw);
     }
+    if (o.ylabel && kind === "stack") body.prepend(h("p", { class: "chart-sub chart-ytitle", text: `↑ ${o.ylabel}` }));
   } catch (e) {
     console.error("live chart:", src, e);
     body.replaceChildren(h("div", { class: "live-error", text: `Chart not drawn: ${e.message}` }));
   }
 }
+
+// redraw on a theme change (colours are read when drawing)
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  document.querySelectorAll("figure.live").forEach(f => { if (f.__live) { f.__live = false; render(f); } });
+});

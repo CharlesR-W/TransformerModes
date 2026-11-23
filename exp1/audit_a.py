@@ -275,8 +275,82 @@ class Npz:
             return z[key]
 
 
-def read_json(path):
-    return json.loads(Path(path).read_bytes())
+def read_json(path, record=None):
+    """Parse a JSON file; with `record` (a dict), remember the size, mtime and SHA-256 of the bytes parsed."""
+    path = Path(path)
+    st = path.stat()
+    data = path.read_bytes()
+    if record is not None:
+        record[str(path.resolve())] = dict(size=st.st_size, mtime_ns=st.st_mtime_ns,
+                                           sha256=hashlib.sha256(data).hexdigest())
+    return json.loads(data)
+
+
+# ------------------------------------------------- inventory of published trees
+INVENTORY_TREES = ("analysis", "site")      # the trees the site build publishes
+
+
+def _sha256_file(path, chunk=1 << 20):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            block = f.read(chunk)
+            if not block:
+                break
+            h.update(block)
+    return h.hexdigest()
+
+
+def inventory_digest(files):
+    """SHA-256 of the canonical JSON of the {relative path: hex} map: keys sorted, separators (',', ':'),
+    ASCII, UTF-8 encoded."""
+    canon = json.dumps(files, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(canon.encode("utf-8")).hexdigest()
+
+
+def inventory_files(root, exclude=()):
+    """{relative POSIX path from root: SHA-256 hex} for every regular file under root/analysis and root/site,
+    walked in sorted order. `exclude`: absolute paths left out (the audit's own report, if written there)."""
+    import os
+    root = Path(root)
+    skip = {str(Path(p).resolve()) for p in exclude}
+    files = {}
+    for tree in INVENTORY_TREES:
+        base = root / tree
+        if not base.is_dir():
+            continue
+        for dirpath, dirnames, filenames in os.walk(base):
+            dirnames.sort()
+            for name in sorted(filenames):
+                path = Path(dirpath) / name
+                if not path.is_file() or str(path.resolve()) in skip:
+                    continue
+                files[path.relative_to(root).as_posix()] = _sha256_file(path)
+    return dict(sorted(files.items()))
+
+
+def make_inventory(root, exclude=()):
+    files = inventory_files(root, exclude)
+    return dict(algorithm="sha256", files=files, count=len(files), digest=inventory_digest(files))
+
+
+def verify_inventory(report, root):
+    """Paths (relative POSIX) under root/analysis and root/site whose content differs from the report's
+    inventory, plus files added or removed since; sorted. Standard library only. If the inventory is malformed
+    or its digest does not match its own file map, the entry 'inventory' is returned as well."""
+    inv = (report or {}).get("inventory") or {}
+    recorded = inv.get("files")
+    problems = set()
+    if (not isinstance(recorded, dict) or inv.get("algorithm") != "sha256" or inv.get("count") != len(recorded)
+            or inv.get("digest") != inventory_digest(recorded)):
+        problems.add("inventory")
+        recorded = recorded if isinstance(recorded, dict) else {}
+    root = Path(root)
+    current = inventory_files(root)
+    for path in set(recorded) | set(current):
+        if recorded.get(path) != current.get(path):
+            problems.add(path)
+    return sorted(problems)
 
 
 # -------------------------------------------------------------- token layout
@@ -694,9 +768,11 @@ def _readout_path(root, model, reading, centring, site, memory, mask):
 
 
 class Audit:
-    def __init__(self, root, rows=None, spec_parameters=True):
+    def __init__(self, root, rows=None, spec_parameters=True, exclude=()):
         self.root = Path(root)
         self.rep = Report()
+        self.reads = {}                  # JSON files parsed: size, mtime and SHA-256 of the bytes parsed
+        self.exclude = tuple(exclude)    # the report itself, if written inside a published tree
         self.spec_parameters = spec_parameters
         self.layout = Layout(root)
         self.pool = self.layout.pool
@@ -706,6 +782,9 @@ class Audit:
         self.files = {}
 
     # ------------------------------------------------------------ helpers
+    def read_json(self, path):
+        return read_json(path, self.reads)
+
     def npz(self, path):
         path = Path(path)
         if path not in self.files:
@@ -730,7 +809,7 @@ class Audit:
         discovered = sorted(p.name for p in census.iterdir() if p.is_dir() and "_stitch" not in p.name
                             and not p.name.startswith("synthetic")) if census.is_dir() else []
         if plan_path.is_file():
-            plan = read_json(plan_path)
+            plan = self.read_json(plan_path)
             groups = [tuple(g) for g in plan["approved_groups"]]
             models = list(plan.get("models") or self.layout.probe.get("models") or discovered)
             dropped = [tuple(g) for g in plan.get("dropped_groups", []) if tuple(g) not in groups]
@@ -754,7 +833,7 @@ class Audit:
             for reading, centring in groups:
                 scope = f"{model}/{reading}_{centring}"
                 path = census / model / f"{reading}_{centring}" / "group.json"
-                cfg = read_json(path) if path.is_file() else None
+                cfg = self.read_json(path) if path.is_file() else None
                 ok = cfg is not None and cfg.get("complete") is True
                 if self.planned:
                     rep.require("presence.group_complete", scope, ok, dict(path=str(path)))
@@ -1116,7 +1195,7 @@ class Audit:
                         if g[1] != "C":
                             continue
                         cfgp = census / name / f"{g[0]}_{g[1]}" / "group.json"
-                        cfg = read_json(cfgp) if cfgp.is_file() else None
+                        cfg = self.read_json(cfgp) if cfgp.is_file() else None
                         if self.rep.require("presence.stitched_group_complete", f"{name}/{g[0]}_{g[1]}",
                                             cfg is not None and cfg.get("complete") is True, dict(path=str(cfgp))):
                             self.configs[name, *g] = cfg
@@ -1133,7 +1212,7 @@ class Audit:
                         if self.planned and g not in self.groups:
                             continue                     # dropped by the plan: stale outputs are not audited
                         if cfgp.is_file():
-                            cfg = read_json(cfgp)
+                            cfg = self.read_json(cfgp)
                             self.configs[d.name, *g] = cfg
                             if cfg.get("complete"):
                                 groups.append(g)
@@ -1153,7 +1232,7 @@ class Audit:
                 scope = f"{model}/{reading}_{centring}"
                 k, w = cfg["k"], cfg["window"]
                 summary_path = self.root / "analysis" / "geometry" / model / f"{reading}_{centring}.json"
-                summaries = {(s["input"], s["memory"], s["mask"]): s for s in read_json(summary_path)} \
+                summaries = {(s["input"], s["memory"], s["mask"]): s for s in self.read_json(summary_path)} \
                     if summary_path.is_file() else None
                 if summaries is None:
                     rep.require("presence.geometry_summary", scope, False, dict(path=str(summary_path)))
@@ -1427,7 +1506,7 @@ class Audit:
             prediction_json = self.root / "analysis" / "prediction" / f"{model}.json"
             stored_settings = {}
             if prediction_json.is_file():
-                for s in read_json(prediction_json)["settings"]:
+                for s in self.read_json(prediction_json)["settings"]:
                     stored_settings[s["site"], s["reading"], s["centring"], s["memory"], s["mask"]] = s
             for reading, centring in self.groups:
                 cfg = self.configs.get((model, reading, centring))
@@ -1490,7 +1569,7 @@ class Audit:
             self.spec_check("bootstrap_draws", scope, int(data["bootstrap_draws"]), SPEC["bootstrap_draws"])
         mine = readout_summary(data["by_document"], fields, reasons, int(data["min_matched"]),
                                int(data["bootstrap_seed"]), int(data["bootstrap_draws"]))
-        stored = read_json(json_path) if json_path.is_file() else None
+        stored = self.read_json(json_path) if json_path.is_file() else None
         for where, s in (("json", stored), ("analysis", stored_entry)):
             lab = dict(label, source=where)
             if not rep.require("presence.readout_summary", scope, s is not None, lab):
@@ -1618,7 +1697,7 @@ class Audit:
             else:
                 rep.absent.append(dict(what="analysis/stage_b_selection.json", reason="missing"))
             return
-        stored = read_json(path)
+        stored = self.read_json(path)
         sites, required = list(stored["sites"]), int(stored["required_sites"])
         readout_sites, thr = list(stored["readout_sites"]), stored["thresholds"]
         models = list(stored["table"][0]["models"]) if stored["table"] else list(self.models)
@@ -1832,6 +1911,8 @@ class Audit:
         self.files.clear()
         log("selection")
         self.selection()
+        log("inventory")
+        inventory = self.inventory_check()
         checks = self.rep.result()
         passed = bool(checks) and all(c["passed"] for c in checks)
         return dict(passed=passed, spec="SPEC v3.2 section 12.4", root=str(self.root), rows=self.rows,
@@ -1841,7 +1922,26 @@ class Audit:
                     failed_checks=[dict(name=c["name"], scope=c["scope"], failed=c["failed"]) for c in checks
                                    if not c["passed"]],
                     checks=checks, absent=self.rep.absent, notes=self.rep.notes,
-                    conventions_trusted=CONVENTIONS, not_reproduced=NOT_REPRODUCED)
+                    conventions_trusted=CONVENTIONS, not_reproduced=NOT_REPRODUCED, inventory=inventory)
+
+    def inventory_check(self):
+        """Hash the published trees after all checks; every file the audit parsed must be unchanged since it was
+        read (size and mtime), and for the published trees the inventory hash must equal the hash of the bytes
+        the audit parsed."""
+        inventory = make_inventory(self.root, self.exclude)
+        root = self.root.resolve()
+        for path, seen in sorted(self.reads.items()):
+            p = Path(path)
+            rel = p.relative_to(root).as_posix() if p.is_relative_to(root) else path
+            try:
+                st = p.stat()
+                same = (st.st_size, st.st_mtime_ns) == (seen["size"], seen["mtime_ns"])
+            except FileNotFoundError:
+                same = False
+            if rel.split("/", 1)[0] in INVENTORY_TREES:
+                same = same and inventory["files"].get(rel) == seen["sha256"]
+            self.rep.require("inventory.audited_files_unchanged", "inventory", same, dict(path=rel))
+        return inventory
 
 
 def run(root: Path, out: Path, rows: int | None = None, *, spec_parameters: bool = True) -> dict:
@@ -1850,13 +1950,17 @@ def run(root: Path, out: Path, rows: int | None = None, *, spec_parameters: bool
     rows: number of audit queries (in probe order) whose complete rows are recomputed; None = all.
     spec_parameters=False turns deviations from the spec's sizes and thresholds into notes (small fixtures only).
     """
+    out = Path(out)
     try:
-        report = Audit(root, rows, spec_parameters).run()
-    except Exception as error:              # an audit that cannot run has failed
+        report = Audit(root, rows, spec_parameters, exclude=[out]).run()
+    except Exception as error:              # an audit that cannot run has failed; it still records the inventory
         import traceback
         report = dict(passed=False, error=f"{type(error).__name__}: {error}", traceback=traceback.format_exc(),
                       checks=[], not_reproduced=NOT_REPRODUCED, conventions_trusted=CONVENTIONS)
-    out = Path(out)
+        try:
+            report["inventory"] = make_inventory(root, [out])
+        except Exception as inv_error:
+            report["inventory_error"] = f"{type(inv_error).__name__}: {inv_error}"
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_name(out.name + ".tmp")
     tmp.write_text(json.dumps(_jsonable(report), indent=1, allow_nan=False))

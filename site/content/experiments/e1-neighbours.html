@@ -1,0 +1,146 @@
+<section class="experiment" id="x-e1-neighbours">
+<h2>Who are a token's nearest neighbours under memory?</h2>
+<p class="x-scope"><b>Tested:</b> every analysed token of the {{fact:x.viewer.texts}} texts ({{fact:x.viewer.pool_tokens}}
+tokens, each compared with all the others), both models, the cosine reading, each of the five memories and four
+accountings, the 64 nearest neighbours of each token. The lead figure is layer 8; the other layers are in the viewer.
+Not varied: the number of neighbours, the window width, the text sample.</p>
+
+<!-- ANSWER: write when the census exists. Spec 12.3: "Under the corpus mean, memory makes [x]% of a token's neighbours
+its own text, [y]% within 64 positions; the window removes [z] of the conditional mass; text-only vectors share [w] of
+the neighbours." Facts: x.e1-neighbours.m1.c.mem_64.own / .near, m1.cw.mem_64.removed, m1.c.mem_64.adv (and m2.*). -->
+<p class="x-answer"><span class="x-placeholder">Answer pending. Two or three sentences, one in bold: how much of a token's
+neighbourhood memory moves into its own text and within 64 positions, how much walk weight the window removes, and how
+many neighbours text-only vectors share.</span></p>
+
+<figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#lead" data-height="200">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each memory, the mean share of a token's 64 nearest neighbours in other texts (grey,
+  bottom), in the same text more than 64 positions away (blue) and within 64 positions (orange, top), over every
+  analysed token. Columns: the four accountings; rows: the two models; layer 8, cosine reading. Whiskers: the
+  other-text share's 5th to 95th percentile over 200 resamplings of the documents. In window columns orange is zero by
+  rule (hatched cap); the number above each bar is the walk weight that same-text tokens within 64 positions carried
+  before the window removed them (sampled suffix queries).</figcaption>
+</figure>
+
+<div class="x-numbers">
+  <div><b>{{fact:x.e1-neighbours.m1.c.mem_none.own}} → {{fact:x.e1-neighbours.m1.c.mem_64.own}}</b><span>of neighbours in the token's own text, memory none → 64; {{fact:x.e1-neighbours.m1.c.mem_64.near}} within 64 positions at 64</span><small>{{fact:x.e1-neighbours.m1.name}} · layer {{fact:x.e1-neighbours.m1.layer}} · corpus mean</small></div>
+  <div><b>{{fact:x.e1-neighbours.m2.c.mem_none.own}} → {{fact:x.e1-neighbours.m2.c.mem_64.own}}</b><span>the same for the second model; {{fact:x.e1-neighbours.m2.c.mem_64.near}} within 64 positions at 64</span><small>{{fact:x.e1-neighbours.m2.name}} · layer {{fact:x.e1-neighbours.m2.layer}} · corpus mean</small></div>
+  <div><b>{{fact:x.e1-neighbours.m1.cw.mem_64.removed}}</b><span>of a row's walk weight was on same-text tokens within 64 positions before the window removed it, memory 64</span><small>{{fact:x.e1-neighbours.m1.name}} · sampled suffix queries</small></div>
+  <div><b>{{fact:x.e1-neighbours.m1.c.mem_64.adv}}</b><span>of the 64 neighbours shared with the closer of the two text-only vectors, memory 64</span><small>{{fact:x.e1-neighbours.m1.name}} · expected overlap with ties</small></div>
+  <div><b>{{fact:x.e1-neighbours.m1.stitch.mem_8}}</b><span>same-source share beyond what position alone gives, memory 8 (stitched controls)</span><small>{{fact:x.e1-neighbours.m1.name}} · mean of {{fact:x.e1-neighbours.stitched_texts}} stitched texts</small></div>
+</div>
+<p class="x-viewlink">See it token by token: <a href="#viewer?memory=64&amp;acc=C-none">the viewer at memory 64, corpus mean</a> ·
+<a href="#viewer?memory=64&amp;acc=C-window">the same with the window</a>.</p>
+
+<h3 id="x-e1-neighbours-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Quantity</th><th>Definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Memory similarity</td><td>$K_a(t,t') = \sum_{s \ge 0} a^s \langle y_{t-s}, y_{t'-s} \rangle,\ d = 1 - \dfrac{K_a(t,t')}{\sqrt{K_a(t,t)\,K_a(t',t')}}$</td>
+      <td>$y_u$: the hidden state at position $u$, centred and scaled to unit length (cosine reading; zero before position 1); $a = 1 - 1/m$ for memory $m$; $d$: cosine distance between the two weighted pasts</td>
+      <td>exp1/census.py: KernelBlocks</td></tr>
+  <tr><td>Origin shares</td><td>$\pi_o = \dfrac{1}{|Q|}\sum_{i \in Q} \dfrac{|\{j \in N(i) : \text{origin}(i,j) = o\}|}{|N(i)|}$</td>
+      <td>$N(i)$: the 64 nearest eligible tokens (ties at the 64th place by text, position); origin: other text, same text with $|\Delta| &gt; 64$, same text with $|\Delta| \le 64$; mean over tokens, not over pairs</td>
+      <td>exp1/census.py: geometry_summary</td></tr>
+  <tr><td>Walk weight (screen)</td><td>$q(j \mid i) \propto e^{-\beta_i (d_{ij} - \min_j d_{ij})},\ \ 1 / \textstyle\sum_j q(j \mid i)^2 = 64$</td>
+      <td>the row Stage B would use: suffix queries against the 16,384 suffix tokens; $\beta_i$ by bisection; origin mass $\sum_{j \in o} q(j \mid i)$</td>
+      <td>exp1/census.py: cond_rows</td></tr>
+  <tr><td>Removed by the window</td><td>$\sum_{j:\ \text{same text},\ |\Delta| \le 64} q_{\text{no mask}}(j \mid i)$</td>
+      <td>the walk weight the unmasked row puts on tokens the window then forbids; reported as a mean over the sampled suffix queries only</td>
+      <td>exp1/census.py: run_group (screen_removed)</td></tr>
+  <tr><td>Shared with text-only vectors</td><td>$\mathbb{E}|A \cap B| / 64 = \tfrac{1}{64}\sum_j P(j \in A)\,P(j \in B)$</td>
+      <td>$A$, $B$: the two top-64 sets; $P = 1$ strictly inside, $t_\text{in}/t_\text{all}$ in a tied cutoff; text-only vectors: a fixed random vector per token id, and the model's embedding output</td>
+      <td>exp1/census.py: overlap_values</td></tr>
+  <tr><td>Share beyond position</td><td>$\text{same-source share} - \tfrac{1}{|N(i)|}\sum_{j \in N(i)} b(j - i)$</td>
+      <td>stitched texts only; $b(\Delta)$: how often two positions $\Delta$ apart share a source under that text's segment schedule</td>
+      <td>exp1/census.py: position_baseline</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="x-e1-neighbours-figures">Supporting figures</h3>
+<div class="x-figs">
+<figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#screen" data-height="180">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> the same layout as the lead figure, but each bar is the walk weight Stage B's dense row
+  would put on each origin, averaged over the 2,048 sampled suffix queries, with the 16,384 suffix tokens as candidates;
+  layer 8, cosine reading.</figcaption>
+</figure>
+<figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#adversary" data-height="220">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each memory, the share of a token's 64 neighbours that also appear among the 64
+  neighbours given by random token vectors (solid), by the embedding output (dashed), and by the same model with no
+  memory (dotted); expected overlap with ties broken at random; corpus mean, every token eligible, layer 8.</figcaption>
+</figure>
+</div>
+
+<h3 id="x-e1-neighbours-caveats">Caveats</h3>
+<ul class="x-caveats">
+  <li><b>Two shares are set by rule, not found.</b> Under the window the within-64 share is zero; with other texts only,
+  the other-text share is one. The removed walk weight shows how much the window took away.</li>
+  <li><b>Own-text mean looks ahead.</b> It subtracts each text's average over all its tokens, including later ones,
+  removes topic along with offsets, and makes any two positions of one text slightly anti-correlated.</li>
+  <li><b>At the whole prefix, position matters by construction:</b> pasts of different lengths are compared over the
+  shorter one, so early and late tokens differ even for structureless text.</li>
+  <li><b>The texts are a capped sample</b> of the beginnings of long, mostly ASCII Pile test documents, at most four per
+  subset; OLMo's training data are not guaranteed to exclude them.</li>
+  <li><b>Shares are means over tokens.</b> Texts with many near-duplicate passages can dominate their own rows; the
+  document resampling shows how much the answer moves when texts are swapped.</li>
+</ul>
+
+<details class="x-more">
+  <summary>Decisions made on the owner's behalf <span class="x-count">(5)</span></summary>
+  <div class="x-tablewrap">
+  <table class="x-decisions">
+    <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>Census</td><td>every analysed token, 64 neighbours, every setting</td><td>a sample of tokens</td></tr>
+    <tr><td>2</td><td>Memory grid</td><td>none, 2, 8, 64, whole (2 added as an interpolation point)</td><td>lengths derived from the models</td></tr>
+    <tr><td>3</td><td>Accounting</td><td>corpus or own-text mean × no mask, a 64-position window, other texts only</td><td>position-wise centring; windows scaled with memory</td></tr>
+    <tr><td>4</td><td>Lead layer</td><td>8, the middle of the measured layers</td><td>all eight layers in the lead</td></tr>
+    <tr><td>5</td><td>Uncertainty</td><td>resampling whole documents (200 draws)</td><td>resampling tokens, which ignores that tokens of one text are not independent</td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<details class="x-more">
+  <summary>More figures <span class="x-count">(5)</span></summary>
+  <div class="x-figs">
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#timescales" data-height="230">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> reference scales beside the memory grid, per layer (log scale): how far back each layer
+    attends directly (median over heads of the attention-weighted distance, band the middle half of the heads), and the
+    lag at which residual similarity within a text falls halfway to its level between texts (solid: corpus mean,
+    dashed: own-text mean). Dotted lines at 2, 8 and 64 tokens. Missing points: no halfway lag within 1,024 tokens.</figcaption>
+  </figure>
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#same_token" data-height="230">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> the share of a token's 64 neighbours that have the same current token, by memory, with
+    every token eligible (solid), the window (dashed) and other texts only (dotted), and its chance level (grey);
+    corpus mean, layer 8.</figcaption>
+  </figure>
+  <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#dot" data-height="180">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> the lead figure for the dot reading, in which loud tokens (large hidden states) count more:
+    the same shares, layout, layer and whiskers.</figcaption>
+  </figure>
+  <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#synthetic" data-height="180">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> the census on synthetic texts with a planted hidden regime (strong or weak), a slow
+    position drift, or pure noise, so that a known structure can be compared with the models' bars; corpus mean, every
+    token eligible, the last synthetic layer, mean over seeds.</figcaption>
+  </figure>
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#stitched" data-height="220">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> for each stitched text (two documents cut into alternating segments of 384 to 640 tokens,
+    solid, or 48 to 80, dashed), the share of neighbours from the token's own source minus the share position alone
+    would give, by memory; corpus mean, every token eligible, layer 8.</figcaption>
+  </figure>
+  </div>
+</details>
+
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/census.py">Code: census.py</a> ·
+<a href="#method/census">Method: the census</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+</section>

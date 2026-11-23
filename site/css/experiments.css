@@ -187,7 +187,9 @@ figure.live:not([data-rendered]) .live-body, .live .live-body:empty { min-height
 .chart-title { font: 600 13px/1.3 var(--sans) !important; color: var(--fg); margin: 0 0 2px !important; }
 .chart-sub { font: 12px/1.4 var(--sans) !important; color: var(--mute); margin: 0 0 6px !important; }
 .chart-ytitle { color: var(--ink-2) !important; font-weight: 560 !important; }
-.chart-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px 24px; }
+.chart-panels { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 12px 18px; }
+@media (max-width: 900px) { .chart-panels { grid-template-columns: repeat(min(var(--cols, 2), 2), minmax(0, 1fr)); } }
+@media (max-width: 520px) { .chart-panels { grid-template-columns: repeat(min(var(--cols, 2), 2), minmax(0, 1fr)); gap: 10px 10px; } }
 .chart-panel { min-width: 0; }
 
 /* tooltip (one per page, #tooltip in index.html) */
@@ -204,3 +206,48 @@ figure.live:not([data-rendered]) .live-body, .live .live-body:empty { min-height
 .tooltip .tt-img > div { min-width: 0; flex: 1; }
 .tooltip .tt-thumb { width: 64px; height: 64px; image-rendering: pixelated; border-radius: 4px; flex: none; background: var(--wash); }
 
+
+/* ---------- additions for this site: figure legends, stacked shares, points, data tables, placeholders */
+.fig-legend { margin: 0 0 10px; }
+.chart-legend .k i.box { width: 11px; height: 11px; border-radius: 2px; }
+.chart-legend .k i.whisk { width: 2px; height: 12px; background: var(--fg); position: relative; }
+.chart-legend .k i.whisk::before, .chart-legend .k i.whisk::after { content: ""; position: absolute; left: -3px; width: 8px; height: 1.5px; background: var(--fg); }
+.chart-legend .k i.whisk::before { top: 0; }
+.chart-legend .k i.whisk::after { bottom: 0; }
+.chart-legend .k i.hatch { width: 14px; height: 8px; border-radius: 1px; background: repeating-linear-gradient(135deg, var(--c) 0 1.6px, var(--surface) 1.6px 3.6px); box-shadow: inset 0 0 0 .6px var(--c); }
+.chart-legend .k i.ln { width: 18px; height: 2px; }
+.chart-legend .k i.mk { width: 9px; height: 9px; background: var(--c); border-radius: 50%; }
+.chart-legend .k i.mk.diamond { border-radius: 1px; transform: rotate(45deg) scale(.85); }
+.chart-legend .k i.mk.hollow { background: transparent; box-shadow: inset 0 0 0 1.6px var(--c); }
+.chart-wrap text.note { font-size: 10.5px; fill: var(--ink-2); }
+.chart-wrap text.na { font-size: 10.5px; fill: var(--mute); }
+.chart-wrap text.reflab { font-size: 10.5px; fill: var(--mute); }
+.chart-wrap text.dlab { font-size: 10.5px; fill: var(--ink-2); }
+.chart-panel .chart-title { font-size: 12.5px !important; }
+.xp .x-figs.x-wide-fig, .xp figure.x-wide-fig { max-width: none; }
+.x-datatable { border-collapse: collapse; width: 100%; font: 12.5px/1.45 var(--sans); font-variant-numeric: tabular-nums; }
+.x-datatable thead th { text-align: left; font: 650 10.5px/1.3 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); padding: 0 12px 6px 0; border-bottom: 1px solid var(--line); vertical-align: bottom; }
+.x-datatable thead th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 450; font-size: 11px; }
+.x-datatable tbody th, .x-datatable tbody td { text-align: left; vertical-align: top; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line-2); font-weight: 450; color: var(--fg); }
+.x-datatable tbody th { font-weight: 600; min-width: 120px; }
+.x-datatable small { display: block; color: var(--mute); font-size: 11px; line-height: 1.35; margin-top: 1px; }
+.x-datatable small.warn { color: var(--accent); }
+.x-datatable tr.muted th, .x-datatable tr.muted td, .x-datatable td.muted { color: var(--mute-2); }
+.x-datatable tr.chosen { background: color-mix(in srgb, var(--wash) 70%, transparent); }
+.x-datatable td.good b { color: var(--good); }
+.x-datatable td.bad b { color: var(--bad); }
+.x-datatable td.tag b { color: var(--fg); }
+.x-datatable details.x-cell-more { margin-top: 3px; font-weight: 400; }
+.x-datatable details.x-cell-more summary { cursor: pointer; color: var(--mute); font-size: 11px; }
+.x-datatable details.x-cell-more code { display: block; font-size: 10.5px; line-height: 1.5; color: var(--ink-2); background: none; padding: 2px 0; white-space: normal; word-spacing: 4px; }
+.x-table-note { margin-top: 6px !important; }
+.x-placeholder { display: inline; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent) 0 8px, transparent 8px 16px);
+  outline: 1px dashed var(--accent); border-radius: 3px; padding: 0 4px; color: var(--fg); font-style: italic; }
+.x-placeholder::before { content: "PLACEHOLDER · "; font: 650 10px/1 var(--sans); letter-spacing: .08em; color: var(--accent); font-style: normal; }
+.xp .x-viewlink { font: 13px/1.5 var(--sans); }
+.xp .x-viewlink a { font-weight: 600; }
+.x-figs > figure.x-wide-fig { grid-column: 1 / -1; }
+.xp figure.live:not(.x-wide-fig):not(.x-table) { max-width: 860px; }
+.x-figs > figure.live { max-width: none !important; }
+.x-numbers > div.x-num-text > b { font-size: 16px; line-height: 1.3; letter-spacing: 0; }
+.chart-panel { display: flex; flex-direction: column; } .chart-panel > .chart-box { margin-top: auto; }

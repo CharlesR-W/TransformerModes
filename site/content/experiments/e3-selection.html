@@ -1,0 +1,79 @@
+<section class="experiment" id="x-e3-selection">
+<h2>What does the screen select for Stage B, and why?</h2>
+<p class="x-scope"><b>Tested:</b> {{fact:x.e3-selection.candidates}} candidate memory constructions (memory 2, 8, 64 or
+whole × cosine or dot reading × corpus or own-text mean × no mask or the window), both models, all
+{{fact:x.e3-selection.sites}} measured layers, on the rows Stage B would solve: the sampled suffix queries against
+every token in the last 512 positions of every text. The rules were fixed before any number existed.</p>
+
+<!-- ANSWER: write when the screen has run. Spec 12.3: "The screen chose [M] because [...]" or "No memory construction
+passed: [condition] failed for [...]; Stage B is not recommended." Facts: x.e3-selection.m, .l, .x, .x_reason,
+.passing, .candidates, .recommend, .required, .sites. -->
+<p class="x-answer"><span class="x-placeholder">Answer pending. Two or three sentences, one in bold: which construction the
+screen chose and the rule that put it first, or which condition failed for every candidate, and so whether Stage B is
+recommended.</span></p>
+
+<figure class="live" data-live="stack" data-src="assets/x/e3-selection.json#lead" data-height="210">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for the reference construction R (no memory, cosine, corpus mean: DepthEmbedding's), the
+  chosen construction M and its local counterpart L (M with no memory), the walk weight Stage B's dense row would put on
+  other texts (grey), the same text far away (blue) and within 64 positions (orange), averaged over the sampled suffix
+  queries; one panel per model, layer 8. Hover a bar for the top-64 shares on the same rows.</figcaption>
+</figure>
+
+<div class="x-numbers">
+  <div><b>{{fact:x.e3-selection.recommend}}</b><span>Stage B, by the prespecified screen</span><small>analysis/stage_b_selection.json</small></div>
+  <div><b>{{fact:x.e3-selection.passing}} of {{fact:x.e3-selection.candidates}}</b><span>candidates passed in both models</span><small>at least {{fact:x.e3-selection.required}} of {{fact:x.e3-selection.sites}} layers each</small></div>
+  <div class="x-num-text"><b>{{fact:x.e3-selection.m}}</b><span>the chosen construction M</span><small>least intervention first, then cosine, then text-only overlap, then shorter memory</small></div>
+  <div class="x-num-text"><b>{{fact:x.e3-selection.x}}</b><span>the one extra example X, screened for prediction concordance</span><small>{{fact:x.e3-selection.x_reason}}</small></div>
+</div>
+
+<h3 id="x-e3-selection-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Quantity</th><th>Definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Condition 1: elsewhere</td><td>$\overline{\sum_{j \in \text{other texts}} q(j \mid i)} \ge 0.25$</td>
+      <td>mean over sampled suffix queries of the walk weight on other texts</td><td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Condition 2: not mostly nearby</td><td>window: removed weight $\le 0.5$; no mask: weight within 64 positions $\le 0.25$</td>
+      <td>the window must not have removed most of the row; without it, the row must not sit mostly next to the token</td><td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Condition 3: memory changes it</td><td>$\overline{\max|A \cap A_\text{none}|} / 64 \le 0.5$</td>
+      <td>$A_\text{none}$: the same accounting with no memory; the largest overlap any tie-breaking allows, so a candidate cannot pass by tie-breaking</td><td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Condition 4: not text alone</td><td>$\overline{\max|A \cap A_\text{adv}|} / 64 \le 0.5$ for both adversaries</td>
+      <td>adversaries: random vectors per token id, and the embedding output, under the same memory and accounting</td><td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Passing</td><td>all four conditions at the same layer, for at least {{fact:x.e3-selection.required}} of {{fact:x.e3-selection.sites}} layers, in both models</td>
+      <td>then ordered: corpus mean without mask, with window, own-text mean without, with; cosine before dot; smaller text-only overlap; shorter memory</td><td>exp1/select_b.py: select</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="x-e3-selection-table">Every candidate</h3>
+<figure class="live x-table" data-live="table" data-src="assets/x/e3-selection.json#table">
+  <div class="live-body"></div>
+  <figcaption>Each row is one candidate; per model, the layers passing all four conditions together, and on the small
+  line the layers where each condition held on its own. Rows from groups the spending cap dropped are greyed. Hover a
+  row for its source.</figcaption>
+</figure>
+
+<details class="x-more">
+  <summary>Every number behind the screen: each candidate, model and layer</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/e3-selection.json#sites">
+    <div class="live-body"></div>
+    <figcaption>The stored values each condition compared with its threshold, per candidate, model and layer, with the
+    expected overlap beside the largest overlap the ties allow. Hover a row for its source in
+    analysis/stage_b_selection.json.</figcaption>
+  </figure>
+</details>
+
+<h3 id="x-e3-selection-caveats">Caveats</h3>
+<ul class="x-caveats">
+  <li><b>The screen is geometric.</b> Passing says the neighbourhood is not mostly nearby, not memoryless and not text
+  alone; it says nothing yet about through-depth modes.</li>
+  <li><b>Failing says only that</b> no candidate met the prespecified screen; the census above is then the result.</li>
+  <li><b>Thresholds were fixed in advance</b> (0.25 and 0.5); a candidate close to a threshold is not singled out.</li>
+  <li><b>Groups dropped by the $8 cap</b> were never computed, so their candidates cannot pass; they are listed so the
+  table is complete.</li>
+</ul>
+
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/select_b.py">Code: select_b.py</a> ·
+<a href="#method/census">Method: choosing Stage B's construction</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+</section>

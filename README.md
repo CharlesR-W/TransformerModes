@@ -23,7 +23,7 @@ Spend figures are the ledger's estimates from runtimes and published rates, not 
 | extract | `20261123-192555-9ff86eda` | Pythia done; OLMo failed before any model work (a Hugging Face downloader log file left open on the Volume blocked `volume.reload()` in a reused container) | $0.18 |
 | extract | `20261123-193404-7017cd5b` | OLMo done after disabling that downloader; hook equality exact and causal check passed for both models | $0.12 |
 | A-pilot | `20261123-200736-7e80ef52` | done: 63 s per census pass on an A100 (estimate was about 20 s), 5.9 GB peak; one audit row 4.3 s | $0.37 |
-| census | `20261123-201624-a982d428` | running: all four settings groups approved | |
+| census | `20261123-201624-a982d428` | stopped after 27 minutes: the Modal workspace reached its billing-cycle spend limit and every container was terminated. Complete on the Volume: Pythia cosine (both centrings) and dot with corpus mean; OLMo cosine (both centrings). Missing: Pythia dot with own-text mean; OLMo dot (both). The two worker attempts were charged by hand for their elapsed time | $3.24 |
 
 The cap for Stage A was $8 at approval and was raised to $11 by the owner after the pilot, so that the dot reading
 would not be dropped (expected total about $7.30; the remainder is retry holds and a 20% margin).

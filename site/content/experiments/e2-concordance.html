@@ -1,0 +1,100 @@
+<section class="experiment" id="x-e2-concordance">
+<h2>Are neighbours prediction-concordant beyond matched controls?</h2>
+<p class="x-scope"><b>Tested:</b> a fixed sample of query tokens (per text, 64 in its last 512 positions and 32
+earlier), each with its 64 nearest neighbours, against controls matched on the neighbour's text, current token and
+distance band; the model's own top-20 next-token predictions; layers 4, 8, 12 and 16, both models, both readings. The
+lead figure is layer 8, cosine reading.</p>
+
+<!-- ANSWER: write when the readout exists. Spec 12.3: "On the fixed query sample, neighbours share [more / less] of the
+model's predictions than matched controls as memory grows; coverage is [c]." Facts: x.e2-concordance.m1.c.mem_<m>.score,
+.p5, .p95, .coverage, .eligible (and m2.*, accountings c, cw, o, ow). -->
+<p class="x-answer"><span class="x-placeholder">Answer pending. Two or three sentences, one in bold: whether neighbours
+share more or less of the model's predictions than their matched controls, how that changes with memory, and the
+coverage behind the score.</span></p>
+
+<figure class="live x-wide-fig" data-live="points" data-src="assets/x/e2-concordance.json#lead" data-height="240">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each memory, the concordance score (how much more of the model's top-20 prediction
+  mass a neighbour shares with its query than a matched control does, averaged over the covered strata), one panel per
+  model, layer 8, cosine reading. Colour: corpus mean (green) or own-text mean (violet); circle: every token eligible,
+  diamond: the window. Whiskers: 5th to 95th percentile over 200 resamplings of the documents. Hollow: ineligible for
+  ranking under the coverage rule. A missing point: that setting was not computed.</figcaption>
+</figure>
+
+<div class="x-numbers">
+  <div><b>{{fact:x.e2-concordance.m1.c.mem_none.score}}</b><span>concordance score with no memory (5–95%: {{fact:x.e2-concordance.m1.c.mem_none.p5}} to {{fact:x.e2-concordance.m1.c.mem_none.p95}})</span><small>{{fact:x.e2-concordance.m1.name}} · layer {{fact:x.e2-concordance.m1.layer}} · corpus mean</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.c.mem_64.score}}</b><span>the same at memory 64 (5–95%: {{fact:x.e2-concordance.m1.c.mem_64.p5}} to {{fact:x.e2-concordance.m1.c.mem_64.p95}})</span><small>{{fact:x.e2-concordance.m1.name}} · {{fact:x.e2-concordance.m1.c.mem_64.eligible}}</small></div>
+  <div><b>{{fact:x.e2-concordance.m2.c.mem_64.score}}</b><span>the second model at memory 64 (5–95%: {{fact:x.e2-concordance.m2.c.mem_64.p5}} to {{fact:x.e2-concordance.m2.c.mem_64.p95}})</span><small>{{fact:x.e2-concordance.m2.name}} · layer {{fact:x.e2-concordance.m2.layer}} · corpus mean</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.c.mem_64.coverage}}</b><span>of neighbour pairs found a matched control at memory 64</span><small>{{fact:x.e2-concordance.m1.name}} · corpus mean</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.c.mem_none.top1}} vs {{fact:x.e2-concordance.m1.c.mem_none.top1_control}}</b><span>same top-1 prediction: neighbour vs its matched control, no memory</span><small>{{fact:x.e2-concordance.m1.name}} · covered strata</small></div>
+</div>
+
+<h3 id="x-e2-concordance-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Quantity</th><th>Definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Prediction overlap</td><td>$o(i,j) = \sum_{v \in T_i \cap T_j} \min\big(p_i(v),\, p_j(v)\big)$</td>
+      <td>$T_i$: the model's 20 most likely next tokens after position $i$; $p_i$: their full-softmax probabilities</td>
+      <td>exp1/readout.py: contributions</td></tr>
+  <tr><td>Matched control</td><td>$j' \sim$ uniform over the pool with $\text{text}(j') = \text{text}(j)$, $\text{token}(j') = \text{token}(j)$, same distance band</td>
+      <td>distance bands (only when $j$ is in $i$'s text): 1–8, 9–64, 65–512, over 512; never $i$, $j$ or another neighbour of $i$; drawn with a seed keyed on the model, setting, $i$ and $j$, so it can be replayed</td>
+      <td>exp1/readout.py: Matcher, keyed_seed</td></tr>
+  <tr><td>Pair advantage</td><td>$o(i,j) - o(i,j')$</td>
+      <td>a pair with no eligible control is unmatched, with its reason recorded</td>
+      <td>exp1/readout.py: contributions</td></tr>
+  <tr><td>Concordance score</td><td>$S = \dfrac{1}{|C|}\sum_{c \in C} \dfrac{\sum_{\text{pairs in } c} \text{advantage}}{\#\text{matched in } c}$</td>
+      <td>strata: neighbour origin (3) × whether its token occurs at least 20 times in the pool (2); $C$: covered strata, at least half and at least 200 pairs matched; equal weights</td>
+      <td>exp1/readout.py: summarize</td></tr>
+  <tr><td>Eligible for ranking</td><td>every non-empty stratum covered and overall coverage $\ge 50\%$</td>
+      <td>an ineligible setting is drawn hollow and never ranked</td>
+      <td>exp1/readout.py: summarize</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="x-e2-concordance-figures">Supporting figures</h3>
+<div class="x-figs">
+<figure class="live x-wide-fig" data-live="heatmap" data-src="assets/x/e2-concordance.json#coverage">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each stratum (rows: neighbour origin and how common its token is) and memory
+  (columns), the share of neighbour pairs that found a matched control; corpus mean, every token eligible, layer 8;
+  blank cells: no pairs in that stratum.</figcaption>
+</figure>
+<figure class="live" data-live="lines" data-src="assets/x/e2-concordance.json#top1" data-height="220">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each memory, how often a neighbour's most likely next token equals the query's (solid)
+  and how often its matched control's does (dashed), mean over covered strata; corpus mean, every token eligible,
+  layer 8.</figcaption>
+</figure>
+</div>
+
+<h3 id="x-e2-concordance-caveats">Caveats</h3>
+<ul class="x-caveats">
+  <li><b>Controls are matched on text, current token and distance band only.</b> Anything else a neighbour shares with
+  its query (its own past, say) is part of the advantage by design.</li>
+  <li><b>Coverage limits the claim.</b> Frequent tokens find controls easily; rare ones often do not, so strata differ in
+  how much they say. Uncovered strata are left out of the score, not filled in.</li>
+  <li><b>Only the top 20 predictions are compared,</b> so overlap below the 20th token is invisible; the retained mass
+  is stored per stratum.</li>
+  <li><b>The score is descriptive.</b> It never chooses Stage B's construction (E3) and is not a validation of it; it can
+  add at most one extra example.</li>
+</ul>
+
+<details class="x-more">
+  <summary>Decisions made on the owner's behalf <span class="x-count">(3)</span></summary>
+  <div class="x-tablewrap">
+  <table class="x-decisions">
+    <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>Readout sample</td><td>a fixed stratified sample of 3,072 queries at four layers</td><td>every token (about 3.5 billion pairs)</td></tr>
+    <tr><td>2</td><td>Score</td><td>equal weights over covered strata</td><td>weighting by pair counts, which frequent tokens would dominate</td></tr>
+    <tr><td>3</td><td>Use</td><td>descriptive; at most one Stage B example</td><td>ranking constructions by concordance</td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/readout.py">Code: readout.py</a> ·
+<a href="#method/census">Method: the census</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+</section>

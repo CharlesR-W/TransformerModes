@@ -1,0 +1,70 @@
+    <div class="vw-page">
+      <header class="vw-head">
+        <h1>Where are a token's nearest neighbours?</h1>
+        <p>Each token of a text is coloured by where its 64 most similar tokens are: in other texts, far away in its own
+        text, or within 64 positions of it. Similarity compares the two tokens' recent pasts, with a memory that sets how
+        far back the comparison reaches. Click a token to see its neighbours as text and check the colour yourself.</p>
+      </header>
+      <details class="primer" id="primer" open>
+        <summary><span>Primer: the five choices above the text, and how to check what you see</span><span class="primer-hint">about one screen · click to fold</span></summary>
+        <div class="primer-grid">
+          <section class="pc" id="primer-texts">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="cells"><rect x="2" y="12" width="9" height="14"/><rect x="13" y="12" width="9" height="14"/><rect x="24" y="12" width="9" height="14"/><rect x="35" y="12" width="9" height="14"/></g><g class="cells on"><rect x="46" y="12" width="9" height="14"/><rect x="57" y="12" width="9" height="14"/><rect x="68" y="12" width="9" height="14"/><rect x="79" y="12" width="9" height="14"/><rect x="90" y="12" width="9" height="14"/><rect x="101" y="12" width="9" height="14"/><rect x="112" y="12" width="9" height="14"/><rect x="123" y="12" width="9" height="14"/><rect x="134" y="12" width="9" height="14"/><rect x="145" y="12" width="9" height="14"/><rect x="156" y="12" width="9" height="14"/></g><path class="arrow" d="M168 19h26m-5-4l5 4-5 4"/><text x="2" y="38">burn-in</text><text x="46" y="38">analysed</text><text x="160" y="9">position</text></svg>
+            <h3>Text and position</h3>
+            <p>{{fact:x.viewer.texts}} texts, each the first {{fact:x.viewer.text_tokens}} tokens of one document, plus
+            {{fact:x.viewer.stitched}} stitched controls. A token is named by its text and position. The first
+            {{fact:x.viewer.burn_in}} positions are burn-in: shown in grey, not analysed, but still part of every later
+            token's past.</p>
+          </section>
+          <section class="pc" id="primer-models">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="blocks"><rect x="2" y="8" width="10" height="18"/><rect x="14" y="8" width="10" height="18"/><rect x="26" y="8" width="10" height="18" class="on"/><rect x="38" y="8" width="10" height="18"/><rect x="50" y="8" width="10" height="18"/><rect x="62" y="8" width="10" height="18"/><rect x="74" y="8" width="10" height="18" class="on"/><rect x="86" y="8" width="10" height="18"/><rect x="98" y="8" width="10" height="18"/><rect x="110" y="8" width="10" height="18"/><rect x="122" y="8" width="10" height="18" class="on"/><rect x="134" y="8" width="10" height="18"/><rect x="146" y="8" width="10" height="18"/><rect x="158" y="8" width="10" height="18"/><rect x="170" y="8" width="10" height="18" class="on"/><rect x="182" y="8" width="10" height="18"/></g><text x="2" y="38">block 1</text><text x="150" y="38">block 16</text></svg>
+            <h3 id="primer-layer">Model and layer</h3>
+            <p>Two models with the same shape (16 blocks, width 2,048), each reading the same tokens. <b>Layer</b> picks
+            which block's output is compared: after block 4, 8, 12 or 16 (16 is before the final normalisation).</p>
+          </section>
+          <section class="pc pc-wide" id="primer-memory">
+            <svg class="pc-fig" viewBox="0 0 260 74" aria-hidden="true"><g class="wt"><rect x="200" y="4" width="16" height="14" style="opacity:1"/><rect x="182" y="4" width="16" height="14" style="opacity:.6"/><rect x="164" y="4" width="16" height="14" style="opacity:.36"/><rect x="146" y="4" width="16" height="14" style="opacity:.22"/><rect x="128" y="4" width="16" height="14" style="opacity:.13"/><rect x="110" y="4" width="16" height="14" style="opacity:.08"/></g><text x="222" y="15">weight</text><g class="row"><rect x="56" y="24" width="16" height="14"/><rect x="74" y="24" width="16" height="14"/><rect x="92" y="24" width="16" height="14"/><rect x="110" y="24" width="16" height="14"/><rect x="128" y="24" width="16" height="14"/><rect x="146" y="24" width="16" height="14"/><rect x="164" y="24" width="16" height="14"/><rect x="182" y="24" width="16" height="14"/><rect x="200" y="24" width="16" height="14" class="cur"/></g><g class="row"><rect x="110" y="48" width="16" height="14"/><rect x="128" y="48" width="16" height="14"/><rect x="146" y="48" width="16" height="14"/><rect x="164" y="48" width="16" height="14"/><rect x="182" y="48" width="16" height="14"/><rect x="200" y="48" width="16" height="14" class="cur"/></g><g class="link"><path d="M208 38v10M190 38v10M172 38v10M154 38v10M136 38v10M118 38v10"/></g><text x="2" y="35">token t</text><text x="2" y="59">token t′</text><text x="204" y="72">lag 0</text><text x="112" y="72">← lags 1, 2, …</text></svg>
+            <h3>Memory: two pasts, aligned at their ends</h3>
+            <p>Two tokens are compared through their pasts, laid side by side so that the tokens themselves line up, then
+            each one before, and so on (not by averaging each past). Earlier pairs weigh less, by a factor $a$ per step:
+            $K_a(t,t') = \sum_{s\ge 0} a^s \langle y_{t-s}, y_{t'-s}\rangle$ with $a = 1 - 1/m$ for memory $m$
+            (none: $a = 0$; whole: $a = 1$, every earlier pair counts equally). Each token's state is centred and scaled to
+            unit length first, and similarity is then the cosine of the two weighted pasts. Two consequences to keep in mind: a chance match between two pasts carries over to the next
+            pair of tokens, so neighbours come in runs along the diagonal; and with the whole prefix, pasts of different
+            lengths are compared over the shorter one, so position matters even for structureless text.</p>
+          </section>
+          <section class="pc" id="primer-accounting">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="cells on"><rect x="2" y="10" width="9" height="14"/><rect x="13" y="10" width="9" height="14"/><rect x="24" y="10" width="9" height="14"/><rect x="167" y="10" width="9" height="14"/><rect x="178" y="10" width="9" height="14"/><rect x="189" y="10" width="9" height="14"/></g><g class="cells hatch"><rect x="35" y="10" width="9" height="14"/><rect x="46" y="10" width="9" height="14"/><rect x="57" y="10" width="9" height="14"/><rect x="68" y="10" width="9" height="14"/><rect x="79" y="10" width="9" height="14"/><rect x="101" y="10" width="9" height="14"/><rect x="112" y="10" width="9" height="14"/><rect x="123" y="10" width="9" height="14"/><rect x="134" y="10" width="9" height="14"/><rect x="145" y="10" width="9" height="14"/><rect x="156" y="10" width="9" height="14"/></g><rect class="cur" x="90" y="10" width="9" height="14"/><path class="brace" d="M35 28v4h130v-4"/><text x="58" y="39">window: 64 each side</text></svg>
+            <h3>Accounting: what is subtracted, what is forbidden</h3>
+            <p><b>Corpus mean</b> subtracts the average state over all texts: which passages does this token resemble, as
+            the model holds it? <b>Own-text mean</b> subtracts its own text's average, topic included, using tokens that
+            come later: a look back over the finished text. The <b>window</b> forbids neighbours within 64 positions in
+            the same text, so orange disappears by rule, not as a finding.</p>
+          </section>
+          <section class="pc" id="primer-origin">
+            <div class="pc-fig pc-swatches" aria-hidden="true"><span><i class="tsw other"></i>other texts</span><span><i class="tsw far"></i>same text, far</span><span><i class="tsw near"></i>within 64</span></div>
+            <h3>Neighbours and where they come from</h3>
+            <p>A token's neighbours are the 64 most similar of the {{fact:x.viewer.pool_tokens}} analysed tokens of all
+            texts (a stitched text: only its own). Each is in another text, in the same text more than 64 positions away,
+            or within 64. The colour mixes the three by their shares; the card lists the {{fact:x.viewer.shown}}
+            nearest.</p>
+          </section>
+          <section class="pc" id="primer-ties">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><path class="axis" d="M4 24h192"/><g class="dots"><circle cx="18" cy="24" r="3"/><circle cx="40" cy="24" r="3"/><circle cx="57" cy="24" r="3"/><circle cx="80" cy="24" r="3"/><circle cx="101" cy="24" r="3"/></g><g class="dots tie"><circle cx="130" cy="24" r="3"/><circle cx="130" cy="16" r="3"/><circle cx="130" cy="8" r="3"/></g><path class="cut" d="M138 4v32"/><text x="4" y="38">nearer</text><text x="104" y="38">64th place</text></svg>
+            <h3>Ties</h3>
+            <p>Sometimes several tokens share the 64th place at exactly the same distance (common with no memory, where
+            equal tokens look alike). The list then takes them in (text, position) order and the card marks them ≈;
+            comparisons between lists count tied places fairly rather than by that order.</p>
+          </section>
+          <section class="pc" id="primer-check">
+            <div class="pc-fig pc-check" aria-hidden="true"><span class="ck-tok">the</span><span class="ck-arrow">→</span><span class="ck-list"><i></i><i></i><i></i></span></div>
+            <h3>How to check a claim</h3>
+            <p>Click a token: the card shows its counts, then its nearest neighbours as text, each with the 24 tokens
+            before it aligned at the end under the clicked token's own, its similarity, and the model's next-token
+            predictions beside the clicked token's. <b>open →</b> jumps to a neighbour in its own text. The numbers for
+            every token are in Experiments; the independent audit is in Method.</p>
+          </section>
+        </div>
+      </details>
+      <div id="vw" class="vw" data-state="loading"><p class="vw-loading">Loading the viewer…</p></div>
+    </div>

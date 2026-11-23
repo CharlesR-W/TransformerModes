@@ -1,0 +1,60 @@
+<!--
+TEMPLATE for one Experiments entry (adapted from DepthEmbedding). Copy to content/experiments/<id>.html, add the entry
+to index.json (id, group, title = the question, exactly the h2 below), write xsite/gen_<name>.py (a run(data, out)
+function that writes assets/x/<id>.json and assets/x/<id>.facts.json with xlib.Out), add it to GENERATORS in
+build_site.py, and check with `python3 site/check_fragment.py <id>` after a build.
+
+The owner reads by skimming: with every <details> closed an entry is about two screens.
+  - Title: the question. Answer: 2-3 sentences, one in <strong>, numbers only as {{fact:x.<id>.<name>}} tokens.
+    Until the numbers exist, the answer is a <span class="x-placeholder">; a release build refuses placeholders.
+  - One lead figure; 3-5 number tiles; "What was computed" (quantity, KaTeX equation, symbols in words, code
+    location); at most two supporting figures; at most six caveats; closed <details> for decisions and extra figures.
+  - Captions start "Plotted:" and say only what is drawn. Plain words in labels; post-hoc fits are called fits.
+    "Exploratory" is said once, in the site banner; nothing is hedged after that. Text never takes a data colour.
+  - Live figure kinds (js/live.js): lines, stack, points, heatmap, table, bars, dots, hist. Colours are roles:
+    other / far / near (neighbour origin), corpus / own (centring), ink / mute / mute2 (neutral series).
+-->
+<section class="experiment" id="x-ID">
+<h2>QUESTION, exactly the title in index.json?</h2>
+<p class="x-scope"><b>Tested:</b> models, layers, settings, sample; what is not varied.</p>
+
+<p class="x-answer"><span class="x-placeholder">Answer pending: what the two or three sentences will say.</span></p>
+
+<figure class="live" data-live="lines" data-src="assets/x/ID.json#lead" data-height="230">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> each axis, mark, colour and line style; the setting and the sample.</figcaption>
+</figure>
+
+<div class="x-numbers">
+  <div><b>{{fact:x.ID.one}}</b><span>what this number is, in words</span><small>model · layer · setting</small></div>
+  <div><b>{{fact:x.ID.two}}</b><span>…</span><small>…</small></div>
+  <div><b>{{fact:x.ID.three}}</b><span>…</span><small>…</small></div>
+</div>
+
+<h3 id="x-ID-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Quantity</th><th>Definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Name in words</td><td>$…$</td><td>every symbol in words</td><td>exp1/file.py: function</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="x-ID-figures">Supporting figures</h3>
+<div class="x-figs"><!-- at most two figures --></div>
+
+<h3 id="x-ID-caveats">Caveats</h3>
+<ul class="x-caveats"><li><b>Short claim.</b> One or two sentences.</li></ul>
+
+<details class="x-more">
+  <summary>Decisions made on the owner's behalf <span class="x-count">(n)</span></summary>
+  <div class="x-tablewrap"><table class="x-decisions">
+    <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+    <tbody><tr><td>1</td><td>…</td><td>…</td><td>…</td></tr></tbody>
+  </table></div>
+</details>
+
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/FILE.py">Code</a> ·
+<a class="x-top" href="#experiments">All experiments</a></p>
+</section>

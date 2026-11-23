@@ -1,0 +1,214 @@
+<p class="lede">Two language models read the same {{fact:x.viewer.texts}} texts once, and every hidden state is stored.
+For each token we ask where its most similar tokens are, when similarity compares two tokens' recent pasts. Stage A
+(this site) is that census and the checks around it; Stage B (through-depth modes) waits for its own approval.</p>
+
+<p class="m-callout"><b>On this page:</b> <a href="#method/why">why neighbours first</a> ·
+<a href="#method/models">models and extraction</a> · <a href="#method/texts">texts and tokens</a> ·
+<a href="#method/similarity">similarity</a> · <a href="#method/census">the census</a> ·
+<a href="#method/controls">controls</a> · <a href="#method/timescales">reference timescales</a> ·
+<a href="#method/check">how to check there is nothing odd going on</a> · <a href="#method/decisions">decisions</a> ·
+<a href="#method/deferred">deferred</a> · <a href="#method/spending">spending</a></p>
+
+<h2 id="why">Why measure neighbours first</h2>
+<p>A free diagnostic on a smaller model ({{fact:x.method.pilot.model}}: four Wikipedia articles, two Python
+standard-library files and two licence texts, {{fact:x.method.pilot.tokens}} tokens each, layers 3, 6 and 9, each
+token's 64 nearest neighbours, positions from {{fact:x.method.pilot.burn}}) showed that with memory, a token's nearest
+neighbours are usually nearby in its own text. A through-depth picture built on such neighbours might then be mostly
+about position within each text; that was not measured. So the experiment first measures where neighbours are, under
+a small set of accounting choices, before paying for modes.</p>
+<figure class="live" data-live="table" data-src="assets/x/method.json#pilot">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> the local diagnostic (exp1/local_pilot.json), not Stage A's texts or models: the share of
+  a token's 64 neighbours in its own text by memory, under the corpus mean, with the own-text mean removed, and with
+  the own-text mean and no neighbour within 64 positions; and how often a neighbour has the same most likely next token
+  (unmatched, so not Stage A's matched comparison).</figcaption>
+</figure>
+<p>Memory 2 was added between none and 8 as an interpolation point, not because of a finding.</p>
+
+<h2 id="models">Models and extraction</h2>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th></th><th>Pythia</th><th>OLMo</th></tr></thead>
+  <tbody>
+  <tr><td>Model</td><td><code>EleutherAI/pythia-1b</code></td><td><code>allenai/OLMo-1B-0724-hf</code></td></tr>
+  <tr><td>Shape</td><td>16 blocks, width 2,048</td><td>16 blocks, width 2,048</td></tr>
+  <tr><td>End-of-text token (read at position 0)</td><td>id 0</td><td>id 50279</td></tr>
+  <tr><td>Training data</td><td>the Pile (its test split held out)</td><td>Dolma 1.7 (not guaranteed to exclude these texts)</td></tr>
+  </tbody>
+</table></div>
+<p>One forward pass per text and model in float32, eager attention, TF32 off. The stored hidden states are the block
+outputs (hidden state 16 is before the final normalisation), checked equal to the library's own outputs; a causal
+check confirms that changing the second half of a text leaves the first half's states unchanged. Also stored per
+position: the top 20 next-token predictions with their full-softmax probabilities, and attention summaries per head
+(never the full attention). Both tokenizers give the same ids for every accepted text; texts that contain special or
+placeholder tokens are rejected.</p>
+
+<h2 id="texts">Texts and tokens</h2>
+<p>The texts are {{fact:x.method.probe.description}}: from the Pile's test file, documents that are at least 95% ASCII
+and at least 2,048 tokens long, shuffled with a fixed seed, taking each document's first 2,047 tokens; rejected if
+mostly whitespace, highly repetitive, sharing a 32-token passage with an accepted text, or from a subset that already
+has four. {{fact:x.method.probe.texts}} texts from {{fact:x.method.probe.subsets}} subsets were accepted; four more
+documents make the stitched controls.</p>
+<p>Each model reads its own end-of-text token at position 0, which is excluded everywhere. A token is named by its text
+and position. Positions 1 to {{fact:x.viewer.burn_in}} are burn-in: part of every later token's past, but not analysed.</p>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th>Set</th><th>Tokens</th><th>Used for</th></tr></thead>
+  <tbody>
+  <tr><td>census pool</td><td>positions 256 to 2,047 of every text</td><td>every token's 64 neighbours (E1)</td></tr>
+  <tr><td>suffix</td><td>the last 512 positions of every text</td><td>the screen on Stage B's own rows (E1, E3)</td></tr>
+  <tr><td>query sample</td><td>per text, 64 positions in the suffix and 32 earlier, drawn with a fixed seed</td><td>the screen's queries and the prediction readout (E2)</td></tr>
+  <tr><td>audit queries</td><td>one of each text's suffix queries, drawn with another seed</td><td>the independent audit</td></tr>
+  </tbody>
+</table></div>
+<details class="m-more">
+  <summary>The {{fact:x.method.probe.texts}} texts and the stitched controls</summary>
+  <figure class="live" data-live="table" data-src="assets/x/method.json#documents">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> one row per text: its Pile subset, its line in the test file, the start of its
+    SHA-256, and how it begins; stitched texts list their segments.</figcaption>
+  </figure>
+</details>
+
+<h2 id="similarity">Similarity</h2>
+<h3>Memory: two pasts aligned at their ends</h3>
+<p>With $y_u$ a token's hidden state after centring (in the cosine reading also scaled to unit length; $y_u = 0$
+before position 1), the similarity of tokens $t$
+and $t'$ lays their pasts side by side, aligned at the end, and compares them step by step back:</p>
+<p>$$K_a(t,t') = \sum_{s \ge 0} a^s\, \langle y_{t-s},\, y_{t'-s} \rangle = \langle y_t, y_{t'} \rangle + a\, K_a(t-1,\, t'-1).$$</p>
+<p>Memory $m$ sets $a = 1 - 1/m$: none ($a = 0$, the current token only), 2 ($a = 0.5$), 8 ($0.875$), 64
+($0.984375$) and the whole prefix ($a = 1$). The <b>cosine reading</b> (the viewer's) normalises twice: each centred
+token vector to unit length before the sum, so every token counts equally, and then the weighted past,
+$d = 1 - K_a(t,t')/\sqrt{K_a(t,t)K_a(t',t')}$. The <b>dot reading</b> keeps the centred vectors' lengths, so loud
+tokens count more, and its distance is $\big[(K_a(t,t) + K_a(t',t'))/2 - K_a(t,t')\big]/\bar K$, with $\bar K$ the mean
+of $K_a(t,t)$ over the census pool. Three properties matter when reading results: a chance agreement between two pasts persists along the
+alignment ($K(t,t')$ and $K(t+1,t'+1)$ share most of their terms), so neighbours come in runs; at the whole prefix
+pasts of different lengths are compared over the shorter one, so similarity depends on position even for
+structureless text; and the recursion is computed exactly, in float64, never through a closed form that overflows.</p>
+<h3>Accounting: what is subtracted, and what is forbidden</h3>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th>Choice</th><th>What it does</th><th>The question it answers</th></tr></thead>
+  <tbody>
+  <tr><td>corpus mean</td><td>subtract the mean state over all texts</td><td>which passages does this state resemble, as the model holds it?</td></tr>
+  <tr><td>own-text mean</td><td>subtract the token's own text's mean, over all its positions</td><td>which passages resemble it once each whole text's average is removed? A look back: it uses later tokens, removes topic with the offsets, and makes two positions of one text slightly anti-correlated</td></tr>
+  <tr><td>window</td><td>no neighbour within 64 positions in the same text</td><td>imposed, not found: the within-64 share is zero by definition (the Theiler window of recurrence analysis)</td></tr>
+  <tr><td>other texts only</td><td>only tokens of other texts are eligible</td><td>imposed: the other-text share is one; shown in Experiments only</td></tr>
+  </tbody>
+</table></div>
+<p>Neither centring is the corrected version of the other; they ask different questions and are shown side by side.
+Both depend only on the token's own text, so two tokens' similarity never depends on which other texts are present.</p>
+<h3>Text-only adversaries</h3>
+<p>The same computation on vectors that know only the tokens: a fixed random vector per token id, and each model's
+embedding output (hidden state 0). Where a model's neighbours overlap these, the neighbourhood could have come from
+the text alone.</p>
+<h3>Ties</h3>
+<p>Two candidates are tied if their distances differ by at most one part in $10^{12}$. The 64 neighbours are every
+candidate strictly closer than the 64th distance, plus tied candidates at the cutoff taken in (text, position) order.
+Overlaps between two neighbour sets are computed as the expected overlap under random tie-breaking,
+$\mathbb{E}|A \cap B| = \sum_j P(j \in A)\, P(j \in B)$, and the screen uses the largest overlap the ties allow, so a
+candidate cannot pass by tie-breaking.</p>
+
+<h2 id="census">The census</h2>
+<p><b>Every analysed token, every setting</b> (2 models × 2 readings × 2 centrings × 5 memories × 3 masks × 8 layers
+and 2 adversaries): the shares of its 64 neighbours in other texts, the same text far away and within 64 positions;
+the median position gap of same-text neighbours; the share with the same current token; overlap with the text-only
+adversaries and with the same setting at no memory. Chance levels come from the eligible counts. (<a
+href="#experiments/x-e1-neighbours">E1</a>)</p>
+<p><b>The screen on Stage B's own rows.</b> For the sampled suffix queries against every suffix token, the dense walk
+row Stage B would use, $q(j \mid i) \propto \exp(-\beta_i (d_{ij} - \min_j d_{ij}))$ with $\beta_i$ set so that
+$1/\sum_j q(j \mid i)^2 = 64$, and its weight on each origin; for the window, the weight the unmasked row put on what
+the window forbids. Nothing $N \times N$ is stored and no eigenproblem is solved. (<a
+href="#experiments/x-e3-selection">E3</a>)</p>
+<p><b>The prediction readout</b> on the query sample at layers 4, 8, 12 and 16: each neighbour's shared prediction mass
+against a control matched on text, current token and distance band, in six strata. (<a
+href="#experiments/x-e2-concordance">E2</a>)</p>
+<p><b>Choosing Stage B's construction</b> is fixed in advance: of the 32 candidates, those meeting all four conditions
+at the same layer for most layers in both models pass; among them the least intervention comes first, then the cosine
+reading, then the smallest overlap with the text-only adversaries, then the shorter memory. Its local counterpart is
+the same with no memory. Concordance can add at most one descriptive example.</p>
+
+<h2 id="controls">Controls</h2>
+<p><b>Hard checks before any spending</b> (exp1/test_census.py): the streamed kernel against the explicit feature map
+and a direct double loop; the three masks against eligible sets written by hand; planted exact ties at the cutoff,
+including 64 taken from 1,024 tied against a set tying all 1,024 (expected overlap 0.0625, largest 1); matched
+controls never equal to the query, its neighbour or another neighbour, and replayable from their seeds; statistics,
+bootstrap and the stitched baseline against hand values.</p>
+<p><b>Stitched texts</b> with expected answers: two pairs of documents from different subsets, each cut into
+alternating segments of 384 to 640 tokens or 48 to 80 tokens. A token's neighbours should come from its own source more
+often than position alone explains, at little or no memory; at memory 64 less so for the short segments.</p>
+<p><b>Synthetic texts</b> with a planted hidden regime, a position drift or pure noise, run through the same census, so
+a known structure can be seen as neighbours.</p>
+
+<h2 id="timescales">Reference timescales</h2>
+<p>Beside the memory grid, two descriptive scales per layer: how far back each attention head looks directly (the
+attention-weighted mean distance, its median over heads), and the lag at which residual similarity within a text
+falls halfway to its level between texts. Neither is an effective context length. (E1, more figures.)</p>
+
+<h2 id="check">How to check there is nothing odd going on</h2>
+<p><b>An independent audit</b> (exp1/audit_a.py: numpy only, importing nothing from the pipeline) recomputes, for
+{{fact:x.method.audit.rows}} audit queries, the complete distance rows from the raw activations by the explicit lag sum,
+then the masks, the 64 neighbours with ties, the screen's walk weights and the removed short-range weight; replays the
+matched controls from their seeds; recomputes census statistics from the stored lists for a sample of tokens, the
+readout from its stored contributions and the Stage B selection; and compares 1,000 random pairs per pass with values
+the census saved before it discarded its distance blocks. The site does not build as a release unless this report is
+present and passing.</p>
+<p class="m-callout">Audit result: <b>{{fact:x.method.audit.passed}}</b>. {{fact:x.method.audit.checks}} checks over
+{{fact:x.method.audit.compared}} compared values, {{fact:x.method.audit.failed}} failed; models
+{{fact:x.method.audit.models}}; run with {{fact:x.method.audit.spec_parameters}}.<br>
+<span class="m-digest">Snapshot verified: {{fact:x.method.audit.inventory_count}} files under analysis/ and site/, inventory
+digest <code>{{fact:x.method.audit.inventory_digest}}</code> (SHA-256 of the report's file list). A release build hashes
+every file it reads or copies and refuses to build if any differs from this list.</span></p>
+<figure class="live x-table wide" data-live="table" data-src="assets/x/method.json#audit">
+  <div class="live-body"></div>
+  <figcaption>The audit's checks grouped by what they recompute; open a row's list for every check name. Source:
+  audit_a/report.json.</figcaption>
+</figure>
+<details class="m-more">
+  <summary>What the audit does not reproduce, and what it takes on trust</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#not_reproduced"><div class="live-body"></div><figcaption>From the report, verbatim.</figcaption></figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#conventions"><div class="live-body"></div><figcaption>From the report, verbatim.</figcaption></figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#absent"><div class="live-body"></div><figcaption>Settings the audit found absent ({{fact:x.method.audit.absent}}), with the report's notes.</figcaption></figure>
+</details>
+<p><b>By clicking.</b> In the <a href="#viewer">viewer</a>, any token's card lists its nearest neighbours as text, with
+the stretch of past the comparison weighs and the model's predictions beside theirs; each neighbour opens in its own
+text. <b>The selection table</b> in <a href="#experiments/x-e3-selection">E3</a> shows every number behind the choice
+for Stage B. <b>The page itself</b> is checked in headless Chrome (site/check_browser.py) over every control, a token
+click and its neighbours (compared with the stored rows decoded independently), both screen sizes, failing on any
+console error or external request.</p>
+
+<h2 id="decisions">Decisions made on the owner's behalf</h2>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+  <tbody>
+  <tr><td>Staging</td><td>census first; modes only for what its screen supports</td><td>modes for every construction</td></tr>
+  <tr><td>Texts</td><td>32, first 2,047 tokens, at most 4 per subset</td><td>windows inside documents; uniform among long documents</td></tr>
+  <tr><td>Census</td><td>every analysed token, 64 neighbours, all settings</td><td>sampled tokens</td></tr>
+  <tr><td>Prediction readout</td><td>a fixed stratified sample of 3,072 queries, four layers</td><td>every token (about 3.5 billion pairs)</td></tr>
+  <tr><td>Layers</td><td>8 even layers measured, 4 in the viewer</td><td>all 16</td></tr>
+  <tr><td>Memory grid</td><td>none, 2, 8, 64, whole</td><td>lengths derived from the models</td></tr>
+  <tr><td>Accounting</td><td>corpus or own-text mean × no mask, a 64-position window, other texts only</td><td>position-wise centring; windows scaled with memory</td></tr>
+  <tr><td>Stage B choice</td><td>a geometric screen on Stage B's own rows, least intervention first; concordance adds at most one example</td><td>ranking by concordance</td></tr>
+  <tr><td>Viewer</td><td>cosine reading, 4 layers, 3 accountings, 8 neighbours shown per token</td><td>every setting (over 1 GB)</td></tr>
+  <tr><td>Viewer colour</td><td>all three origins in one background: lightness for the own-text share, hue for near versus far</td><td>the other-text share alone on one sequential scale</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="deferred">Deferred</h2>
+<ul>
+  <li><b>Truncated rows</b> (keeping each row's nearest neighbours only): measured to move the walk's balance point by
+  about 15% on a synthetic graph, so Stage B stays dense.</li>
+  <li>Model-derived lag weights; a recurrent random sketch; attention-weighted links across layers; a
+  training-checkpoint axis; a width sweep; windows scaled with memory; mixed readings; longer contexts; more models.</li>
+  <li>The owner's later list: a sentence-embedding or vector-database baseline on the same texts, and the Hankel
+  predictive-state construction of Golowich, Liu and Shetty.</li>
+</ul>
+<p><b>Stage B, if approved,</b> adds to this site: a mode colouring and mode card in the viewer, a one-text versus
+all-texts graph choice, and entries E4 (do the models share through-depth structure outside the tested text features?)
+and E5 (does a text's picture change with its company?). None of it exists yet.</p>
+
+<h2 id="spending">Spending</h2>
+<p class="m-note">Stage A charged <b>${{fact:x.method.ledger.spent}}</b> of its ${{fact:x.method.ledger.cap}} hard cap
+over {{fact:x.method.ledger.attempts}} attempts ({{fact:x.method.ledger.failed}} not finished), from the ledger on the
+Modal volume.</p>
+<details class="m-more">
+  <summary>By unit</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#ledger"><div class="live-body"></div><figcaption>Source: ledger/attempts.</figcaption></figure>
+</details>

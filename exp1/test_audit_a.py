@@ -116,6 +116,44 @@ def test_audit_passes_on_unmodified_pipeline_output(case):
     assert report["not_reproduced"] and report["conventions_trusted"]
 
 
+def test_inventory_binds_report_to_published_trees(case, tmp_path):
+    root = tmp_path / "inventoried"
+    shutil.copytree(case, root)
+    (root / "site").mkdir()
+    (root / "site" / "index.html").write_text("<p>stage A</p>")
+    report = audit_a.run(root, root / "audit_a" / "report.json", rows=1, spec_parameters=False)
+    assert report["passed"], _failed(report)
+    inv = json.loads((root / "audit_a" / "report.json").read_text())["inventory"]
+    assert inv["algorithm"] == "sha256" and inv["count"] == len(inv["files"]) > 5
+    assert "site/index.html" in inv["files"] and "analysis/stage_b_selection.json" in inv["files"]
+    assert all(p.split("/")[0] in ("analysis", "site") for p in inv["files"])
+    assert inv["digest"] == audit_a.inventory_digest(inv["files"])
+    assert audit_a.verify_inventory(report, root) == []
+    geometry = "analysis/geometry/pythia/cosine_C.json"
+    with open(root / geometry, "a") as f:
+        f.write(" ")                                          # modified after the audit
+    (root / "analysis" / "late.json").write_text("{}")         # added
+    (root / "site" / "index.html").unlink()                    # removed
+    assert audit_a.verify_inventory(report, root) == sorted(["analysis/late.json", geometry, "site/index.html"])
+    tampered = json.loads(json.dumps(report))
+    tampered["inventory"]["files"][geometry] = "0" * 64
+    assert "inventory" in audit_a.verify_inventory(tampered, root)
+
+
+def test_inventory_fails_audit_when_a_read_file_changes_during_the_run(case, tmp_path):
+    root = tmp_path / "changing"
+    shutil.copytree(case, root)
+    audit = audit_a.Audit(root, 1, spec_parameters=False)
+    audit.plan()
+    audit.read_json(root / "analysis" / "stage_b_selection.json")
+    (root / "analysis" / "stage_b_selection.json").write_text("{}")
+    inventory = audit.inventory_check()
+    failed = [c for c in audit.rep.result() if not c["passed"]]
+    assert [c["name"] for c in failed] == ["inventory.audited_files_unchanged"]
+    assert inventory["files"]["analysis/stage_b_selection.json"] == audit_a._sha256_file(
+        root / "analysis" / "stage_b_selection.json")
+
+
 def test_time_one_row(case):
     assert audit_a.time_one_row(case, "pythia") > 0
 
