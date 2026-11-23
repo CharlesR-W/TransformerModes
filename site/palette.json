@@ -1,0 +1,23 @@
+{
+  "_note": "build_site.py writes css/tokens.css from this file. Origin colours: blue/orange validated with the dataviz validator (all pairs, both modes); 'other texts' is a deliberate neutral (the unmarked page in the viewer), so it fails the categorical chroma floor by design and always carries a direct label. Tints are the token backgrounds in the viewer: OKLab mixes of the origin hue with the page background, ink contrast >= 6:1 at every mix. Centring hues (corpus mean, own-text mean) validated as a pair, both modes; the mask is carried by marker shape.",
+  "light": {
+    "bg": "#fafaf8", "surface": "#ffffff", "fg": "#16161a", "ink-2": "#3f3e3b", "mute": "#6b6b70", "mute-2": "#8d8c86",
+    "line": "#e4e3de", "line-2": "#efeee9", "wash": "#f2f1ec", "axis": "#c9c8c1", "accent": "#c2410c", "focus": "#2a78d6",
+    "o-other": "#9d9b94", "o-far": "#2a78d6", "o-near": "#eb6834",
+    "t-paper": "#fcfcfb", "t-far": "#8cb5ea", "t-near": "#f7a385", "t-burn": "#e9e8e3",
+    "c-corpus": "#15956a", "c-own": "#6250d6",
+    "seq": ["#e9f1fc", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"],
+    "neg": "#2166ac", "mid": "#d3d2cc", "pos": "#b2182b",
+    "good": "#0a7d0a", "bad": "#b42323"
+  },
+  "dark": {
+    "bg": "#141413", "surface": "#1c1c1b", "fg": "#ecebe7", "ink-2": "#cfcec8", "mute": "#a3a29b", "mute-2": "#7d7c76",
+    "line": "#34332f", "line-2": "#292826", "wash": "#24231f", "axis": "#4a4944", "accent": "#f0814a", "focus": "#6da7ec",
+    "o-other": "#77756f", "o-far": "#3987e5", "o-near": "#d95926",
+    "t-paper": "#1a1a19", "t-far": "#305b91", "t-near": "#8b4227", "t-burn": "#262523",
+    "c-corpus": "#199e70", "c-own": "#9085e9",
+    "seq": ["#0d2340", "#12305a", "#184f95", "#256abf", "#3987e5", "#6da7ec", "#9ec5f4", "#cde2fb"],
+    "neg": "#6da7ec", "mid": "#3a3936", "pos": "#e66767",
+    "good": "#3cc13c", "bad": "#f07070"
+  }
+}

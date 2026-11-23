@@ -35,14 +35,17 @@ CPU_RATE = 0.0000131
 MEM_RATE = 0.00000222
 GPU_RATES = {"L4": 0.000164, "A100-80GB": 0.000694}
 STARTUP_SECONDS = 120
-STAGE_A_CAP = 8.0
+# $8 at first approval; raised to $11 by the owner on 2026-11-23 after the pilot measured 63 s per census pass,
+# so that the dot reading is not dropped (expected total about $7.30; the rest is retry holds and margin).
+STAGE_A_CAP = 11.0
 EXTRACTION_VERSION = 2  # Bump when the U1 data or diagnostics change.
 # (GPU, reserved cores, GiB, timeout seconds, expected work seconds before startup)
 HW = {"U0": (None, 2, 8, 40 * 60, 20 * 60),
       "U1": ("L4", 4, 32, 50 * 60, 25 * 60),
       "pilot-gpu": ("A100-80GB", 8, 64, 15 * 60, 15 * 60),
       "pilot-cpu": (None, 16, 64, 10 * 60, 10 * 60),
-      "census": ("A100-80GB", 8, 64, 40 * 60, 25 * 60),
+      # Ceiling 55 min: 40 passes at the pilot's 63 s are 42 min before margin.
+      "census": ("A100-80GB", 8, 64, 55 * 60, 42 * 60),
       "readout": (None, 16, 64, 40 * 60, 40 * 60),
       "audit-a": (None, 16, 64, 30 * 60, 30 * 60),
       "coordinator": (None, 0.25, 1, 65 * 60, 0)}
@@ -494,7 +497,8 @@ def _ledger_total():
     return sum(map(_charge, _ledger_rows()))
 
 
-def _require_budget(committed, pending, cap=STAGE_A_CAP):
+def _require_budget(committed, pending, cap=None):
+    cap = STAGE_A_CAP if cap is None else cap  # read at call time, so the cap is one setting
     if committed + sum(_charge(row) for row in pending) > cap + 1e-12:
         raise RuntimeError(f"Stage A ledger plus pending reservations exceeds the ${cap:g} cap")
 
@@ -541,7 +545,8 @@ def _census_reservations(run_id, plan):
         if groups:
             seconds = max(1, math.ceil(plan["gpu_seconds_per_group"] * len(groups) * (1 + PROJECTION_MARGIN)))
             if seconds > HW["census"][3]:
-                raise RuntimeError(f"projected census of {model} exceeds the configured 40-minute invocation ceiling")
+                raise RuntimeError(f"projected census of {model} exceeds the configured "
+                                   f"{HW['census'][3] // 60}-minute invocation ceiling")
             attempts.append(dict(_reservation(run_id, "census", model, seconds), groups=groups))
     return attempts
 
