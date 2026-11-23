@@ -102,6 +102,58 @@ def test_kernel_guards_fail_closed(tmp_path, device):
     assert not (tmp_path / "census").exists()
 
 
+def test_origin_document_counts_and_bootstrap_against_queries():
+    # Documents have the same number of pool nodes but not the same numbers
+    # of neighbours or of rows with any neighbour. Pooling pairs would give
+    # a different answer from averaging the eligible query shares.
+    counts = np.array([[8, 0, 0], [0, 2, 0], [0, 0, 0], [0, 0, 8], [3, 1, 0], [0, 0, 0]])
+    selected = counts.sum(1)
+    shares = np.divide(counts, selected[:, None], where=selected[:, None] > 0, out=np.full(counts.shape, np.nan))
+    data, interval = c._origin_document_data(counts, shares, selected, (0, 4, 7))
+    assert data["counts"] == [[8, 2, 0], [0, 0, 8], [3, 1, 0]]
+    assert data["query_counts"] == [2, 2, 2] and data["queries_with_neighbours"] == [2, 1, 1]
+    assert interval["seed"] == r.BOOTSTRAP_SEED and interval["draws"] == 200
+    doc = shares.reshape(3, 2, 3)
+    truth = [np.nanmean(doc[rows].reshape(-1, 3), axis=0) for rows in r.bootstrap_indices(3)]
+    np.testing.assert_allclose([interval["p5"], interval["p95"]], np.percentile(truth, [5, 95], axis=0), atol=1e-15)
+    reconstructed = np.array(data["share_sums"]).sum(0) / sum(data["queries_with_neighbours"])
+    np.testing.assert_allclose(reconstructed, np.nanmean(shares, axis=0), atol=1e-15)
+    _, empty = c._origin_document_data(np.zeros_like(counts), np.full_like(shares, np.nan), np.zeros_like(selected), (0, 4, 7))
+    assert empty["valid_draws"] == 0 and empty["p5"] is None and empty["p95"] is None
+
+
+@pytest.mark.parametrize("reading", ("cosine", "dot"))
+def test_saved_display_distances_against_explicit_history(tmp_path, reading, device):
+    rng = np.random.default_rng(59)
+    x = rng.normal(size=(2, 12, 7))
+    p = c.Pool(rng.integers(0, 10, size=x.shape[:2]), (2, 4), 3, 8)
+    c.run_group(tmp_path, "toy", p, {"site04": x}, reading, "O", device=device, k=5, window=2,
+                memories=("none", "8"), screen=False, pair_count=0, row_block=4)
+    y = x - x.mean(1, keepdims=True)
+    if reading == "cosine":
+        y /= np.linalg.norm(y, axis=-1, keepdims=True)
+    for memory, mask in itertools.product(("none", "8"), c.MASKS):
+        with np.load(c.setting_path(tmp_path, "toy", reading, "O", "site04", memory, mask)) as f:
+            raw = f["display_distances"]
+            assert raw.dtype == np.float32 and raw.shape == (p.n, 8)
+            rows = [(i, t) for i in range(len(p.texts)) for t in range(p.start - 1, p.length)]
+            a = c.MEMORIES[memory]
+            feat = np.zeros((p.n, p.length, x.shape[-1]))
+            for j, (text, t) in enumerate(rows):
+                feat[j, :t + 1] = y[text, :t + 1][::-1] * np.sqrt(a ** np.arange(t + 1))[:, None]
+            feat = feat.reshape(p.n, -1)
+            if reading == "cosine":
+                feat /= np.linalg.norm(feat, axis=1, keepdims=True)
+                oracle = 1. - feat @ feat.T
+            else:
+                s = (feat ** 2).sum(1).mean()
+                oracle = ((feat[:, None] - feat[None, :]) ** 2).sum(-1) / (2 * s)
+            j = f["indices"]
+            expected = np.full_like(raw, np.nan)
+            expected[:, :j.shape[1]] = np.where(j >= 0, oracle[np.arange(p.n)[:, None], j], np.nan)
+            np.testing.assert_array_equal(raw, expected)
+
+
 def test_masks_origins_and_chance(device):
     text, pos, token = [on(a, device) for a in ([0, 0, 0, 0, 1, 1], [100, 104, 164, 165, 8, 108], [1, 1, 4, 1, 6, 1])]
     q = on([0], device)

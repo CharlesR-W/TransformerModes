@@ -25,6 +25,14 @@ MASKS = ("none", "window", "other_texts")
 REFERENCES = ("local", "random", "embedding")
 SITES = tuple(range(2, 17, 2))
 TIE_RTOL = 1e-12
+DISPLAY_K = 8
+ORIGIN_BOOTSTRAP_SEED = 23  # Same document-resampling convention as readout.py.
+ORIGIN_BOOTSTRAP_DRAWS = 200
+DISPLAY_DISTANCE = {
+    "cosine": dict(quantity="cosine distance", units="dimensionless", similarity="1 - distance"),
+    "dot": dict(quantity="half squared history-feature distance divided by the pool mean K(t,t)",
+                units="dimensionless, scaled by mean K(t,t)"),
+}
 
 
 def atomic(path, writer, *args, **kwargs):
@@ -488,6 +496,15 @@ def _selected(top, candidates):
     return torch.where(top.indices >= 0, candidates[top.indices.clamp_min(0)], -1)
 
 
+def _display_distances(top, d):
+    """Gather the first eight final IDs, not the provisional torch.topk ranks."""
+    idx = top.indices[:, :DISPLAY_K]
+    vals = d.gather(1, idx.clamp_min(0)).float().masked_fill_(idx < 0, torch.nan)
+    if idx.shape[1] < DISPLAY_K:
+        vals = torch.nn.functional.pad(vals, (0, DISPLAY_K - idx.shape[1]), value=torch.nan)
+    return vals
+
+
 def _arrays(top, other, candidates):
     out = dict(indices=_selected(top, candidates), cutoff=top.cutoff, t_all=top.t_all, t_in=top.t_in)
     if other:
@@ -538,7 +555,8 @@ class _Output:
                 keep = np.asarray(ids)
             out[prefix + "query"] = self.arrays["screen_query"][keep] if prefix else keep
             for field in ("indices", "cutoff", "t_all", "t_in", "eligible", "origins", "gap_median", "same_token",
-                          "overlap_counts", "overlap_expected", "overlap_maximum", "mass", "removed", "status", "beta", "dmin", "logz"):
+                          "overlap_counts", "overlap_expected", "overlap_maximum", "mass", "removed", "status", "beta", "dmin", "logz",
+                          "display_distances"):
                 if prefix + field in self.arrays:
                     out[prefix + field] = self.arrays[prefix + field][keep]
             ptr = self.arrays[prefix + "tie_indptr"]
@@ -548,7 +566,27 @@ class _Output:
         return out
 
 
-def geometry_summary(fields, k):
+def _origin_document_data(counts, shares, selected, documents):
+    """Sufficient statistics for the same query-weighted estimator as `origin`."""
+    n = len(documents)
+    valid = (selected > 0).reshape(n, -1)
+    sums = np.nansum(shares.reshape(n, -1, 3), axis=1)
+    support = valid.sum(1)
+    contributions = dict(document_ids=[int(i) for i in documents], query_counts=[valid.shape[1]] * n,
+                         queries_with_neighbours=support.tolist(),
+                         counts=counts.reshape(n, -1, 3).sum(1, dtype=np.int64).tolist(), share_sums=sums.tolist())
+    # Same default_rng(seed).integers schedule as readout.bootstrap_indices.
+    samples = np.random.default_rng(ORIGIN_BOOTSTRAP_SEED).integers(0, n, size=(ORIGIN_BOOTSTRAP_DRAWS, n))
+    denom = support[samples].sum(1)
+    have = denom > 0
+    boot = sums[samples[have]].sum(1) / denom[have, None]
+    limits = np.percentile(boot, [5, 95], axis=0).tolist() if len(boot) else [None, None]
+    interval = dict(seed=ORIGIN_BOOTSTRAP_SEED, draws=ORIGIN_BOOTSTRAP_DRAWS, valid_draws=int(have.sum()),
+                    p5=limits[0], p95=limits[1], estimator="mean origin share over queries with neighbours")
+    return contributions, interval
+
+
+def geometry_summary(fields, k, *, documents=None):
     """Means over queries, not a pooled pair-weighted average."""
     def mean(a):
         a = np.asarray(a)
@@ -562,8 +600,9 @@ def geometry_summary(fields, k):
 
     eligible = fields["eligible"].sum(1)
     selected = fields["origins"].sum(1)
+    shares = ratio(fields["origins"], selected[:, None])
     ans = dict(queries=len(selected), full_topk_queries=int((selected == k).sum()),
-               origin=mean(ratio(fields["origins"], selected[:, None])),
+               origin=mean(shares),
                chance_origin=mean(ratio(fields["eligible"], eligible[:, None])),
                position_gap=mean(fields["gap_median"]), position_gap_defined=int(np.isfinite(fields["gap_median"]).sum()),
                same_token=mean(ratio(fields["same_token"], selected)),
@@ -579,6 +618,9 @@ def geometry_summary(fields, k):
                    screen_overlap_maximum=mean(fields["screen_overlap_maximum"] / k))
         if "screen_removed" in fields:
             ans["screen_removed"] = mean(fields["screen_removed"])
+    if documents is not None:
+        contributions, interval = _origin_document_data(fields["origins"], shares, selected, documents)
+        ans.update(origin_by_document=contributions, origin_document_bootstrap=interval)
     return ans
 
 
@@ -724,6 +766,7 @@ def run_group(root, model, pool, inputs, reading, centring, *, device="cpu", mem
                         mins[name] = torch.minimum(mins[name], d.min())
                     for mi, mask in enumerate(masks):
                         top = _membership(d, elig[mask], k)
+                        displayed = _display_distances(top, d) if persist_lists else None
                         suffix_top = None
                         screen_row = None
                         if len(si):
@@ -731,9 +774,9 @@ def run_group(root, model, pool, inputs, reading, centring, *, device="cpu", mem
                             screen_row = {key: value[ai, mi] for key, value in screen_data.items()}
                             if mask == "window":
                                 screen_row["removed"] = screen_mass[ai, masks.index("none"), :, 2]
-                        current[mem, mask] = (top, suffix_top, screen_row)
-                    # Nothing requires the full distance rows after extracting
-                    # both candidate sets and the prespecified audit pairs.
+                        current[mem, mask] = (top, suffix_top, screen_row, displayed)
+                    # The distances are now reduced to audit pairs, suffix
+                    # statistics, and the eight ordered values for the viewer.
                 if name in refs:
                     references[name] = current
                     if name != refs[-1]:
@@ -743,10 +786,12 @@ def run_group(root, model, pool, inputs, reading, centring, *, device="cpu", mem
                     ready = ((name, current),)
                 for ready_name, rows_by_setting in ready:
                     for mem, mask in combos:
-                        top, suffix_top, screen_row = rows_by_setting[mem, mask]
+                        top, suffix_top, screen_row, displayed = rows_by_setting[mem, mask]
                         other = (rows_by_setting["none", mask], *(references[r][mem, mask] for r in refs))
                         out = outputs[ready_name, mem, mask]
                         fields = _arrays(top, [r[0] for r in other], candidates)
+                        if displayed is not None:
+                            fields["display_distances"] = displayed
                         fields.update(statistics(top, origin, gap, elig[mask], q, candidates, tokens, chance=chance[mask]))
                         if pool.source is not None:
                             selected = fields["indices"]
@@ -775,6 +820,9 @@ def run_group(root, model, pool, inputs, reading, centring, *, device="cpu", mem
     if any(v <= 1e-9 for v in checked_min.values()):
         raise ValueError(f"model off-diagonal distance <= 1e-9: {checked_min}")
     result["checked_min"] = checked_min
+    if persist_lists:
+        result["display_distances"] = dict(DISPLAY_DISTANCE[reading], dtype="float32", columns=DISPLAY_K,
+                                           missing="NaN", order="first eight indices in the saved top-list order")
     pool.save(base / "pool.npz")
     write_json(marker, dict(result, complete=False))
     audit_base = root / "audit_a" / "expected" / model / f"{reading}_{centring}"
@@ -792,7 +840,7 @@ def run_group(root, model, pool, inputs, reading, centring, *, device="cpu", mem
             if pool.audit:
                 atomic(audit_base / name / f"{mem}_{mask}.npz", np.savez, **out.audit_arrays(pool.audit))
             atomic(path, np.savez, **out.arrays)
-        summaries.append(dict(input=name, memory=mem, mask=mask, **geometry_summary(out.arrays, k)))
+        summaries.append(dict(input=name, memory=mem, mask=mask, **geometry_summary(out.arrays, k, documents=pool.texts)))
         if persist_lists and on_setting is not None:
             on_setting(path)
     write_json(root / "analysis" / "geometry" / model / f"{reading}_{centring}.json", summaries)

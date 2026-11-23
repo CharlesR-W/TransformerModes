@@ -378,7 +378,7 @@ def test_coordinator_ledger_and_cap_without_rpc(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError, match="exceeds"):
         app._require_budget(7.99, [app._reservation("next", "U1", "pythia")])
     with pytest.raises(ValueError, match="no implemented worker"):
-        app._stage_units("A-pilot", False)
+        app._stage_units("B-pilot", False)
     monkeypatch.setitem(app.STAGE_B_WORKERS, "test-stage-b", (("U1", "pythia"),))
     with pytest.raises(ValueError, match="requires a separate"):
         app._stage_units("test-stage-b", False)
