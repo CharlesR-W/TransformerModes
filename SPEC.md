@@ -1,621 +1,626 @@
-# TransformerModes, experiment 1: memory kernels on two language models, through depth
+# TransformerModes, experiment 1: memory kernels on two language models
 
-Spec v2.1, 2026-11-23. v1 earlier the same day; v2 answered review 1 (`reviews/spec-v1-astra.md`, see the last
-section); v2.1 adds the owner's answers and replaces dense numerics by a sparse, every-token design. Exploratory.
-Sources: `BRIEF.md`; DepthEmbedding `SPEC_SPACETIME.md`, `spacetime.py`, `spacetime_stage.py`, `test_spacetime.py`,
-`invert/NOTES.md`, `invert/dm.py`, `opt/REPORT.md`, `opt/sparse_core.py`, `site/xsite/AUTHORING.md`;
-`deprecated/lm_coherent/SPEC.md`. Model, corpus and price facts checked on huggingface.co and modal.com, 2026-11-23.
+Spec v3.2, 2026-11-23. History: v1; v2 (review 1); v2.1 (owner's answers); v3 (review 2, numerics prototype
+`reviews/numerics-prototype-sol.md` with `exp1/bench_numerics.json`, local diagnostic `exp1/local_pilot.json`);
+v3.1 (review 3, `reviews/spec-v3-astra.md`); v3.2 (the three Stage A fixes of `reviews/spec-v3.1-astra.md`, applied by
+the orchestrator: tie-proof selection overlap, stitched baseline, audit queries drawn from Q, audit reserved first). Exploratory. Sources: `BRIEF.md`; DepthEmbedding `spacetime.py`,
+`spacetime_stage.py`, `test_spacetime.py`, `SPEC_SPACETIME.md`, `invert/dm.py`, `invert/NOTES.md`; `exp1/`
+(`similarity.py`, `graph.py`, `solve.py`, `kernels.py`, `test_numerics.py`). **The owner is asked to approve Stage A
+only.** Stage B (sections 6-8) is provisional, pending Stage A's results and the list in section 16.
 
-**In one paragraph.** We take 32 long documents from the Pile test split, run Pythia-1b and OLMo-1B once on the first
-2,047 tokens of each, and store every residual and the models' next-token predictions. A token's similarity to another
-compares their recent pasts aligned at the end, with a memory length (none, 8 tokens, 64 tokens, the whole prefix)
-and two readings. Every token after a 255-token burn-in is a node. Each similarity gives two graphs at each of 8
-layers: the **one-text graph** (the 1,792 tokens of one text) and the **all-texts graph** (all 57,344 tokens of the
-32 texts together). DepthEmbedding's through-depth operator ties the layers; its 16 lowest modes are the picture. A
-text-only picture built from the same tokens with the same memory is the adversary, and a fixed rule names a winner or
-says that none exists. The viewer shows the text coloured by a mode. Projected spend about $25.
+**In one paragraph.** We run Pythia-1b and OLMo-1B once on the first 2,047 tokens of 32 long Pile documents and store
+every residual and next-token prediction. A token's similarity to another compares their recent pasts aligned at the
+end, with a memory length (none, 2, 8, 64 tokens, or the whole prefix). **Stage A, the neighbour census** (hard cap $8,
+projected about $6.80): for every token, who are its 64 nearest tokens under each memory and each way of accounting for
+which text a token comes from: other texts, the same text far away, or the same text nearby? On a fixed sample, do
+neighbours share the model's next-token predictions more than matched controls? No eigen-solves; the result is a page,
+figures and a viewer in which clicking a token lists its neighbours as text, verified by its own independent audit.
+**Stage B** (separate approval, provisional): DepthEmbedding's through-depth modes for the local kernel and the one
+memory construction Stage A's screen supports, dense and exact on one GPU. **Stage B is not worth funding if** no memory
+construction passes the geometric screen of section 5 in both models (no candidate met the prespecified screen, which
+by itself says nothing more than that); the census is then the result.
 
 ## 0. Why this is the smart way to do it
 
-Nothing is spent until the owner has seen this section. Each line: the choice, what it beats, by how much.
+Labels: **[here]** measured in this repo; **[sibling]** measured in DepthEmbedding; **[derived]** by calculation;
+**[pilot]** to be measured before the stage's main spend.
 
-**Experimental design**
-- **One forward pass per model, everything stored** (20 GB of residuals): every kernel, graph and control is
-  recomputed from the store without the models. Rerunning models per variant would multiply the GPU work by the 8
-  constructions and make the two models' inputs harder to keep identical.
-- **Every token is a node.** The exact kernel already compares every pair of tokens, so sampling 1 token in 7 (v1)
-  saved nothing in the kernel and cost sampling noise, a resample design, half-coloured texts and an out-of-sample
-  extension. Now the one-text and all-texts pictures are compared on all 1,792 tokens of a text.
-- **A text-only adversary and a "no winner" outcome.** The construction is chosen by how much the two models agree
-  beyond what the tokens alone produce with the same memory (random vectors per token id; each model's embedding
-  output). Choosing the nicest-looking picture, or raw cross-model agreement, would reward surface text statistics
-  that both models share trivially (review 1). The adversary adds about 10% to the compute.
-- **Controls with known answers run first and gate spending**: an exact planted positive, two independent noise fields
-  that must not agree, and an equivariance check, all for cents on synthetic data.
-- **Few constructions, one coupling.** 8 similarities (4 memories × 2 readings), coupling fixed at the calibrated
-  value t*; sweeps of width, coupling and graph recipes are deferred or kept to one small comparison.
-- **A capped timing pilot (about $1) gates the rest**, with fallbacks fixed in advance (section 11).
+**The evidence that shaped Stage A** [here]. A free CPU diagnostic on Pythia-160m: four WikiText articles, two Python
+standard-library files and two licence texts (not Pile documents), 1,023 tokens each, nodes from position 128, layers
+3/6/9, cosine reading, each token's 64 nearest neighbours. Ranges are over the three layers.
 
-**Numerical methods** (timings at N = 2,000 tokens × 12 layers from DepthEmbedding `opt/REPORT.md`)
+| Memory | Own-text share, corpus mean (chance 0.125) | Own-text mean removed | ... and no neighbour within 64 positions | Same top-1 prediction (unmatched) |
+|---|---|---|---|---|
+| none | 0.43-0.58 | 0.31-0.40 | 0.25-0.31 | 0.11-0.15 |
+| 8 | 0.61-0.77 | 0.41-0.53 | 0.30-0.36 | 0.065-0.075 |
+| 64 | 0.84-0.93 | 0.56-0.74 | 0.29-0.36 | 0.033-0.035 |
+| whole | 0.94-0.96 | 0.82-0.88 | 0.22-0.24 | 0.025-0.026 |
 
-| Step | Chosen | Instead of | Gain |
+The last column is an unmatched diagnostic, not Stage A's matched advantage; its references (random pairs 0.011, pairs
+sharing the current token 0.295) were printed by the script (`/var/tmp/tm_local_pilot2.log`), not stored in the JSON.
+In the earlier run (`exp1/local_pilot_v1.json`), 75-84% of whole-prefix neighbours lay within 32 positions in the same
+text. **What it shows:** with memory, nearest neighbours are usually nearby in the same text; we have not measured the
+dense walk or its modes on these inputs. **What it changed:** the experiment measures neighbours first, under a small
+set of accounting variants (section 4), before paying for modes. Memory 2 is added as interpolation (the rise from none
+to 8 is 34-51% of the rise to the whole prefix), not because of a finding.
+
+**Design choices.**
+- One forward pass per model, everything stored (21 GB): every kernel and control is recomputed without the models
+  [derived].
+- Every post-burn-in token enters the census; the all-texts spectral graph of Stage B uses only the final 512 tokens
+  per text [derived from GPU memory, section 6].
+- Geometric counts for every token; the expensive prediction readout on a prespecified, stratified sample shared by all
+  candidates and both models [derived: about 3.5 billion directed neighbour pairs exist in all].
+- Stage B's graph is screened in Stage A on the same tokens (final 512 per text) and the same dense conditional rows it
+  will use, so a candidate is not chosen on a different graph from the one solved.
+- Text-only adversaries (random vectors per token id; each model's embedding output): Stage A reports how much their
+  neighbours overlap the models'; Stage B projects both models off the same tested text-feature span. This removes
+  agreement inside that span only, not every surface statistic.
+
+**Numerics.**
+
+| Step | Chosen | Evidence |
+|---|---|---|
+| Memory kernel | exact recursion along diagonals of each Gram block, streamed, float64 | matches the explicit feature map to 1.4e-13; streamed top-256 sets identical to dense [here] |
+| Stage A cost | about 1.4·10^15 float64 flops of Gram products, then masks, tie-aware top-64, suffix rows, matching and I/O | flops [derived]; wall time and cost [pilot] |
+| Stage B graph | dense participation-ratio rule and `spacetime.py`, ported to CuPy, the copied CPU code as oracle | the dense solver ran at N = 8,000 × 12 layers [sibling]; at N = 1,792 × 8 the dense CPU path took 90 s to build the graph, 15 s to calibrate and 9 s to solve, one thread [here] |
+| Not chosen: truncated rows | keeping each row's nearest neighbours only | on a synthetic graph at N = 1,792, keeping 1,024 neighbours loses 3.25% of the conditional mass on average yet moves t* about 15% and the 16-mode space by 0.19 (1 - mean cos²) [here] |
+| Stage B size | 16,384 tokens | fits one 80 GB GPU by calculation [derived]; the fit and the cost are pilot questions [pilot] |
+
+**Costs** [derived; the pilots replace them]: Stage A about $6.80 under a hard $8 cap enforced by reservations (section
+11). Stage B about $21, approved separately with Stage A's results.
+
+## 1. Questions
+
+| # | Stage | Question | Could come out |
 |---|---|---|---|
-| Memory kernel | exact recursion along diagonals of each Gram block, float64 on one GPU (about 1.4·10^15 flops: minutes) | truncated windows or a random sketch (approximate); 16 CPU cores (about an hour) | exact; ~20x faster |
-| Graph storage | each row keeps its 512 nearest tokens (sparse) plus a uniform floor (one rank-one term) | dense N × N walks | at N = 57,344: about 0.5 GB per layer instead of 26 GB; dense would need over 400 GB for walks and inverses |
-| Sinkhorn scaling | sparse fixed point | dense Newton | 49 s to 0.19 s at N = 2,000 |
-| Layer scales | 9 leading eigenpairs per layer | full eigendecompositions | 197 s to 3-7 s at N = 2,000; full ones are infeasible at 57,344 |
-| Coupling t* | bracketed root of one-mode solves | bisection with full solves | 38 s to 5-8 s; t* equal to 4e-14 |
-| 24 modes | direct Lanczos on the sparse operator, on the GPU | dense block inversion | 23 s to 2 s at N = 2,000; the dense path scales as N³ (days at 57,344), the sparse one about linearly |
-| Correctness | `spacetime.py` copied byte for byte as the dense reference; the sparse path must reproduce it on the same operator | trusting a new solver | eigenvalues and t* to 1e-8, subspaces to sin θ ≤ 1e-6 (section 6) |
+| Q1 | A | Under each memory and accounting, are a token's nearest neighbours in other texts, its own text far away, or its own text nearby? | memory makes neighbours local, or not; accounting changes that, or not |
+| Q2 | A | On a fixed query sample, do neighbours share the model's top-20 next-token predictions more than controls matched on text, current token and distance? | more, less or the same, by memory |
+| Q3 | A | Do the models' neighbours differ from what text alone gives (two text-only adversaries)? | overlap high or low |
+| Q4 | A | Over what distances do the models attend directly, and how long do residuals stay similar? (descriptive) | reference scales only |
+| Q5 | B | For the local kernel and the selected memory construction, do the two models share through-depth structure outside the tested text features, and is it more with memory? | four outcomes, section 8 |
+| Q6 | B | Does a text's picture change when other texts are in the graph? (two focal texts, illustrative) | stable or reorganised |
 
-The one thing the sparse design changes is the graph rule: keeping 512 neighbours per row is part of its definition.
-How far that moves the picture from the dense rule is measured before the main run, and the number of neighbours
-doubles if the drift is not small (section 5). Net effect: every token instead of 1 in 7, for about half v1's
-projected $47.
-
-## 1. Questions and measured quantities
-
-| # | Question | Measured quantity (section 7) | Could come out |
-|---|---|---|---|
-| Q1 | Does memory give a picture the two models share beyond what the text alone gives? | remainder share; cross-model agreement on the remainder minus agreement with text-only pictures | memory helps, hurts, a middle length is best, or nothing beats text alone |
-| Q2 | Does it matter whether each token counts equally (cosine) or loud tokens count more (dot)? | the same numbers per reading; agreement between readings | readings agree or differ |
-| Q3 | Does a text's picture change when other texts are in the graph? (descriptive) | agreement on the text's tokens between graphs built on 1, 4, 16 and 32 texts, including two disjoint sets of companions | stable, or reorganised by the company it keeps |
-| Q4 | Which of three configured graph recipes keeps the joint modes spread over many tokens? | worst two-token mass and spread of the first 16 joint modes | the earlier finding against Shannon perplexity repeats on tokens or not |
-| Q5 | Over what distances do the models attend directly, and do residuals stay similar? (descriptive) | direct attention distance; residual autocorrelation | reference scales only, not an effective context length |
-
-**Functional readout** (beside the decision, not in it): do tokens close in the picture share the model's next-token
-predictions beyond tokens matched on the current token and document?
-
-## 2. Models and tokens
+## 2. Models, tokens, extraction
 
 | | Pythia | OLMo |
 |---|---|---|
-| Hugging Face id, revision | `EleutherAI/pythia-1b`, `f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2` | `allenai/OLMo-1B-0724-hf`, `d7cbab742d80589e714b1a2d7f838dcd21cbe143` |
-| Shape | 16 blocks, width 2,048, parallel attention and MLP | 16 blocks, width 2,048, non-parametric layer norm |
-| Context limit | 2,048 | 4,096 |
-| End-of-text token | `<|endoftext|>` = id 0 | `<|endoftext|>` = id **50279**; id 0 is `|||IP_ADDRESS|||` |
-| Extra tokens | none above 50,276 | 50277 `|||EMAIL_ADDRESS|||`, 50278 `|||PHONE_NUMBER|||` |
-| Training data | the Pile (test split held out) | Dolma 1.7 (the Pile test split is not guaranteed held out) |
+| Id, revision | `EleutherAI/pythia-1b`, `f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2` | `allenai/OLMo-1B-0724-hf`, `d7cbab742d80589e714b1a2d7f838dcd21cbe143` |
+| Shape | 16 blocks, width 2,048 | 16 blocks, width 2,048 |
+| End-of-text token | id 0 | id **50279** (id 0 is `|||IP_ADDRESS|||`; 50277-50278 are PII placeholders) |
+| Training data | the Pile (test split held out) | Dolma 1.7 (not guaranteed held out) |
 
-Ordinary text gets the same ids from both tokenizers, but **the separator differs**: each model reads its own
-end-of-text token at position 0, and identity is asserted on positions 1-2,047. Display decoding passes
-`clean_up_tokenization_spaces=False` (OLMo's default is `True`).
+Ordinary text gets the same ids from both tokenizers; each model reads its own separator at position 0. **Token
+assertion (fails closed):** documents containing `<|endoftext|>`, `<|padding|>`, the three placeholder strings or NUL
+are rejected; both tokenizers give identical ids for each accepted text; no text id is in {0, 1, 50277, 50278, 50279};
+every probe id has the same `convert_ids_to_tokens` string under both. Display decoding passes
+`clean_up_tokenization_spaces=False`.
 
-**Token assertion (U0, fails closed).** (i) Documents containing `<|endoftext|>`, `<|padding|>`,
-`|||EMAIL_ADDRESS|||`, `|||PHONE_NUMBER|||`, `|||IP_ADDRESS|||` or NUL are rejected before tokenisation. (ii) Both
-tokenizers encode each accepted text to identical ids. (iii) No text id is in {0, 1, 50277, 50278, 50279}. (iv) Every
-id in the probe has the same `convert_ids_to_tokens` string under both. A failure stops the run.
+**Forward pass.** float32, `model.eval()`, eager attention, TF32 off, one context per batch, `transformers==4.57.6`,
+`torch==2.5.1` (nearest working pair pinned and recorded if OLMo fails). Residuals by hooks on each decoder layer
+(block outputs; hidden state 16 is before the final norm), asserted equal to `output_hidden_states` for layers 1-15;
+hidden state 0 is the embedding output. **Causal check (hard):** context 0, and context 0 with positions 1,024-2,047
+replaced by a suffix whose token at 1,024 differs (found by search, recorded); residuals at positions 0-1,023 agree to
+1e-5 relative at every layer and differ by more than 1e-3 at 1,024. A truncated run is a recorded diagnostic only.
 
-**Forward pass (U1).** float32, `attn_implementation="eager"`, TF32 off, one context per batch, `transformers==4.57.6`,
-`torch==2.5.1` (if OLMo does not load, the nearest working pair is pinned and recorded). Residuals by forward hooks on
-each decoder layer; hooks for layers 1-15 asserted equal to `output_hidden_states`. Hidden state ℓ = 0 is the
-embedding output, ℓ = 1..16 the block outputs. Also stored per position: top-20 next-token ids and probabilities
-(softmax of the model's own logits over the full vocabulary) and the full-distribution entropy.
+**Saved by extraction** (so Stage A is verifiable on its own and later choices need no rerun):
+- **Provenance:** model, tokenizer and library versions actually loaded; eval, dtype, attention and TF32 settings;
+  the hook-equality and causal-check results, including the replacement suffix.
+- **Activations:** float32 (17, 2,048, 2,048) per context, all hidden states at every position, 36 contexts.
+- **Predictions:** per position, the top-20 ids and their full-softmax probabilities, the entropy of the full
+  distribution and the retained top-20 mass. Exact full distributions can be regenerated from hidden state 16 and the
+  pinned final norm and output head, so logits are not stored.
+- **Attention summaries** (eager probabilities, never stored whole): per document, layer and head, and per query range
+  (positions 256-1,535 and 1,536-2,047): the sum of sink mass A[i,0], the sums Σ_{j≥1} A[i,j](i - j) and
+  Σ_{j≥1} A[i,j], and the query count, so per-head means and their medians are recomputable.
 
-**Causal checks (hard).** Two equal-shape inputs: context 0, and context 0 with positions 1,024-2,047 replaced by
-context 1's tokens. Residuals at positions 0-1,023 agree to 1e-5 relative at every layer; at position 1,024 they differ
-by more than 1e-3 relative at every layer. A truncated 1,024-token run is recorded per layer as a diagnostic only
-(eager attention and OLMo's layer norm compute in float32 internally, so `.double()` is not a float64 reference).
+## 3. Probe, node sets and query samples
 
-## 3. Probe
+**Corpus** (owner: anything in the Pile is fine, all text shown). `monology/pile-uncopyrighted` revision
+`3be90335b66f24456a5d6659d9c8d208c0357119`, `test.jsonl.zst` (337,771,483 bytes); `meta.pile_set_name` is the
+**subset**. **Selection:** at least 95% ASCII, at least 2,048 Pythia tokens, no forbidden strings; shuffled with
+`default_rng(0)`; the context is a document's first 2,047 tokens. Reject if whitespace-only tokens exceed 30%, more than
+10% of positions u ≥ 32 repeat an earlier 32-gram of the context, any 32-gram occurs in an accepted document, or the
+subset already has 4 texts. The first 32 accepted are the **texts** (random order, at least 8 subsets); four more make
+the stitched controls (section 9.2). The page calls this **a capped sample of the beginnings of long, mostly ASCII Pile
+test documents**. **Recorded per document:** file index, SHA-256 of the text, subset, the accepted ids including each
+model's separator id; per stitched text, its segment schedule and, for every position, the source document and source
+position.
 
-**Corpus (owner's answer: anything in the Pile is fine, all text shown).** Pile test split,
-`monology/pile-uncopyrighted` revision `3be90335b66f24456a5d6659d9c8d208c0357119`, `test.jsonl.zst` (337,771,483
-bytes), streamed in file order; `meta.pile_set_name` is the document's **subset**. Pythia never trained on it; OLMo
-may have seen similar text.
+**Positions.** Input `[that model's end-of-text] + context`, positions 0..2,047; position 0 (constant, attention sink)
+is excluded from everything (centring, memory sums, nodes); a node's history includes every position from 1. Tokens are
+identified by the immutable pair (text, position).
 
-**Selection.** Eligible: at least 95% ASCII characters, at least 2,048 Pythia tokens, no forbidden strings; shuffled
-with `numpy.random.default_rng(0).permutation`. A document's **context** is its first 2,047 tokens, read from the start,
-so no document is split. Reject if: whitespace-only tokens exceed 30%; more than 10% of positions u ≥ 32 repeat a
-32-gram that occurred earlier in the context; any 32-gram occurs in an already accepted document; the subset already
-has 4 accepted texts. Rejection counts by reason and subset are stored. The first 32 accepted are the **texts**, in
-acceptance order (random); at least 8 subsets. Four more accepted documents, never among the 32, make the stitched
-controls (section 9.2). The page describes the probe as **a capped sample of the beginnings of long, mostly ASCII
-documents from the Pile test split**, not as random text in general; the subset table is on the Method tab.
-
-**Input and nodes.** `[that model's end-of-text] + context`, T = 2,048, positions u = 0..2,047; the residual at
-u ≥ 1 has read text tokens 1..u. Position 0 is identical in every context, carries the attention sink and is
-**excluded from everything**. **Burn-in** b = 256: the nodes of a text are positions 256..2,047 (1,792 tokens). At
-memory 64 the weight before position 1 is at most (1 - 1/64)^256 = 1.8% of the total; the whole prefix never reaches
-a steady state, which is measured, not hidden.
-
-| Graph | Nodes | N |
-|---|---|---|
-| **one-text graph** | the 1,792 tokens of one text (32 texts and 4 stitched controls) | 1,792 |
-| **all-texts graph** | the 1,792 tokens of each of the 32 texts together | 57,344 |
-| **companion graphs** (Q3; texts 0 and 1 only) | text c with 3 others; text c with 15 others (set H1); text c with the other 16 (set H2) | 7,168; 28,672; 30,464 |
-
-Companions are drawn with `default_rng(100 + c)`; the 3 are a subset of H1. The viewer opens on text 0; example figures
-use texts 0 and 1.
-
-**Stored** (Volume `tm-exp1`): `probe/probe.json` (subsets, ids, display strings, stitched tables, companion sets,
-rejections, assertions); `acts/<model>/c<cc>.npy`, float32 (17, 2048, 2048), 36 contexts, 20.5 GB in all;
-`pred/<model>.npz`; `attn/<model>.npz` (section 10).
-
-## 4. Similarity (the kernel family)
-
-**Sites.** L = 8 hidden states ℓ ∈ {2, 4, ..., 16}, the same in both models. **Centring.** μ_ℓ = mean of x_{c,u,ℓ}
-over the 32 texts and u = 1..2,047, float64, one per model and site, used by every graph, so the similarity of two
-tokens never depends on which graph they are in (one-text graphs are labelled as using a corpus mean).
-
-| Reading | Token vector y_u | Similarity | Distance d given to the graph rule |
+| Set | Tokens | Size | Used by |
 |---|---|---|---|
-| cosine (each token counts equally) | (x_u - μ)/‖x_u - μ‖ | ĉ = K(t,t')/sqrt(K(t,t)K(t',t')) | 1 - ĉ |
-| dot (loud tokens count more) | x_u - μ | K(t,t') | [(K(t,t) + K(t',t'))/2 - K(t,t')] / s |
+| census pool | positions 256..2,047 of the 32 texts | 57,344 | Stage A: queries and candidates |
+| suffix | positions 1,536..2,047 of the 32 texts | 16,384 | Stage A screen; Stage B all-texts graph |
+| query sample Q | per text 64 positions in the suffix and 32 in 256..1,535, drawn with `default_rng(21)` | 3,072 | Stage A screen (suffix part) and prediction readout |
+| audit queries | per text 1 position drawn from that text's 64 suffix queries in Q, `default_rng(22)` (so every audit query has production matches and suffix-screen records) | 32 | Stage A audit |
+| one-text graph | positions 256..2,047 of one text | 1,792 | Stage B |
+| matched one-text graph | the suffix of one text | 512 | Stage B |
+| companion graphs | the suffix of focal text c (0 or 1) with that of 3, 15 (H1) or a disjoint 15 (H2) other texts | 2,048; 8,192; 8,192 | Stage B |
 
-s = mean of K(t,t) over all nodes (one scalar per model, site and memory), so dot distances are in units of the mean
-squared norm and comparable across graphs.
+Q, the audit queries and the companion sets (`default_rng(100 + c)`) are drawn by `probe.py` and stored in
+`probe/probe.json` before any kernel is computed.
+
+## 4. Similarity
+
+**Sites.** L = 8 hidden states ℓ ∈ {2, 4, ..., 16}, the same in both models.
+
+**Centrings answer different questions** and are shown side by side, neither as the corrected version of the other:
+
+| Centring | Token vector | Question it answers |
+|---|---|---|
+| corpus mean (C) | x_u - μ_ℓ, μ_ℓ the mean over the 32 texts, positions 1..2,047 | which passages does the state at this token resemble, as the model holds it? |
+| own-text mean (O) | x_u - μ_{ℓ,c}, μ_{ℓ,c} the mean of text c over positions 1..2,047 | a retrospective within-document contrast: which passages resemble it once each whole text's average is removed? It uses tokens after the query, removes genuine topic information along with offsets, and gives two positions of the same text a covariance of -Σ/T (Σ the token covariance, T the text length) that positions in different texts do not share |
+
+**Exclusion masks are rules, not findings:**
+
+| Mask | Eligible neighbours of token i | What it imposes |
+|---|---|---|
+| none | every other token of the pool | nothing |
+| window | no token of the same text within w = 64 positions (the Theiler window of recurrence analysis; the memory kernel is a weighted recurrence plot) | the near share is **zero by definition**; it forbids short offsets but does not make two long histories independent. The page shows the short-range mass the mask removed (section 5) |
+| other texts | tokens of other texts only | the other-text share is **one by definition**; shown in Experiments only, never solved in Stage B, disabled for a stitched text analysed alone |
+
+Both centrings depend only on the token's own text, so the similarity of two tokens never depends on which graph they
+are in.
+
+**Readings.**
+
+| Reading | y_u | Similarity | Distance d |
+|---|---|---|---|
+| cosine (each token counts equally) | centred, then unit length | ĉ = K(t,t')/sqrt(K(t,t)K(t',t')) | 1 - ĉ |
+| dot (loud tokens count more) | centred | K(t,t') | [(K(t,t) + K(t',t'))/2 - K(t,t')]/s, s = mean K(t,t) over the census pool |
 
 **Memory kernel** (the owner's definition). With G(u,u') = ⟨y_u, y_u'⟩ and y_u = 0 for u ≤ 0,
+K_a(t,t') = Σ_{s≥0} a^s G(t-s, t'-s) = G(t,t') + a K_a(t-1, t'-1): two pasts laid side by side **aligned at their ends**
+and compared lag by lag (not the dot product of running means). Memory m ∈ {none (a = 0), 2 (a = 0.5), 8 (0.875),
+64 (0.984375), whole (a = 1)}, a = 1 - 1/m. For the primer: chance agreement persists along a diagonal (K(t,t') and
+K(t+1,t'+1) share history, correlation a for unrelated noise); at the whole prefix pasts of different lengths are
+compared over the shorter, so similarity depends on position even for structureless text; for memories up to 64 after
+burn-in the readings differ approximately only in token normalisation, at the whole prefix also in prefix
+normalisation.
 
-    K_a(t, t') = Σ_{s ≥ 0} a^s G(t - s, t' - s) = G(t, t') + a K_a(t - 1, t' - 1).
+**Text-only adversaries**, same tokens, centrings, readings, memories and masks: (i) **random token vectors**, a fixed
+Gaussian vector in dimension 2,048 per token id (`default_rng(7)`), model-free; (ii) **embedding output**, each model's
+hidden state 0.
 
-It is the dot product of φ(t) = (a^{s/2} y_{t-s})_{s≥0}: two pasts laid side by side **aligned at their ends** and
-compared lag by lag; not the dot product of running means. Facts the primer states:
-- For two unrelated noise texts the expected similarity is zero at every pair of positions, but chance agreement
-  persists along a diagonal (K(t+1, t'+1) and K(t, t') share history, correlation a at steady state), so graph entries
-  are dependent even without real autocorrelation (measured, section 9.1).
-- At the whole prefix (a = 1) prefixes of different lengths are compared over the shorter one, and even for noise the
-  spread of ĉ depends on position (variance about 1/(d·max(t,t')) for unit tokens in dimension d).
-- **What the readings isolate.** With unit tokens K(t,t) = (1 - a^t)/(1 - a), so for memories none, 8 and 64 after
-  burn-in the Euclidean distance of unit-token pasts is m(1 - ĉ) to within 2%: there the readings differ only in token
-  normalisation. At the whole prefix the dot distance of unit tokens is (t + t')/2 - sqrt(tt')ĉ, so the readings also
-  differ in prefix normalisation; whole-prefix comparisons are two combined geometry choices.
+**Exact computation** (`exp1/similarity.py`, extended). Diagonals K(t,t) first. Then per text c: the Gram of its 2,047
+tokens against all 65,504 tokens of the 32 texts (one float64 matmul), the recursion `K[t, 1:] = G[t, 1:] + a *
+K[t-1, :-1]` within each text's column block for all memories at once, distances from the diagonals, the three masks.
+The closed form a^t Σ a^{-u} g(u) is not used (it overflows). Checks (fail closed): no token with ‖x - μ‖ < 1e-6 ×
+median; smallest off-diagonal model distance above 1e-9.
 
-**Memory grid.** m = memory in tokens, a = 1 - 1/m: none (a = 0), 8 (a = 0.875), 64 (a = 0.984375), whole (a = 1).
-8 constructions = 4 memories × 2 readings. **"Smart EMA" here** is the measurement of section 10; a kernel with
-model-derived lag weights is deferred (a general lag profile needs a convolution along diagonals, not this
-one-step recursion).
+**Ties (production path).** Two candidates are tied if their distances differ by at most 1e-12 relative. The top-64 set
+is every candidate strictly closer than the 64th distance d_64 plus the tied candidates at d_64 needed to reach 64,
+chosen by (text, position); stored with it: d_64, the number of candidates tied at d_64 (t_all) and how many were taken
+(t_in). Every overlap between two neighbour sets is the **expected overlap under uniformly random tie-breaking**,
+E|A ∩ B| = Σ_j P(j ∈ A) P(j ∈ B), with P = 1 strictly inside, t_in/t_all at the cutoff, 0 outside. This matters for the
+adversaries at memory none, where hundreds of tokens can share a current token. `torch.topk`, which leaves tie
+membership unspecified, is replaced by this rule.
 
-**Text-only adversaries**, on exactly the same nodes with the same readings, memories, graph rule and one site (no
-layers): (i) **random token vectors**: a fixed Gaussian vector in dimension 2,048 per token id (`default_rng(7)`),
-the same for both models; (ii) **embedding output**: each model's hidden state ℓ = 0. At memory none both are exact
-functions of the current token (already in the nuisance span of section 7.3) and are not built.
+Expected overlap is a **descriptive** statistic: when one set's cutoff ties contain the other set, it is small although
+every neighbour is shared (a model picking 64 of 1,024 tied occurrences of one token against an adversary tying all
+1,024 gives 64/1,024 = 0.06). The selection conditions of section 5 therefore use the **maximum overlap compatible with
+the cutoff ties**. With A_s, B_s the strictly-inside sets, A_t, B_t the tied sets at each cutoff and a, b the numbers
+still to take from them, and c1 = |A_s ∩ B_t|, c2 = |A_t ∩ B_s|, c3 = |A_t ∩ B_t|:
+max|A ∩ B| = |A_s ∩ B_s| + max over z = 0..min(c3, a, b) of [z + min(c1, b - z) + min(c2, a - z)].
+The four counts |A_s ∩ B_s|, c1, c2, c3 are computed and stored while the rows are live, for every pair of settings
+whose overlap is used (each setting against memory none and against each adversary); full tie identities are stored for
+the audit queries.
 
-**Loud tokens.** Kept under the dot reading. Reported per model and site: share of centred squared norm in the top 1%
-of tokens, and the 10 most frequent token strings among tokens above 5 times the median norm.
+## 5. Stage A: the neighbour census
 
-**Exact computation, streamed on one GPU (U2).** First the diagonals K(t,t) of every text by the same recursion on
-squared norms. Then for each text c and site: the Gram of its 2,047 tokens against all 65,504 tokens of the 32 texts
-(one float64 matmul), the recursion `K[t, 1:] = G[t, 1:] + a * K[t-1, :-1]` within each text's column block, row by
-row, for the three nonzero memories at once; conversion to distances with the diagonals; and for each node row its
-K_nb nearest nodes (ties by index), both among all 57,344 nodes and among its own text's 1,792. Only these lists are
-stored (int32 indices, float32 distances computed in float64); nothing of size N × N is kept. The companion graphs get
-their lists from the same row blocks restricted to their texts' columns; the four stitched texts from their own blocks.
-U2 then calibrates the participation-ratio widths on the kept lists and makes a second streamed pass for the
-discarded mass of section 5. Cost: about 1.76·10^13 flops per site, reading and
-model for the Grams, 1.4·10^15 in all with the adversary inputs, minutes on an A100 in float64 (L4 has no usable
-float64 rate). Not used: the closed form a^t Σ a^{-u} g(u), which overflows. Tests: recursion against φ and a direct
-double loop, 1e-12.
+**Settings.** 2 models × 2 readings × 2 centrings × 5 memories × 3 masks × (8 sites + 2 adversary inputs). One kernel
+pass per (model, reading, centring, input) serves all memories and masks: 80 passes.
 
-**Checks** (fail closed): no token with ‖x_u - μ‖ < 1e-6 × the median; smallest off-diagonal distance in every graph
-above 1e-9 (adversary graphs exempt; their near-ties are reported).
+**A. Geometric census, every token of the census pool, every setting.**
 
-## 5. Graph rule
-
-**Definition (default recipe: participation ratio, k = 64, K_nb = 512).** For node i with kept neighbour set N_i
-(its K_nb nearest nodes in the graph), q(j | i) = exp(-β_i (d_ij - min_{j' ∈ N_i} d_ij'))/Z_i for j ∈ N_i, with β_i set
-by bisection so that 1/Σ_j q(j | i)² = k (achieved within 1e-3 of k, fail closed). S = (q + q^T)/2. W = S + η(11^T - I)
-with η = 10^-4/(N - 1): a uniform floor holding 10^-4 of each row's mass, which keeps every graph connected and is
-the single rank-one term. Symmetric Sinkhorn scaling d with d_i (W d)_i = 1 to 1e-11 (sparse fixed point; Newton steps
-solved by conjugate gradients if it stalls), P = D W D, lazy walk M = (I + P)/2. In storage M = sparse part + rank-one
-part, the form of `opt/sparse_core.py`'s `Walk`. The per-row calibration is `_cond_rows` from DepthEmbedding
-`invert/dm.py`, applied to the kept distances (`mask_self=False`; self excluded from N_i).
-
-**Truncation is part of the rule, and its drift is measured before the main run (V3).** (i) Discarded mass: for every
-row of the all-texts graph, Σ_{j ∉ N_i} exp(-β_i(d_ij - min))/Z_i, by a second streamed pass; required median ≤ 1e-3
-and maximum ≤ 1e-2 at every site. (ii) Against the dense, untruncated, floor-free participation-ratio rule
-(`ea_kernel(renyi=2)`) solved with the dense reference: texts 0-3 (N = 1,792) and the 4-text companion graph of text 0
-(N = 7,168), Pythia, cosine, memories none and 64: t* and the first 16 eigenvalues within 1% and alignment of the
-16-mode pictures (section 7.2) at least 0.99. If either fails, K_nb = 1,024 for every graph and V3 is repeated; if it
-fails again, the rule stays as defined and the page states the drift.
-
-**Disconnected texts.** If, without the floor, the kept-neighbour graph of a layer falls into several components
-(texts that never appear in each other's 512 nearest), its lowest modes are set by the floor and are document
-indicators. The number of components per layer is reported, and such constructions fail the remainder gate of
-section 8 through their document share.
-
-**Why participation ratio, against the owner's "Shannon perplexity is perhaps gentler".** It is the same per-point
-Gaussian construction with the participation ratio in place of exp(entropy). Before symmetrisation and Sinkhorn, a
-participation ratio of k bounds every conditional weight by 1/sqrt(k) = 0.125, whereas a Shannon perplexity of 64
-allows about 0.6 on one neighbour; in DepthEmbedding (joint modes, perplexity 400, N = 8,000) Shannon gave modes carried
-by two images. The bound does not carry through Sinkhorn, so the shipped joint modes are checked (P2).
-
-**Recipe comparison (P2), on the joint modes the viewer ships.** Recipes on the same kept lists: participation ratio
-k = 64; Shannon perplexity 64 (`_cond_rows` with renyi=1); union 15-nearest-neighbours with weight 1, floor 10^-6
-(the DepthEmbedding rule). Pythia, cosine reading: the all-texts graph at memory 64 and texts 0-3 at memories none
-and 64, 9 graphs × 16 joint modes. Per mode, w_i = Σ_ℓ f_ℓ(i)²/Σ_{ℓ,j} f_ℓ(j)² (depth-aggregated token mass);
-**two-token mass** = the largest w_i + w_j; **spread** = 1/Σ_i w_i². Localised if two-token mass > 0.1 or spread < 20.
-Reported separately for the all-texts and one-text graphs, with each recipe's effective width (exp of mean row
-entropy of P). **Rule:** the recipe with the fewest localised modes over the 144 is used after P2; ties go to
-participation ratio, then nearest neighbours. Widths are not matched, so the conclusion is about these configured
-recipes only.
-
-## 6. Through-depth operator and solvers
-
-The operator is DepthEmbedding's: L_t = blockdiag((I - M_ℓ)/c_ℓ) + t (D_path ⊗ I), solved on functions whose slice
-at every layer has mean zero. `spacetime.py`, `spacetime_stage.py` and `test_spacetime.py` are copied from commit
-`8dd7a66` unchanged and their tests must pass unchanged.
-
-| Choice | Value |
+| Quantity | Definition (means over queries; chance computed exactly from eligible counts) |
 |---|---|
-| Sites | the 8 hidden states in depth order, path with free ends, the same tokens at every layer |
-| Units | relative: c_ℓ = mean of the first 8 nontrivial 1 - λ_k of M_ℓ |
-| Coupling | t = t* only: the coupling at which the first between-layer eigenvalue equals the first eigenvalue on slice-mean-zero functions (it equates two eigenvalues, not two energy terms) |
-| Modes | 24 computed, 20 checked, 16 read; readings also at K = 12 and 20 (section 8) |
-| Precision | float64 |
+| origin shares | fractions of the top-64 in other texts / same text more than 64 positions away / same text within 64 |
+| position gap | median |Δ position| of same-text neighbours |
+| same current token | fraction of the top-64 with the query's current token id |
+| adversary overlap | expected overlap with each adversary's top-64 (same memory, reading, centring, mask), divided by 64 |
+| overlap with local | expected overlap with the top-64 at memory none (same reading, centring, mask), divided by 64 |
 
-**Solvers.** One-text graphs (N = 1,792) and the dense checks: the copied `spacetime.py` on the densified walk
-(`modes`, `balance_direct` with the full site eigensystem passed in, `site_scales('own')`). All-texts and companion
-graphs: the sparse path of `opt/sparse_core.py`, copied with its arithmetic unchanged and its array calls made
-switchable between numpy/scipy and CuPy (`cupyx.scipy.sparse`), run on the GPU: `site_spectra` (9 leading eigenpairs
-per layer) for c_ℓ, `balance_root` (bracketed t*), `normal_modes` (direct Lanczos on the sparse operator with the
-between-layer-only sector pushed above the target) for 24 modes, `ritz` for the values. If Lanczos needs more than
-20,000 operator applications for 24 modes, `power_modes` (the polynomial filter of the report) is used instead and
-recorded.
+**B. Stage-B-matched screen** (while the distance rows are live; no eigen-solve, nothing N × N stored). Queries: the
+2,048 suffix queries of Q; candidates: the 16,384 suffix tokens (the Stage B all-texts graph). For each query row, the
+dense participation-ratio conditional of Stage B: q(j|i) ∝ exp(-β_i(d_ij - min_j d_ij)) over eligible j ≠ i, β_i by
+bisection so that 1/Σ_j q(j|i)² = 64 (`_cond_rows` arithmetic; rows whose target is unattainable because of tied
+minima are counted and excluded). Reported: **top-64 origin shares** and **conditional-mass origin shares**
+Σ_{j in origin} q(j|i) on these rows; for the window mask, the **short-range mass removed**: the conditional mass the
+unmasked row (calibrated separately) puts on same-text tokens within 64 positions.
 
-**The dense reference must agree with the sparse path on the same operator (V1, V2; hard).** V1: the synthetic
-all-texts graph (8 texts × 768 tokens × 4 layers). V2: the real one-text graph of text 0 (Pythia, cosine, memory 64),
-and the 4-text companion graph of text 0. Required: t* and the first 20 eigenvalues to 1e-8 relative; for each
-cluster of eigenvalues closer than 1e-8, the largest principal-angle sine to 1e-6; CPU (scipy) and GPU (CuPy) sparse
-paths both checked.
+**C. Prediction readout on the query sample Q** (sites 4, 8, 12, 16; every setting of the 8 model sites). For each
+query i in Q and each neighbour j in its census top-64 (ties expanded as in section 4), a control j' drawn with a keyed
+seed (hash of model, setting, i, j) from the census pool with j's text, j's current token id and, if j is in i's text,
+the same bin of |Δ position| (1-8, 9-64, 65-512, over 512), excluding i, j and i's other neighbours. o(i,j) =
+Σ_{v in both top-20 sets} min(p_i(v), p_j(v)); pair advantage = o(i,j) - o(i,j'). **Strata:** neighbour origin (3) ×
+frequency of j's token in the pool (at least 20 occurrences, or fewer): 6 strata. A pair without an eligible control is
+**unmatched** (reason recorded: no same-token token in that text, empty lag bin, all candidates excluded). A stratum is
+**covered** if at least 50% of its pairs and at least 200 pairs are matched; an empty stratum is **absent** and carries
+no weight. **Concordance score** = the mean over covered strata of each stratum's mean advantage, with equal weights;
+a setting is **ineligible** for ranking if any non-absent stratum is uncovered or overall coverage is below 50%. Stored
+per document: per stratum, the sum of advantages, matched and unmatched counts by reason, and the retained top-20 mass;
+the bootstrap (200 draws of documents) resamples these contributions. Also reported: top-1 match beside its matched
+control (readable form). The model's own predictions are used for each model.
 
-**Acceptance per solve:** residuals of the first 20 modes below 1e-8; at t*, |λ_1/(t*·4 sin²(π/16)) - 1| < 1e-6;
-occupancy and recurrent strengths sum to K; finite outputs; Sinkhorn row error below 1e-10. Stored: relative gaps
-(λ_{K+1} - λ_K)/λ_K at K = 12, 16, 20; a small gap at 16 means the 16-dimensional space itself may be unstable, which
-is why the gates of section 8 are also checked at 12 and 20.
+**D. Stitched controls** (each stitched text analysed alone; masks none and window; centring C). Same-source share of the
+top-64 against its **position baseline**: for each signed lag Δ, b(Δ) = the mean, over all query positions u of that
+stitched text with u and u + Δ both nodes, of 1[source(u) = source(u + Δ)] under its segment schedule; the baseline of
+query i is the mean of b(j - i) over its neighbours j. (Conditioning on i as well would leave one position per lag, the
+neighbour itself, and make observed minus baseline identically zero.) Observed minus baseline is the share beyond
+position.
 
-## 7. Readings
+**E. Synthetic census.** The variants of section 9.3 run through A, so the page can show what a planted regime looks
+like as neighbours.
 
-### 7.1 The picture as a matrix on tokens
+**Stage A's result stands alone.** It says, for two real models, what memory and accounting do to a token's
+neighbourhood and whether neighbours are prediction-concordant, verifiable by clicking any token.
 
-G_ℓ = the N × K matrix of the first K modes' slices at site ℓ (K = 16 unless stated); X = [G_1 ... G_8] (N × 8K).
-**R** = X X^T = Σ_ℓ G_ℓ G_ℓ^T (trace K) combines token functions shared by several modes or layers and weights each by
-how much of the picture uses it (four depth envelopes of one function give 4uu^T). R is never formed: every reading
-below uses the factor X. Everything is unchanged by rotating the K modes. **Effective rank** r_eff = number of
-eigenvalues of R above 1% of the largest; U_eff their eigenvectors.
+### Choosing Stage B's construction (fixed now)
 
-### 7.2 Agreement
+Candidates: memory ∈ {2, 8, 64, whole} × reading × centring × mask ∈ {none, window}: 32. On the **Stage-B-matched
+screen**, a candidate **passes** if for both models at 5 or more of the 8 sites:
+1. its conditional mass from other texts is at least 0.25;
+2. for the window mask, the short-range mass removed is at most 0.5 (the rule did not remove most of the row);
+   for no mask, the conditional mass within 64 positions in the same text is at most 0.25;
+3. its top-64 overlap with memory none (same reading, centring, mask) is at most 0.5;
+4. its overlap with each adversary is at most 0.5.
 
-A(R_1, R_2) = tr(R_1 R_2)/sqrt(tr(R_1²) tr(R_2²)) = ‖X_1^T X_2‖²/(‖X_1^T X_1‖ ‖X_2^T X_2‖) (linear kernel alignment;
-the mean cos² of principal angles for equal-weight projectors). After restriction to a subset of tokens (one text of
-the all-texts graph), both factors are centred on that subset first and the retained trace is reported; below 5%
-retained, the value is "no signal". **Null:** 200 permutations of one picture's token labels (within texts for
-multi-text graphs), mean and 95th percentile. **Document bootstrap** (all-texts graph): 200 draws of the 32 texts with
-replacement on the fixed graphs, 5th-95th percentiles, labelled as conditional on these graphs.
+In 3 and 4 the overlap at a site is the mean over suffix queries of (maximum overlap compatible with ties)/64
+(section 4), so a candidate cannot pass through tie-breaking; the expected overlap is shown beside it.
 
-### 7.3 What the picture is made of
+**Primary memory construction M:** among passing candidates, the least intervention first (C/none, then C/window, then
+O/none, then O/window), then the cosine reading, then the memory with the smallest adversary overlap (the maximum over
+models, sites and the two adversaries of the site value in 4), then the shorter memory. Its
+**local counterpart L** is memory none with M's reading, centring and mask. **Stage B solves** R (memory none, cosine,
+C, no mask: DepthEmbedding's construction), L (if different from R) and M. **At most one additional example X:** among
+passing candidates other than M whose concordance is eligible, the one with the highest concordance score (candidates
+are compared on the strata covered in all of them, so absent strata cannot change the weights) if its
+bootstrap 5th percentile is above 0; X is described as "screened for prediction concordance" and treated as descriptive
+in Stage B (no difference test). The concordance score is never used to choose M and never presented as validation.
+**If nothing passes,** Stage B is not recommended (see the first paragraph); if the owner still wants it, it solves R and
+the reference construction (cosine, C, window, memory 64) labelled "did not pass the screen".
 
-Nuisance span Z, orthonormalised by QR in this order on mean-zero functions:
+## 6. Stage B: graph rule, operator and solver (provisional)
 
-| Family | All-texts graph | One-text graph |
-|---|---|---|
-| document | the 32 text indicators, centred: 31 dimensions | none |
-| position | p_j(t) = cos(π j (t - 255.5)/1,792), j = 1..16, the same function of position in every text, residualised against documents | the same 16 functions (position and slow drift of topic cannot be told apart; labelled so) |
-| common token | indicators of ids seen at least 20 times among the nodes, residualised against the above | the same within the text |
+**Graph rule:** participation ratio, k = 64, dense and exact (`kernels.py`: `_cond_rows`, `ea_kernel(renyi=2)`,
+`sinkhorn_sym`, from DepthEmbedding `invert/dm.py` at `8dd7a66`), on eligible pairs (excluded pairs get d = +∞, hence
+zero weight); W = (q + q^T)/2; symmetric Sinkhorn (float64, 1e-11); M = (I + P)/2; no truncation, no floor;
+`ea_kernel` is passed C = 1 - d. Achieved participation ratio is checked per row. Participation ratio rather than the
+owner's suggested Shannon perplexity: before Sinkhorn it caps any conditional weight at 1/sqrt(k) = 0.125 where a
+Shannon perplexity of 64 allows about 0.6, and Shannon gave two-image joint modes in DepthEmbedding [sibling]. Shannon
+and union 15-nearest-neighbours are compared once on R's all-texts graph, off the critical path, reported only.
 
-Shares s_doc = tr(Q_doc^T R Q_doc)/K, s_pos, s_tok likewise; **remainder share** s_rem = 1 - s_doc - s_pos - s_tok;
-chance = each family's dimension over N - 1. **Remainder picture** R̃ from X̃ = (I - Π_Z) X; its effective rank is
-(tr R̃)²/tr(R̃²). The remainder is "outside these columns", not "beyond the obvious": previous tokens, formatting,
-rare tokens and fast position patterns remain, which is what the adversaries are for. Per-mode shares (viewer) use
-one mode's unit slice at one site.
+**Operator:** L_t = blockdiag((I - M_ℓ)/c_ℓ) + t(D_path ⊗ I) on functions with mean-zero slices; c_ℓ = mean of the first
+8 nontrivial 1 - λ_k of M_ℓ, reusing the full site spectra; t = t* (`balance_direct`), where the first between-layer
+eigenvalue t·4 sin²(π/(2L)) meets the first eigenvalue on mean-zero slices (two eigenvalues, not two energy terms); 24
+modes computed, 20 checked, 16 read. Every temporal formula uses L.
 
-### 7.4 Other readings
+**GPU route:** `spacetime_gpu.py` and `kernels_gpu.py` are the copied CPU modules with the array module switched to
+CuPy; ARPACK stays in scipy on the CPU, one vector moving per operator application. The CPU modules stay unchanged as the
+oracle. **G1 (hard, pre-B):** on the operator fixtures of section 9.1, a masked nonuniform synthetic graph and the
+one-text graph of text 0 under L, GPU and CPU agree: q, W and P entries to 1e-12; c_ℓ, t*, first 24 eigenvalues to 1e-10
+relative; complete eigenvalue clusters (with guard modes) to principal-angle sine 1e-8. One-text and matched graphs run
+on the CPU oracle itself.
 
-| Reading | Definition |
-|---|---|
-| spread, two-token mass | section 5, per mode; localised if spread < 20 or mass > 0.1 |
-| captured share of a grouping F | ‖U_eff^T Q_F‖²/r_F for orthonormal centred indicators Q_F (r_F columns); chance r_eff/(N - 1) |
-| same-document walk share | per token and site, Σ_{j in its text, j ≠ i} P_ℓ[i,j]; chance 1,791/57,343 = 0.031 |
-| cross-model agreement | A(R̃_Pythia, R̃_OLMo), same tokens and Z |
-| text agreement | A(R̃_model, R̃_adversary), each model and adversary |
-| cross-reading agreement | A(R_cosine, R_dot), same model and memory |
-| one-text vs all-texts, text c | A between the one-text picture and the all-texts picture restricted to c (centred), on all 1,792 tokens, with the retained trace |
-| companion series, texts 0 and 1 | the same between the graphs on 1, 4, 16 (H1), 16 (H2) and 32 texts; **H1 vs H2** compares text c's picture in two graphs whose other texts are disjoint |
-| realised radius | per token, Σ_j q(j|i) d_ij (the row's mean distance), median over text c in each graph: a fixed k is not a fixed radius |
-| prediction overlap | o(i,j) = Σ_{v in both top-20 sets} min(p_i(v), p_j(v)), a lower bound on the overlap of two next-token distributions |
+**Memory at N = 16,384, float64** [derived; one matrix 2.15 GB]: graph building, one site at a time, about 32 GB
+transient plus up to 17.2 GB of finished walks; calibration: walks 17.2 + the site eigenvectors, which the copied
+`site_eigs` holds twice while stacking (34.4) = 51.5 GB before workspace; solve: walks + inverses + set-up about 43 GB.
+Device-level high-water is measured in the B-pilot.
 
-**Functional readout.** Picture distance D(i,j) = ‖X_i - X_j‖². For each token i its 10 nearest tokens j by D; for
-each j a control j' (`default_rng(11)`) with the same current token id as j and the same same-text relation to i.
-Readout = mean of o(i,j) - o(i,j'), each model with its own predictions and picture; pairs without a control are
-skipped and the coverage reported; document bootstrap. Not in the decision: the next-token distribution is read from
-the last layer alone, so as a criterion it would favour pictures weighted toward late layers. It is shown beside the
-decision and the E2 answer states its sign.
+**Acceptance per solve:** residuals of the first 20 modes below 1e-8; |λ_1/(t*·4 sin²(π/(2L))) - 1| < 1e-6; occupancy
+and recurrent strengths sum to K; finite outputs; Sinkhorn row error below 1e-10. Stored and shown: the first 12 site
+gaps 1 - λ_k per layer and joint gaps at K = 12, 16, 20; a construction whose site gaps reveal a near-disconnection that
+sets the first displayed modes or the unit c_ℓ is not shipped as a winner, and the clusters' text composition is shown.
 
-## 8. Choosing the construction the viewer ships
+## 7. Stage B readings (provisional)
 
-Applied by `decide.py` inside U7, recomputed by the audit (U8), shown on the page with every number. A construction
-is **supported** if all of these hold for both models:
+G_ℓ = N × K slices of the first K modes (K = 16 unless stated); X = [G_1 ... G_L]; R = X X^T (never formed).
+**Alignment** A(R_1, R_2) = ‖X_1^T X_2‖²/(‖X_1^T X_1‖ ‖X_2^T X_2‖). **Common projection:** Z = text indicators (31
+dimensions in the all-texts graph) and position harmonics cos(π j (t - t_0 + 1/2)/n) with wavelength at least 224 tokens
+(J = 4 for n = 512, 16 for 1,792), residualised against texts; F = indicators of every current-token id plus the first
+32 nontrivial eigenvectors of each adversary walk. For comparing **models within one construction**, both are projected
+off Z + F of that construction; for the **difference between M and L**, both sides are projected off the **union** of
+the two constructions' spans (section 16). Reported for every remainder: retained energy, effective rank (tr R̃)²/tr(R̃²),
+exhaustion dim/N, and alignment against a reference calibrated with the projection reapplied (section 16).
 
-1. **Numerical:** every solve passed acceptance.
-2. **Not mostly nuisance:** s_rem ≥ 0.25 in the all-texts graph and in the median one-text graph; remainder effective
-   rank ≥ 4.
-3. **Shared beyond text:** cross-model agreement minus the largest text agreement (over both models and both
-   adversaries; 0 at memory none, where the adversaries are the removed common-token span) is at least 0.05, in the
-   all-texts graph and in the median one-text graph.
-4. **Above chance:** cross-model agreement above its null 95th percentile.
-5. **Not a cutoff artefact:** conditions 2-4 also hold with K = 12 and K = 20.
+**Q6:** on the focal text's 512 tokens, alignment between the matched one-text, full one-text (restricted), companion
+(4, H1, H2) and all-texts pictures, for R and M; focal occupancy and retained signal reported separately (no signal
+below 0.05 retained); realised radius Σ_j q(j|i) d_ij per graph. Illustrative, not an estimate. **Per mode:** depth
+weight, shares, spread 1/Σ_i w_i², two-token mass.
 
-**Score** = mean over (all-texts, median one-text) of the margin in 3; highest supported score wins; a runner-up within
-0.05 is broken toward the cosine reading, then the shorter memory. Reported, not used: the paired difference from the
-same reading at memory none (document bootstrap, conditional) and the functional readout.
+## 8. Stage B decision (provisional)
 
-**No supported winner** is a stated outcome: the viewer then ships the **reference construction**, fixed now as cosine
-reading with memory 64 (counterpart: memory none), labelled "reference, not supported by the criteria", and E2 says
-so. With a winner, its counterpart is memory none (or, if the winner is none, the best supported construction with
-memory and the same reading, else cosine 64). The score measures shared descriptive geometry beyond a text-only
-picture; usefulness for interpretation is only what the functional readout shows.
+M and L are each **supported** if, for both models, in the all-texts graph and the median one-text graph: acceptance
+passed, no disqualifying near-disconnection, retained energy ≥ 0.1, effective rank ≥ 4, exhaustion ≤ 0.5, cross-model
+agreement above the calibrated reference, and the same at K = 12 and 20. **Increment:** M's cross-model agreement minus
+L's, both on the union projection, with a paired document bootstrap. **Outcomes:** (i) M supported with a demonstrated
+increment (5th percentile above 0): the viewer ships M with L; (ii) both supported, no demonstrated increment; (iii) only
+L supported; (iv) neither. The viewer always ships M and L, labelled by outcome, and names the failed condition. The
+claim is shared descriptive geometry outside the tested text features.
 
 ## 9. Controls
 
-### 9.1 Synthetic (pipeline), run with P2's recipe, before any main unit
+### 9.1 Hard checks
 
-Same code path end to end, sparse path included. 8 texts of 1,024 positions (position 0 excluded), burn-in 256 (768
-tokens per text, all-texts N = 6,144), width 64, 4 sites, seeds 1-5; harmonics cos(π j (t - 255.5)/768). At position u
-of text c and site ℓ,
+**Before Stage A (on the VPS, free; then repeated on CUDA at the start of the A-pilot):**
+- **Kernel:** streamed kernel against the explicit feature map and a direct double loop, both readings, all memories
+  (1e-12); the diagonals.
+- **Masks:** on a toy pool with known texts and positions, the three masks give exactly the eligible sets by hand; the
+  other-texts mask is refused for a single stitched text.
+- **Ties:** a pool with planted exact ties at the cutoff (hundreds of equal distances): top-64 membership follows the
+  rule of section 4, t_all and t_in are right, and expected and maximum overlaps equal their hand values, including
+  the case of 64 picked from 1,024 tied against a set tying all 1,024 (expected 0.0625, maximum 1: fails condition 4);
+  same under all three masks.
+- **Matching:** controls have j's text, token id and lag bin; never i, j or i's neighbours; replaying a keyed seed gives
+  the same control; unmatched reasons are counted correctly on constructed cases.
+- **Statistics:** origin shares and chance levels on a toy pool by hand; per-document contributions sum to the totals;
+  the bootstrap from contributions equals one recomputed from pairs on a small case.
+- **Suffix screen:** conditional rows equal `kernels._cond_rows(renyi=2)` on the same distances (1e-12); unattainable
+  targets from tied minima are detected.
+- **Stitched baseline** on a constructed schedule by hand, including a case where observed and baseline differ; the
+  token assertion on two short texts.
 
-    x = α_ℓ r_{z(u)} + β_ℓ e_{w(u)} + γ g(u) + ε,
-
-z(u) ∈ {1..4} a hidden regime (Markov chain per text, switching probability 1/128; r_z random unit vectors shared
-across texts; α_ℓ = α·(0, 1, 1, 1)); w(u) a token id, independent Zipf(1.1) on 500 ids, e_w random unit vectors,
-β_ℓ = β·(1, 0.7, 0.5, 0.3); g(u) = cos(πu/1,024) g_a + sin(πu/1,024) g_b, the same in every text; ε ~ N(0, I/64).
-
-| Variant | α, β, γ | Purpose |
-|---|---|---|
-| strong | 1, 1, 0 | exact positive |
-| planted | 0.25, 1, 0 | power at realistic strength (per-token same-regime cosine about 0.03 against a spread of 0.125) |
-| drift | 0.25, 1, 0.5 | position share |
-| noise, fields 1 and 2 | 0, 0, 0 | two independently drawn noise fields on the same tokens |
-
-**Hard checks (stop before the main units).** H1: strong, memories 8 and 64, cosine: captured share of the regime span
-≥ 0.99 in ≥ 4 of 5 seeds. H2: noise field 1 against field 2, every memory: agreement of their all-texts pictures below
-the null 99th percentile in ≥ 4 of 5 seeds. H3: relabelling all tokens by one permutation permutes the picture exactly
-(1e-8). V1 (section 6) runs on the same data.
-
-**Measurements (reported).** Power: planted, captured share of the regimes against memory, beside a regime grouping
-from an independent Markov chain with the same persistence (95th percentile over 50 draws). Leakage through depth: at
-site 0, where regimes are absent, the captured share of the site-0 walk alone against the joint picture's site-0 slice
-(coupling is designed to carry structure there; the difference is the leakage). Token dominance: s_tok by memory.
-Position: s_pos by memory in planted and drift, and in noise field 1 the share of each token's 10 nearest within ±m
-positions and the spread of ĉ by position quartile (the flat-norm white-noise check).
+**Before Stage B (moved from v3; pre-B gate with G1):**
+- **Analytic operator fixture,** memory none, L ∈ {4, 8} identical sites: two groups of n = 48 tokens with vectors
+  e_i + c·g_A (or g_B), all orthonormal, so each conditional row has n - 1 equal near and n equal far entries; a
+  participation ratio of 64 is feasible because n - 1 < 64 < 2n - 1. The two row weights are solved from the
+  target; Sinkhorn is trivial by symmetry; the group indicator is an eigenvector of M of known eigenvalue, giving scaled
+  energy h. Required to 1e-10: the **ground state** is the indicator with a **constant** depth envelope (j = 0) at
+  eigenvalue h; the first non-constant harmonic, cos(π(l + 1/2)/L), sits at h + t·4 sin²(π/(2L)).
+- **Near-cut fixtures** on directly constructed doubly stochastic walks with a prescribed crossing weight ε: two groups
+  (one fragile direction: the first gap is about ε and the first mode is the cut); nine groups (eight fragile gaps,
+  setting c_ℓ): both are flagged by the gap report.
+- **Equivariance:** permuting node labels after features permutes q, P and the joint modes, compared as whole clusters.
+- **Decision fixture:** constructed inputs with literally zero retained signal fail the energy gate; each of the four
+  outcomes is produced by a constructed case.
 
 ### 9.2 Stitched real texts (expected answers, not gated)
 
-Two source pairs (A, B), (C, D), each from different subsets. Each pair makes two texts with alternating segments of
-random lengths (seeded): **long**, uniform in [384, 640]; **short**, uniform in [48, 80]; ids concatenated, never
-re-tokenised across a join. One-text graphs only. Measured for every construction and both models: captured share of
-the A/B indicator; the **position-only baseline** (share of the indicator inside the 16 harmonics; about 0.9 for a few
-long segments); and the **share beyond position** (indicator residualised against the harmonics, then captured).
-Expected: share beyond position above its null at none and 8 in all four texts, lower at 64 than at 8 for the short
-schedule; the whole prefix is reported without a prediction.
+Two source pairs (A, B), (C, D), each from different subsets; each pair makes two texts alternating segments of random
+length, **long** uniform in [384, 640] and **short** in [48, 80], ids concatenated. Stage A: section 5 D. Stage B
+(one-text graphs): captured share of the A/B indicator, the position-only baseline (its share inside the harmonics) and
+the share beyond position. Expected: share beyond position above zero at none, 2 and 8; lower at 64 than at 8 for the
+short schedule; no prediction at the whole prefix.
 
-## 10. Direct attention distance and residual autocorrelation (Q5)
+### 9.3 Synthetic (measurements, reported, not gated)
 
-From U1's attention probabilities, per model, layer and head, over query positions 256..2,047 of the 32 texts: sink
-mass A[i,0] and mean direct attention distance Σ_{j≥1} A[i,j](i - j)/Σ_{j≥1} A[i,j]; per layer median and interquartile
-range over heads. From residuals, per model and site: ρ(δ) = mean cosine of centred unit vectors δ apart within a text,
-δ = 1..1,024, and the background ρ_∞ between tokens of different texts; the half-similarity lag is the smallest δ with
-ρ(δ) - ρ_∞ ≤ (ρ(1) - ρ_∞)/2, reported as censored ("> 1,024") with a count of texts when there is no crossing. Neither
-is an effective context length (direct attention ignores routes through values, MLPs and earlier layers; residual
-similarity can persist through shared vocabulary or topic); the page draws them as reference scales beside the
-memory grid.
+8 texts of 1,024 positions, width 64, 4 sites, 5 seeds. x = α_ℓ r_{z(u)} + β_ℓ e_{w(u)} + γ g(u) + ε with a hidden
+4-state regime (switch probability 1/128, absent at site 0), Zipf tokens, an optional position drift, Gaussian noise.
+Variants: strong (α = 1), planted (α = 0.25), drift (γ = 0.5), two independently drawn noise fields. Stage A reports
+their census; Stage B reports captured regime share against a same-persistence reference, site-0 leakage, and the
+noise fields' alignment by position quartile against redrawn fields on the same index geometry.
+
+## 10. Direct attention distance and residual autocorrelation (Q4, Stage A)
+
+From the attention sums of section 2: per model, layer and head, the mean sink mass and mean direct attention distance
+over query positions 256..2,047; per layer the median and interquartile range over heads. Per model and site: ρ(δ) =
+mean cosine of centred unit vectors δ apart within a text (δ ≤ 1,024), background ρ_∞ between texts, and the
+half-similarity lag (smallest δ with ρ(δ) - ρ_∞ ≤ (ρ(1) - ρ_∞)/2; censored "> 1,024" with a count when absent). Neither
+is an effective context length; the page draws them beside the memory grid as reference scales.
 
 ## 11. Compute plan
 
-Modal app `tm-exp1`, Volume `tm-exp1`, per the `modal` skill (detached coordinator, one worker per unit). Rates on
-2026-11-23: A100-80GB $0.000694/s, L4 $0.000164/s, CPU $0.0000131 per physical core-second, memory $0.00000222 per
-GiB-second; volumes free to 1 TiB. The VPS runs tests and builds the site. Estimates below are from flop counts and
-the report's measurements scaled to N; the pilot replaces them with measurements.
+Modal app `tm-exp1`, Volume `tm-exp1`, per the `modal` skill. Rates (modal.com, 2026-11-23): A100-80GB $0.000694/s,
+L4 $0.000164/s, CPU $0.0000131 per physical core-second, memory $0.00000222 per GiB-second. Hourly: A100 + 8 cores +
+64 GiB **$3.39**; L4 + 4 cores + 32 GiB $1.04; 16 cores + 64 GiB $1.27; 2 cores + 8 GiB $0.16. Each attempt adds about 2
+minutes of start-up.
 
-| Unit | Count | Hardware | Work | Each | Spend |
+**Spending control (Stage A cap $8, hard).** A ledger on the Volume records every attempt's billed seconds × rate.
+Before any unit starts, the coordinator **reserves** its timeout × rate; it refuses to start a unit if spent + reserved
+would exceed $8. Failed attempts are charged. Settings run in priority order, so the cap can only remove the last ones:
+(1) cosine reading, both centrings; (2) dot reading, corpus mean; (3) dot reading, own-text mean. Settings dropped by
+the cap are listed on the page. The readout and the Stage A audit (with start-up and one retry each) are reserved
+**before** any setting beyond (1) is dispatched, so the cap can never remove the verification. The A-pilot times one
+complete explicit-lag audit row; if 32 full rows do not fit the audit's reservation, fewer rows are audited (never
+fewer models or masks) and the page says how many.
+
+**Stage A ledger** [derived; the A-pilot replaces it]:
+
+| Unit | Count | Hardware | Work | Time each | Spend |
 |---|---|---|---|---|---|
-| U0 probe | 1 | 2 cores | download, filter, tokenise both ways, assert | 20 min | $0.1 |
-| U1 extract | 2 (model) | L4, 4 cores, 32 GiB | 36 forward passes, hooks, predictions, attention statistics, causal checks | 25 min | $0.5 |
-| U2 kernel lists | 2 (model) | A100-80GB, 8 cores, 64 GiB | diagonals, streamed Grams, memory recursion, K_nb lists for all graphs, second pass for discarded mass | 25 min | $2.4 |
-| P1 timing pilot | 2 | as U3 and U4 | one all-texts unit and one one-text group, Pythia, cosine, memory 64: stage timings, peak memory, billed cost | 45 min cap | $1 |
-| V (checks) | 1 | 16 cores, 96 GiB + A100 for 15 min | V1-V3 dense reference comparisons | 60 min | $2 |
-| P2 recipes | 1 | A100-80GB | Shannon and nearest-neighbour graphs and joint solves (participation ratio reuses P1) | 20 min | $1 |
-| U5 synthetic | 1 GPU + 30 CPU | A100; 8 cores | 5 variants × 5 seeds; all-texts graphs on the GPU, one-text graphs dense | 40 min; 3 min | $2.2 |
-| U3 all-texts | 16 (model × reading × memory) | A100-80GB, 8 cores, 64 GiB | 8 walks, sparse Sinkhorn, site spectra, t*, 24 modes, adversary walks, readings, viewer neighbours | 12 min | $6 |
-| U3c companions | 8 (model × text × construction pair) | A100-80GB | 3 companion graphs × 2 constructions (cosine none and 64) | 15 min | $3 |
-| U4 one-text | 24 (model × reading × group of 6 texts) | 8 cores, 32 GiB | 4 memories × (8 walks + dense solve), adversaries | 20 min | $5 |
-| U7 analysis | 1 | 16 cores, 64 GiB | readings, nulls, bootstraps, readout, decision, packaging | 60 min | $1.3 |
-| U8 audit | 1 | 16 cores, 64 GiB | independent checker (section 12.4) | 60 min | $1.3 |
+| U0 probe | 1 | 2 cores, 8 GiB | download, filter, tokenise both ways, assert, query samples | 20 min | $0.06 |
+| U1 extract | 2 | L4 | 36 forward passes, hooks, predictions, attention sums, causal check | 25 min | $0.94 |
+| A-pilot | 1 + 1 | A100; 16 cores | CUDA repeat of the census tests; one shard (Pythia, cosine, C, site 8, all memories and masks): pass, screen, list I/O; then the readout, statistics and bootstrap for that shard on CPU | 15 min; 10 min | $1.21 |
+| UA census | 2 (model) | A100 | the remaining 39 passes per model: geometric census, suffix screen, tie records, list output (about 35 GB) | 25 min | $3.05 |
+| UA readout | 1 | 16 cores, 64 GiB | prediction readout (about 94 million pairs), statistics, bootstrap, stitched and synthetic census, timescales, viewer data | 40 min | $0.89 |
+| UA audit | 1 | 16 cores, 64 GiB | section 12.4 | 30 min | $0.68 |
 
-**Projected spend about $26; budget $40.** The largest uncertainty is the number of Lanczos applications at
-N = 57,344 × 8 (estimated 20,000-50,000 at about 3 ms each on an A100, from 8 layers × about 40 million stored
-entries per layer); P1 measures it. Order: U0 → U1 → U2 → P1 ‖ V ‖ P2 → budget check → U5 (P2's recipe) → hard checks
-H1-H3, V1-V3 → U3 ‖ U3c ‖ U4 → U7 → U8 → site. Wall-clock about 4 hours, mostly waiting between gates.
+Projected **about $6.83**; cap $8, which leaves room for one failed attempt of a small unit but not of a census unit.
+**Stop rule after the A-pilot:** projected total = spent + (measured shard cost × remaining shards) + readout and audit
+(scaled from the pilot) + 10%; if above $8, priority group (3) is dropped, then (2); if still above, stop and report the
+pilot's numbers. Wall-clock about 2 hours.
 
-**Budget check after P1 (fixed now).** Projected total = spent so far + measured unit costs × remaining unit counts
-+ 20%. If above $40: (i) switch the all-texts solves to `power_modes`; (ii) K_nb stays at 512 even if V3 asked for
-1,024, and the page states the measured drift; (iii) if still above, stop and report the measured numbers.
+**Stage B ledger** (provisional, for the second approval): G1 and B-pilot (one all-texts solve, device high-water,
+one CPU one-text group benchmarked) $3.5; all-texts graphs for R, L, M (and X) × 2 models, 15 min each, $5.8-7.7;
+companions for R and M, $4.5; one-text groups on CPU, $2.3; synthetic $1.2; recipe comparison $0.8 (dropped first if
+short); analysis $1.0; operator audit $1.0. About $21, cap to be set at approval.
 
-**Volume layout.** `/hf`, `/probe`, `/acts/<model>`, `/pred`, `/attn`, `/nb/<model>/<reading>/<input>_<memory>.npz`
-(kept lists, about 36 GB in all), `/pilot`, `/checks`, `/synthetic`, `/all/<model>/<reading>_<memory>.npz` (float32
-slices (8, 57,344, 24), values, site spectra, c_ℓ, t*, gaps, acceptance, components, per-token same-text walk shares,
-top-10 neighbours per token and site, adversary modes, worked-token rows), `/one/<model>/<reading>/c<cc>.npz`,
-`/companions`, `/analysis`, `/audit`, `/site`. Only `/analysis`, `/audit` and `/site` are fetched. Run ids, spend and
-status go in the README.
+**Volume.** `/hf`, `/probe`, `/acts`, `/pred`, `/attn`, `/census/<model>/<reading>_<centring>/` (per input and
+memory and mask: top-64 lists with tie records, d_64, eligible counts by origin; suffix-screen rows' origin masses and
+removed short-range mass; about 35 GB), `/readout` (per-document stratum contributions, control ids or keyed seeds,
+unmatched reasons), `/audit_a` (expected values saved before distance blocks are discarded), `/ledger`, `/b` (Stage B),
+`/analysis`, `/site`. Only `/analysis`, `/audit_a`, `/ledger` and `/site` are fetched.
 
 ## 12. The site
 
 Public repo `CharlesR-W/TransformerModes`, GitHub Pages; machinery copied from DepthEmbedding (`build_site.py`,
 `xsite/xlib.py` facts and `{{fact:...}}` tokens, `check_fragment.py`, `check_browser.py` adapted, live charts, palette,
-CSS; not the CIFAR embedding figure). Tabs: **Viewer**, **Experiments**, **Method**; a one-line banner on each (both
-models, 16 blocks, width 2,048, the 8 sites marked).
+CSS). Tabs: **Viewer**, **Experiments**, **Method**; a one-line banner (both models, 16 blocks, width 2,048, sites
+marked). Stage A publishes the viewer (neighbours) and entries E1-E3; Stage B adds modes and E4-E5.
 
 ### 12.1 Viewer
 
-**Main view** (desktop: text about 65% of the width, side column right; phone: one column, no horizontal scroll).
+Every offered choice has data behind it.
 
-| Control | Values | Why |
+| Control | Values (Stage A) | Added by Stage B |
 |---|---|---|
-| Text | 32 texts (subset, first words) + 4 stitched controls | the text is the object read |
-| Graph | one-text graph / all-texts graph (all-texts disabled for stitched texts) | the owner asked for both |
-| Model | Pythia / OLMo | the two models are the replication; tokens align |
-| Memory | shipped construction / its counterpart (section 8) | local versus memory is the point of the kernel |
-| Layer | 8 stops, 2-16 | each mode has a slice at every layer |
-| Mode | 1-16 | which of the picture's functions colours the text |
+| Text | 32 texts + 4 stitched | |
+| Model | Pythia / OLMo | |
+| Layer | 4, 8, 12, 16 | (modes at the same four layers; the depth bar shows all 8) |
+| Memory | none, 2, 8, 64, whole | |
+| Accounting | corpus mean; corpus mean + window; own-text mean + window (cosine reading) | M's and L's exact setting if not among these, including the dot reading |
+| Colour | where the neighbours come from | mode 1-16 for R, L and M |
+| Graph | | one-text / all-texts (all-texts disabled for stitched texts) |
 
-A caption line under the controls names the reading, recipe and coupling, and whether the construction is the
-supported winner or the reference.
-- **Text.** Tokens inline with whitespace kept; every token after burn-in coloured by the mode's unit slice at the
-  layer (diverging palette, range ±99th percentile of |value| over the mode's layers, fixed across layers; the legend
-  says so); burn-in tokens grey. If the mode's depth weight at this layer is under 1%, the text is faded with a note.
-  Stitched texts show joins and A/B labels.
-- **Mode card.** Depth weight over 8 layers (bars), the four shares as one stacked bar with chance ticks, spread.
-  Whenever Model, Memory or Graph changes: "mode numbers and signs are local to this graph" and the alignment between
-  the picture just left and the new one on this text's 1,792 tokens (precomputed), so a reader sees whether the change
-  is real before comparing colours.
-- **Token card** (click a token). Token, position, value; its 10 nearest tokens under the similarity at this layer
-  (ĉ for cosine, scaled d for dot; text and position; in the all-texts graph from any text), each with the last up to 24
-  tokens ending there, right-aligned under the clicked token's own, and the share of memory weight those 24 tokens
-  carry (31.5% at memory 64; 1.2% of a whole prefix at the end of a text); in the all-texts graph, the token's
-  same-text walk share.
+Other-texts-only, the remaining accounting choices and the dot reading are shown in Experiments, not the viewer; the
+caption under the controls says so. A stitched text offers only the corpus-mean accountings without the other-texts
+mask (the only ones computed for it, section 5D). The short-range mass a window removed exists only for the sampled
+suffix queries and is shown as a labelled aggregate, never as a per-token value.
 
-**One disclosure, "Details":** a strip chart of the value against position (120 px), a scatter of mode 1 against the
-selected mode, and the **worked token**: for 3 prespecified tokens in each of texts 0 and 1 (`default_rng(13)`), the
-10 nearest by raw similarity beside the 10 largest walk weights P_ℓ[i,j], and the local eigen-equation at this layer
-evaluated in the browser from the stored sparse row, the floor term and float32 slices:
-(f_ℓ(i) - Σ_j M_ℓ[i,j] f_ℓ(j))/c_ℓ + t(deg_ℓ f_ℓ(i) - f_{ℓ-1}(i) - f_{ℓ+1}(i)) against λ f_ℓ(i), residual printed. The
-state is kept in the URL hash; the primer's open state in `localStorage` (try/catch).
+- **Text** inline with whitespace kept. **Neighbour colouring:** each token's share of its **64** neighbours from
+  other texts (sequential palette 0-1), burn-in grey; for the window accounting, a
+  marker shows how much short-range mass the mask removed. **Mode colouring** (Stage B): the mode's unit slice at the
+  layer (diverging, range fixed across layers); faded with a note when the depth weight there is under 1%.
+- **Token card** (click): the **8 nearest** eligible tokens under the current setting (value, text, position; tied
+  cutoff marked), each with the last up to 24 tokens ending there, right-aligned under the clicked token's own, with the
+  share of memory weight those 24 tokens carry (1 - a^24: 100% at 2, 96% at 8, 31.5% at 64; 24/t at the whole prefix);
+  the token's origin shares over all 64; its top-3 predictions beside its neighbours'.
+- **Mode card** (Stage B): depth weights, stacked shares with chance ticks, spread; on any change of Model, Memory,
+  Accounting or Graph: "mode numbers and signs are local to this graph" with the alignment between the two pictures on
+  this text's shared tokens.
+- **Details** (one disclosure): strip chart of the coloured value against position; Stage B adds a scatter and the
+  worked token (raw nearest beside the largest walk weights; the local block equation evaluated in the browser).
 
-**Data (lazy per text).** `d/manifest.json` (60 KB); `d/text/c<cc>.json` (ids, display strings, 50 KB each);
-`d/modes/<model>/<mem>/<graph>/c<cc>.i8` (int8 unit slices (8, 16, 1,792) with float32 scales, 230 KB each; 272 files,
-63 MB); `d/info/...json` (eigenvalues, depth weights, shares, spreads, toggle alignments, 15 KB each); `d/nb/...`
-(top-10 neighbours per token and site, uint16 index within the graph and float16 value, scaled so values are of order
-one, 570 KB each, 155 MB); `d/worked/...` (sparse rows and slices of the 6 worked tokens, 3 MB). About 230 MB in all;
-opening a text fetches about 0.5 MB per graph-model-memory choice, a click 0.6 MB.
+**Data** (lazy per text and setting): texts 36 × 50 KB; neighbour lists for 2 models × 4 layers × 5 memories × 3
+accountings = 120 settings, 8 neighbours per token as uint16 index + float16 value (cosine distances, order one) plus a
+byte of origin share and a tie flag: 36 texts × 1,792 tokens × 120 × 34 bytes ≈ **263 MB**, about 61 KB per text and
+setting; Stage B adds up to 2 settings × 2 models × 4 layers of lists (≈ 18 MB) and int8 mode slices at 4 layers
+(≈ 40 MB).
 
-### 12.2 Primer (top of the Viewer tab, collapsible, about one screen)
+### 12.2 Primer (top of the Viewer tab, collapsible, one screen)
 
-**Position** (token number; the first 255 are burn-in). **Layer** (which block's output; 8 of 16). **Memory** (a
-drawing of two pasts aligned at their right ends with fading weights; chance agreements persist along the alignment;
-the whole prefix compares pasts of different lengths, so it depends on position even for structureless text).
-**Readings** (for memories up to 64 they differ only in whether tokens are normalised). **The two graphs** (the
-one-text graph links tokens of one text; the all-texts graph links all tokens of the 32 texts, so a token's neighbours
-may come from other texts; Sinkhorn scaling gives every token the same total link weight, it does not make one text
-behave like the whole). **Mode** (a pattern over tokens and layers that changes little between similar tokens and
-between neighbouring layers; numbered from the smoothest; numbers and signs are local to one graph). **Coupling**
-(fixed where the first between-layer and first within-layer eigenvalues meet). **Share bar** (which text, position,
-common token, the rest; chance marks; the rest still contains previous tokens and formatting). **Checking** (click a
-token; open Details for a worked token).
+**Position** (the first 255 tokens are burn-in). **Layer** (block outputs 4, 8, 12, 16 of 16). **Memory** (two pasts
+aligned at their right ends with fading weights; chance agreements persist along the alignment; the whole prefix depends
+on position even for structureless text). **Accounting** (corpus mean: the state as the model holds it; own-text mean: a
+retrospective contrast that removes each whole text's average, topic included; the window: a rule that forbids
+neighbours within 64 positions, so "nearby" is zero by construction). **Neighbour origin** (other texts, same text far,
+same text near). **Checking** (click a token: its neighbours are listed as text, with the stretch of past each
+comparison weighs). Stage B adds: the two graphs, modes (numbers and signs local to one graph), coupling, the share bar.
 
-### 12.3 Experiments tab entries
-
-Each follows `_template.html` (question, scope, 2-3 sentence answer with one bold sentence, lead figure, 3-5 tiles,
-"What was computed" table, at most two supporting figures, at most six caveats, closed `<details>`); numbers are
-generated facts.
+### 12.3 Experiments entries
 
 | Entry | Lead figure: x · y · facets · uncertainty | The sentence a reader should be able to say |
 |---|---|---|
-| E1 Does the pipeline recover what it should, and only that? | x = memory · y = captured share of the regime span · series: strong (thin), planted (solid), same-persistence reference (dashed grey) · band: min-max over 5 seeds · chance line. Supporting: stitched texts, x = memory, y = share beyond position, long and short schedules, both models, null line | "A strong planted regime is recovered exactly, independent noise fields share nothing, the realistic regime appears with memory [as measured], and on real stitched texts the switch between documents is [visible / not visible] beyond position." |
-| E2 Which similarity, if any, gives a picture both models share beyond the text? | two panels sharing rows; rows = 8 constructions · left x = remainder share, Pythia circle, OLMo diamond, gate 0.25 · right x = cross-model agreement (filled) and largest text agreement (hollow), whiskers = document bootstrap (conditional) · winner or reference highlighted, failing rows grey with the failed condition named. Supporting: stacked shares; functional readout with intervals | "[Winner] is supported: the models agree on its remainder at [x], [y] above the best text-only picture, and close tokens share predictions [z] beyond matched controls", or "No construction beats the text-only pictures by 0.05; the viewer shows the reference construction." |
-| E3 Does a text's picture change when other texts are in the graph? | x = number of texts in the graph (1, 4, 16, 32) · y = alignment with the 32-text picture on the text's tokens · series: texts 0 and 1 × memory none and 64 (hue = memory) · facets: model · H2 as a second marker at 16; retained trace and realised radius in a strip below. Supporting: one-text vs all-texts alignment for all 32 texts by memory (band 10-90%) | "Text [c]'s picture with 15 other texts matches its picture with a disjoint 16 at [x], and its own one-text picture matches the all-texts one at [y]: [the company matters / little]." |
-| E4 Which graph recipe keeps the joint modes spread out? | x = recipe, grouped all-texts / one-text · y = localised modes among the first 16 joint modes · effective width above each bar | "[Recipe] gives [n] localised joint modes against [n] and [n]; it is used. This compares three configured recipes, not the rules in general." |
-| E5 How far do the models attend directly, and how long do residuals stay similar? | x = layer · y = tokens (log) · series: median direct attention distance (solid), residual half-similarity lag (dashed, censored marked), hue = model · reference lines at 8 and 64 · band: interquartile range over heads | "Direct attention reaches about [x] tokens and residual similarity halves after about [y]: reference scales beside the memory grid, not effective context lengths." |
+| E1 (A) Who are a token's nearest neighbours under memory? | x = memory (none, 2, 8, 64, whole) · y = share of the 64 neighbours, stacked: other texts / same text far / same text within 64 · facets: columns = corpus mean, own-text mean (side by side, different questions), each without and with the window (window columns hatched in the near band: "zero by rule", with the removed short-range mass printed); rows = models · site 8, cosine, census pool · whisker: document bootstrap on the other-text share. Supporting: the Stage-B-matched screen as conditional-mass shares; adversary overlap by memory | "Under the corpus mean, memory makes [x]% of a token's neighbours its own text, [y]% within 64 positions; the window removes [z] of the conditional mass; text-only vectors share [w] of the neighbours." |
+| E2 (A) Are neighbours prediction-concordant beyond matched controls? | x = memory · y = concordance score (stratified top-20 overlap advantage) · series: accounting · facets: model · whiskers: document bootstrap; zero line; ineligible settings hollow and labelled. Supporting: coverage by stratum; top-1 match beside its matched control | "On the fixed query sample, neighbours share [more / less] of the model's predictions than matched controls as memory grows; coverage is [c]." |
+| E3 (A) What does the screen select for Stage B, and why? | table, not a chart: the 32 candidates × the four conditions per model, the ordering that chose M, L, and X if any. Lead figure: E1's lead restricted to the suffix screen for M, L and R | "The screen chose [M] because [...]" or "No memory construction passed: [condition] failed for [...]; Stage B is not recommended." |
+| E4 (B) Do the models share structure outside the tested text features, and is it more with memory? | rows R, L, M (X descriptive) · x = cross-model agreement of the remainder, calibrated reference marked · panels all-texts, median one-text | "[Outcome (i)-(iv)]." |
+| E5 (B) Does a text's picture change with its company? | x = texts in the graph (1, 4, 16 H1, 16 H2, 32) · y = alignment with the 32-text picture on the focal suffix · texts 0 and 1 × R and M | "With disjoint companions the picture of text [c] agrees at [x]." |
 
-Tiles: E1 H1-H3 and V1-V3; E2 outcome, margin, remainder share, readout; E3 H1-H2 alignment, retained trace,
-same-text walk share against 0.031; E4 the three counts; E5 sink mass. E2's "More figures": cross-reading agreement,
-layer-matched agreement, cutoff checks at 12 and 20, loud-token statistics, components per layer. The Method tab
-carries sections 0 and 2-10 in page form, the subset table, decisions and deferred items.
+The timescales of section 10 are a supporting figure of E1 (reference lines at 2, 8, 64); the stitched controls are
+E1 tiles. The Method tab carries sections 0, 2-5 and 9-10, the subset table and the decisions.
 
-### 12.4 How a reader can check there is nothing odd going on
+### 12.4 How a reader can check there is nothing odd going on (Stage A)
 
-- **The dense reference.** V1-V2 show the sparse solver reproducing the byte-for-byte copied dense code on the same
-  operator; V3 shows how far the 512-neighbour rule is from the dense rule. Both are tiles in E1.
-- **Controls** on the page; the stitched texts in the viewer with joins drawn.
-- **Every mode** shows its shares with chance marks and its spread; localised modes are flagged.
-- **Clicking a token** lists, as text, the tokens most similar to it and the ends of the pasts compared, with the
-  fraction of the memory shown; Details shows raw neighbours beside actual walk weights and the eigen-equation
-  evaluated in the browser.
-- **The decision table** shows all 8 constructions with every condition.
-- **Audit (U8)**, beside the raw arrays on Modal, numpy only and importing nothing from the pipeline: recomputes every
-  decision input for all 8 constructions and both adversaries from the float32 slices and the probe tables (same
-  permutation and bootstrap seeds), then the ranking and outcome, to 1e-6; for 50 query tokens per graph (the 16
-  all-texts graphs, one-text graphs of texts 0-3) recomputes distances to **all** tokens of the graph from the
-  activations by the explicit lag sum and checks stored K_nb and top-10 membership and values. The site build fails if
-  its report is missing or failing.
+- **Stage A audit (UA audit)**, numpy only, importing nothing from the pipeline: for the 32 audit queries, at sites 4
+  and 12, both models, both readings and both centrings, recomputes the **complete** distance row against the census
+  pool by the explicit lag sum from the activations (all memories), then the three masks, the top-64 with ties
+  (membership, d_64, t_all, t_in), the suffix-screen conditional masses and removed short-range mass; replays the matched
+  controls of those queries from their keyed seeds and checks every matching constraint; recomputes all census
+  statistics from the stored lists for a 1% sample of tokens and the readout from stored contributions; and compares
+  1,000 random pairs per pass with values the census saved before discarding its distance blocks. Tolerance 1e-9 on
+  distances, exact on memberships and counts. Its report is fetched with the ledger; the Stage A site build fails if it
+  is missing or failing. It states what it does not reproduce.
+- Clicking any token shows its neighbours as text, the stretch of past compared and its predictions beside theirs.
+- The selection table (E3) shows every number behind the choice for Stage B.
 - `check_browser.py` drives headless Chrome over every control, a token click, Details and both viewports, failing on
   console errors or external requests; screenshots are inspected before deploying.
 
+Stage B adds its own operator audit (rebuild one walk independently and check the block equation; recompute decision
+inputs from slices), its G1 tiles and the worked token.
+
 ## 13. Code and tests
 
-New: `probe.py`, `extract.py`, `kernel_gpu.py` (diagonals, streamed Grams, recursion, K_nb lists, discarded mass),
-`graph.py` (the rule of section 5 on kept lists; sparse Sinkhorn; walk as sparse plus rank one), `sparse_solve.py`
-(from `opt/sparse_core.py`, arithmetic unchanged, array module switchable), `kernels.py` (from `invert/dm.py` at
-`8dd7a66`, unchanged: `_cond_rows`, `ea_kernel`, `ea_oos_rows`, `sinkhorn_sym`, `knn_kernel`, `perplexity`),
-`stage.py`, `readings.py`, `synthetic.py`, `decide.py`, `audit.py` (independent), `modal_app.py` (from the `modal`
-skill), `test_tm.py`, `test_kernels.py` (masked-row and duplicate-bound tests from `invert/test_dm.py`). Copied
-unchanged: `spacetime.py`, `spacetime_stage.py`, `test_spacetime.py`. `test_tm.py` covers: the recursion against φ
-and a double loop, a ∈ {0, 0.5, 1}; GPU lists equal to a dense CPU computation on a small input; the unit-token
-identity of section 4; the rule with K_nb = N - 1 and η = 0 equal to `ea_kernel(renyi=2)`; sparse-plus-rank-one walk
-equal to its dense form; sparse solver equal to `spacetime.py` (small V1); shares summing to 1, (1, 0, 0, 0) for a
-centred document indicator and (0, 1, 0, 0) for a document-residualised harmonic; A(R, R) = 1 and rotation invariance;
-equivariance H3; the token assertion on two short texts. All run on the VPS in under ten minutes (CuPy paths on
-Modal).
+In `exp1/`: `similarity.py` (extended for masks, the tie rule and the suffix screen), `kernels.py`, `spacetime.py`,
+`spacetime_stage.py`, `test_spacetime.py`, `test_numerics.py`; `graph.py` and `solve.py` (sparse, shelved). New for
+Stage A: `probe.py`, `extract.py`, `census.py`, `readout.py`, `select_b.py`, `audit_a.py` (independent), `modal_app.py`
+(with the ledger), `test_census.py` (section 9.1, pre-A). For Stage B: `spacetime_gpu.py`, `kernels_gpu.py`,
+`stage_b.py`, `readings.py`, `decide.py`, `audit_b.py`, `test_stage_b.py` (pre-B fixtures). All tests run on the VPS
+in under ten minutes; the census tests are repeated on CUDA in the A-pilot.
 
 ## 14. Decisions made on the owner's behalf
 
 | # | Decision | Chosen | Alternative not taken |
 |---|---|---|---|
-| 1 | Context | first 2,047 tokens of a document of at least 2,048 | shorter contexts; windows inside documents |
-| 2 | Texts | 32, at most 4 per subset, burn-in 256 | uniform among long documents (favours papers, law, code) |
-| 3 | Nodes | every token after burn-in, in both graphs | sampling (v1) |
-| 4 | Sites | 8 even layers | all 16 |
-| 5 | Memory grid | none, 8, 64, whole | lengths derived from the models (deferred) |
-| 6 | Readings | cosine of unit-token pasts; scaled Euclidean of raw-token pasts | mixed readings |
-| 7 | Centring | one corpus mean per model and site for every graph | per graph, per text, per position |
-| 8 | Graph rule | participation ratio k = 64 on 512 kept neighbours, floor 10^-4 of row mass, unless P2 or V3 says otherwise | dense rule (infeasible at 57,344); Shannon perplexity; k-NN |
-| 9 | Coupling | t* only | DepthEmbedding's six-stop slider |
-| 10 | Nuisance span | texts, 16 global position harmonics, ids seen ≥ 20 times | all token identities; other numbers of harmonics |
-| 11 | Adversaries | random token vectors; each model's embedding output | formatting-only or n-gram baselines |
-| 12 | Decision | margin over text agreement ≥ 0.05 with gates; fixed reference if none | resampling stability as a gate (no valid null) |
-| 13 | Functional readout | beside the decision | inside the rule (favours late layers) |
-| 14 | Q3 design | companions for texts 0 and 1 at 1, 4, 16 (two disjoint halves), 32 texts, two constructions | all texts and constructions (cost); split halves without shared tokens (nothing to compare on) |
-| 15 | Precision | float32 forward; float64 kernels and solvers; float32 storage of distances and slices | float64 forward |
+| 1 | Staging | census first; modes only for what its screen supports | modes for every construction |
+| 2 | Texts | 32, first 2,047 tokens, at most 4 per subset | windows inside documents; uniform among long documents |
+| 3 | Census | every post-burn-in token, 64 neighbours, all settings | sampled tokens |
+| 4 | Prediction readout | fixed stratified sample of 3,072 queries, four sites | every token (about 3.5 billion pairs) |
+| 5 | Sites | 8 even layers (4 in the viewer) | all 16 |
+| 6 | Memory grid | none, 2, 8, 64, whole | lengths derived from the models |
+| 7 | Accounting | corpus or own-text mean × no mask, 64-position window, other texts | position-wise centring; windows scaled with memory |
+| 8 | Stage B choice | geometric screen on Stage B's own tokens and rows, least intervention first; concordance adds at most one example | ranking by concordance |
+| 9 | All-texts graph | final 512 tokens of 32 texts (16,384), dense | 16 × 1,024; truncated rows (measured drift) |
+| 10 | Graph rule | participation ratio k = 64, fixed | Shannon perplexity (owner's suggestion) or k-NN as decisive |
+| 11 | Coupling | t* only | DepthEmbedding's slider |
+| 12 | Viewer | cosine, 4 layers, 3 accountings, 8 neighbours shown | every setting (over 1 GB) |
 
 ## 15. Deferred
 
-Model-derived lag weights (the "smart EMA" kernel); the recurrent random sketch and the leave-one-text-out Nystrom
-comparison (`ea_oos_rows` is copied for it); attention-weighted links between positions across layers; a
-training-checkpoint axis and the model as a coupled axis; coupling robustness, the coupling slider, native units and
-the Trower et al. matrix; a participation-ratio width sweep; graph-specific or position-wise centring;
-cross-text-only neighbours; mixed readings; clipping loud tokens; k-means set readouts; longer contexts (OLMo reads
-4,096); more models. **Owner's TODO, explicitly not for now:** (a) a baseline from a sentence-embedding model
-(SentenceTransformers) or a vector-database style embedding of the same contexts, "whatever the smart version of that
-is"; (b) the Hankel predictive-state construction "like from LingenLearning" (recorded as dictated; reference to be
-confirmed).
+- **Truncated rows.** `graph.py`, `solve.py` and their tests stay. Measured: keeping 1,024 of 1,792 neighbours moves t*
+  about 15% and the 16-mode space by 0.19 on a synthetic graph, because participation-ratio rows have long, nearly flat
+  tails when distances concentrate. Idea: calibrate on the exact dense row inside the streaming pass, keep the top
+  neighbours exactly, and treat the dropped tail as a uniform low-rank term instead of refitting on the kept support.
+- Model-derived lag weights (the "smart EMA" kernel); the recurrent random sketch; leave-one-text-out Nystrom
+  (`ea_oos_rows` is copied); attention-weighted links across layers; a training-checkpoint axis; the model as a coupled
+  axis; coupling robustness; a width sweep; windows scaled with memory; mixed readings; clipping loud tokens; k-means
+  readouts; longer contexts; more models; a second memory construction paired with its own local counterpart.
+- **Owner's TODO, not for now:** (a) a sentence-embedding (SentenceTransformers) or vector-database style baseline on
+  the same contexts, "whatever the smart version of that is"; (b) the Hankel predictive-state construction of Golowich,
+  Liu and Shetty, *Sequences of Logits Reveal the Low Rank Structure of Language Models* (CoherentModes notes: "lingen").
 
-## 16. Departures from the brief
+## 16. Open before Stage B approval
 
-- **Separator and token identity.** The end-of-text token is id 0 in Pythia and 50279 in OLMo, where id 0 is a PII
-  placeholder; each model reads its own separator and identity is asserted on positions 1-2,047.
-- **Every token is a node** (N = 57,344 in the all-texts graph), not 512 sampled per text; this needs the sparse graph
-  rule and solver of sections 5-6 and is cheaper than the sampled dense design.
-- **No CPU kernel computation**; the kernel runs streamed on one GPU in float64; nothing N × N is stored.
-- **Storage.** All 17 hidden states in float32.
-- **Centring settled** as one corpus mean for every graph.
-- **Same-text dominance** is measured (same-text walk share, components, document share, E3), not corrected.
-- **"Smart EMA"** is a descriptive measurement here.
-- **Comparisons** use alignment of R through its factor, with centring after restriction and a no-signal rule.
-- **Viewer** keeps two two-way toggles (Graph, Memory), each an explicit request, with detail behind one disclosure.
-- **Brief correction:** identical tokens give identical vectors only at the embedding output, not at early layers.
+Recorded from review 3; each must be settled, with Stage A's numbers, before Stage B is requested.
 
-## 17. Response to review 1
+1. **One memory construction, exactly paired** (finding 6): M with L as in section 5; M2 is cut; X is descriptive.
+2. **Same projection on both sides of the difference** (finding 6): the union of M's and L's Z + F spans for the
+   increment test, with retained energy and rank shown for both; check exhaustion and singleton-token fractions from the
+   Stage A token tables before authorising; at memory none the adversary pictures are not purely token functions under
+   own-text centring or the window, so L gets its own adversary eigenvectors too.
+3. **Four outcomes** (finding 6), as in section 8, and wording "outside the tested text features" throughout.
+4. **Calibrated cross-model reference** (finding 7): permutations or surrogate factors with the common projection
+   reapplied after permuting; calibration checked on a text-only control and on independent synthetic fields; the null
+   stated exactly. The `decide.py` hard test is deterministic (zero retained signal fails).
+5. **GPU memory and solver checks** (finding 8): device-level high-water including the doubled eigenvector stack; G1
+   with a masked candidate; achieved participation ratio per row, rejecting targets made unattainable by tied minima;
+   the first 12 gaps reported, not a single flag.
+6. **Timing** (finding 8): one end-to-end GPU unit and one CPU one-text group benchmarked (the measured dense CPU graph
+   build is 90 s per 1,792-token graph on one thread); the audit included in the projection; the recipe comparison and
+   the second focal text dropped first if short.
+7. **Operator fixtures** of section 9.1 (pre-B) passing.
 
-| # | Objection | Response | Where |
+## 17. Departures from the brief
+
+Each model reads its own separator (id 0 in Pythia, 50279 in OLMo); staged design with a neighbour census first; every
+post-burn-in token in the census, the final 512 per text in the spectral graph; accounting variants answer the owner's
+"possibly accounting somehow for that"; "smart EMA" is a descriptive measurement; identical tokens give identical
+vectors only at the embedding output.
+
+## 18. Responses to reviews
+
+**Review 1:** noise null, winner rule, cost, primer, invariants, cutoff, recipe pilot, audit, mode numbers and Q5 all
+accepted; the A/B ceiling superseded; publication answered by the owner. **Review 2:** 1 (common projection; margin
+removed), 4 (analytic fixtures, L-parameterised formulas), 6 (retained signal, equal companions), 7 (matched controls),
+8 (ledger, stage caps) accepted; 2, 3 and 5 dissolved by the dense design, their residues tracked below.
+
+**Review 3** (`reviews/spec-v3-astra.md`):
+
+| # | Finding | Response | Where |
 |---|---|---|---|
-| 1 | Noise control tests the wrong null | Accepted. Two independently drawn noise fields must not agree (hard H2); the A/B resample design and its stability gate are gone (every token is now a node, so there is no node resample); regime power against independent labels of the same persistence; synthetic runs use P2's recipe | 9.1, 8 |
-| 2 | Winner rule can select an obvious picture | Accepted. Text-only adversaries (random token vectors, embedding output) with the same memory; the margin over them is the score; remainder effective-rank gate; "no supported winner" with a fixed reference construction; bootstrap labelled conditional; functional next-token readout reported beside; claim stated as shared descriptive geometry | 4, 7.3, 7.4, 8 |
-| 3 | A/B is not a ceiling; Q3 cannot show unbiased sampling | Accepted; superseded by the every-token design. Q3 is now "does a text's picture change with its company": companion graphs on 1, 4, 16 and 32 texts, two disjoint 16-text companions (H1 vs H2), retained trace and a no-signal rule, realised radius reported. Generalisation to a new text awaits the leave-one-text-out test | 3, 7.2, 7.4, E3 |
-| 4 | Cost estimate has no margin | Accepted, and the numerics replaced: sparse walks with 512 kept neighbours and a rank-one floor, sparse Sinkhorn, partial spectra, bracketed t*, GPU Lanczos (`opt/sparse_core.py`), validated against the copied dense code (V1-V2) with the rule's drift measured (V3). Capped timing pilot with a fixed budget check; projected $26, budget $40 | 0, 5, 6, 11 |
-| 5 | Primer noise claim false; readings not isolated | Accepted, with an exact refinement: up to memory 64 the readings differ only in token normalisation (to 2%); at the whole prefix they are two combined choices. Diagonal dependence stated; white-noise position check added; "any lag profile at no cost" removed | 4, 9.1, 12.2 |
-| 6 | Targets mix invariants and predictions; S512 passes on position | Accepted. Hard checks reduced to an exact positive, independent noise and equivariance; the rest reported; site-0 leakage shown as site-only against coupled; stitches reuse each source pair across random-length schedules, with a position-only baseline and a share beyond position; no prediction at whole prefix | 9.1, 9.2 |
-| 7 | Cutoff and token-space errors | Accepted. Gaps and gates at K = 12, 16, 20; R described as weighted; captured share on a declared effective rank; chance dimensions 31 and 0; document-residualised harmonics; t* described as equating eigenvalues | 6, 7, 12.2 |
-| 8 | Recipe pilot does not test shipped joint modes | Accepted. P2 compares recipes on the first 16 joint modes (depth-aggregated two-token mass and spread), all-texts and one-text reported apart, no tolerance margin, conclusion limited to configured recipes | 5 |
-| 9 | Checker and click-to-verify not implementable | Accepted. U8 audit beside the raw arrays recomputes every decision input and the ranking and checks neighbour lists against all tokens for sampled queries; per-token walk shares stored; worked tokens with walk weights and an in-browser eigen-equation check; memory fraction shown; dot values scaled before float16 | 11, 12.1, 12.4 |
-| 10 | Mode numbers invite false comparisons | Accepted. "Mode numbers and signs are local" plus the alignment between pictures on every toggle; strip, scatter and worked token behind one disclosure; all-texts graph disabled for stitched texts | 12.1 |
-| 11 | Q5 overreaches; causal check overstated | Accepted. E5 renamed and described as reference scales with background and censoring; causal check by equal-shape inputs and a current-token check; truncated run kept as a diagnostic | 2, 10 |
-| 12 | Publishing long excerpts | Answered by the owner: anything in the Pile is fine and all text is shown. Kept from the objection: the probe is described as a capped sample of the beginnings of long, mostly ASCII documents, not as natural text in general | 3 |
+| 1 | Analytic fixture wrong; near-cut infeasible | Accepted. Ground state = constant envelope, first harmonic tested separately; n = 48 satisfies n - 1 < 64 < 2n - 1; near cuts on directly constructed walks with 2 and 9 groups; operator fixtures moved to the pre-B gate; pre-A tests target the census code (kernel, masks, ties, matching, statistics, suffix rows) | 9.1 |
+| 2 | Screen is not Stage B's graph; masks impose results | Accepted. Full census kept as the primary result; a Stage-B-matched screen on suffix queries and suffix candidates reports top-64 and dense conditional-mass origin shares; the window's near share and the other-texts share are labelled as imposed, with the removed short-range mass shown; selection uses the matched screen | 4, 5, 12.3 |
+| 3 | Concordance ranks candidates on different populations | Accepted, reviewer's simpler option: M chosen on the geometric screen; concordance (fixed sample, strata, equal weights, coverage rules, ineligible and absent cases defined) may add at most one example, "screened for prediction concordance" | 5 |
+| 4 | Centring, masks and ties generate results | Accepted. C and O labelled as different questions, side by side; −Σ/T covariance stated; stitched position baseline from the empirical lag distribution and schedule; other-texts disabled for a stitched text; expected overlap under random tie-breaking with stored tie counts; tie and all-mask tests on the production path (`torch.topk` replaced) | 4, 5, 9.1 |
+| 5 | Unpriced readout; no Stage A audit | Accepted. Geometric counts for every token, readout on a stratified sample; bootstrap from per-document contributions; matching, overlap, aggregation and I/O timed in the A-pilot; standalone Stage A audit; reservations, failed attempts and priority-ordered settings under the $8 cap; ledger re-derived | 5, 11, 12.4 |
+| 6 | "Memory adds" can mislead | Accepted for Stage B, recorded: one M with exact L, union projection, fourth outcome, M2 cut | 5, 8, 16 |
+| 7 | Permutation reference too easy after projection | Accepted, recorded for Stage B | 16 |
+| 8 | GPU memory and timing not bounds | Accepted, recorded for Stage B; memory figure corrected to include the doubled eigenvector stack | 6, 16 |
+| §0 | Owner-facing claims | Adopted as listed: diagnostic sample named, unmatched column, log cited, chain claim replaced, m = 2 as interpolation, census versus spectral graph, narrower projection claim, CPU timings exclude graph building (now stated), 3% is a mean, fit and costs are pilot questions | 0 |
+| Save | What Stage A should save | Adopted: provenance and hashes, separator ids, stitch maps, full-softmax top-20 and retained mass, attention sums and counts, tie and eligibility records, keyed control seeds, per-document paired contributions, audit expected values, ledger | 2, 3, 11 |
+| Viewer | Offered choices without data | Reconciled: 4 layers and 8 shown neighbours in both controls and budget; Stage B adds M's and L's exact settings, dot included | 12.1 |
