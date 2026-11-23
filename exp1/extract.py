@@ -33,37 +33,40 @@ def set_precision():
     torch.backends.cudnn.allow_tf32 = False
 
 
-def attention_sums(weights, query_start):
-    """Reduce a [1, heads, query, key] eager matrix in bounded-memory query blocks.
+def query_ranges(seq, start, split):
+    if not 1 <= start < split:
+        raise ValueError("expected two query ranges excluding the separator")
+    first, second = min(start, seq), min(split, seq)
+    return ((first, second), (second, seq))  # half-open
 
-    Distance is a mean *of ratios*, one ratio per query and head. Exact zero
-    non-sink mass (possible in finite precision) is counted separately rather
-    than silently treated as zero distance.
+
+def attention_sums(weights, query_start, query_split):
+    """Reduce eager [1, head, query, key] weights to [range, head] raw sums.
+
+    Keep numerator and non-sink mass separately, before any division, as §2
+    requires. Accumulate in float64 after each float32 row reduction.
     """
     if weights.ndim != 4 or weights.shape[0] != 1 or weights.shape[2] != weights.shape[3]:
         raise ValueError("expected square eager attention weights for one context")
     a = weights[0]
     heads, seq, _ = a.shape
-    sink = a[:, query_start:, 0].sum(dim=-1, dtype=torch.float64)
-    distance = torch.zeros_like(sink)
-    valid_count = torch.zeros(heads, dtype=torch.int64, device=a.device)
     keys = torch.arange(1, seq, device=a.device)
-    for start in range(query_start, seq, 128):
-        stop = min(start + 128, seq)
-        non_sink = a[:, start:stop, 1:]
-        offsets = (torch.arange(start, stop, device=a.device)[:, None] - keys).to(a.dtype)
-        mass = non_sink.sum(dim=-1)
-        valid = mass > 0
-        numerator = (non_sink * offsets).sum(dim=-1)
-        ratio = numerator / torch.where(valid, mass, 1.0)
-        distance += torch.where(valid, ratio, 0.0).sum(dim=-1, dtype=torch.float64)
-        valid_count += valid.sum(dim=-1)
-    return {
-        "sink_mass_sum": sink,
-        "distance_sum": distance,
-        "query_count": torch.full_like(valid_count, max(0, seq - query_start)),
-        "distance_count": valid_count,
-    }
+    sinks, numerators, masses, counts = [], [], [], []
+    for lo, hi in query_ranges(seq, query_start, query_split):
+        sink = a[:, lo:hi, 0].sum(dim=-1, dtype=torch.float64)
+        numerator, mass = torch.zeros_like(sink), torch.zeros_like(sink)
+        for start in range(lo, hi, 128):
+            stop = min(start + 128, hi)
+            non_sink = a[:, start:stop, 1:]
+            offsets = (torch.arange(start, stop, device=a.device)[:, None] - keys).to(a.dtype)
+            numerator += (non_sink * offsets).sum(dim=-1).sum(dim=-1, dtype=torch.float64)
+            mass += non_sink.sum(dim=-1).sum(dim=-1, dtype=torch.float64)
+        sinks.append(sink)
+        numerators.append(numerator)
+        masses.append(mass)
+        counts.append(torch.full((heads,), hi - lo, dtype=torch.int64, device=a.device))
+    return dict(sink_mass_sum=torch.stack(sinks), distance_numerator_sum=torch.stack(numerators),
+                non_sink_mass_sum=torch.stack(masses), query_count=torch.stack(counts))
 
 
 def predictions(logits):
@@ -72,6 +75,7 @@ def predictions(logits):
     values, indices = prob.topk(20, dim=-1, largest=True, sorted=True)
     ids = indices.to(torch.int32).cpu().numpy()
     result = dict(top20_ids=ids, top20_probs=values.cpu().numpy(), top1_id=ids[:, 0].copy(),
+                  top20_mass=values.sum(dim=-1).cpu().numpy(),
                   entropy=torch.special.entr(prob).sum(dim=-1).cpu().numpy())
     if not np.isfinite(result["entropy"]).all():
         raise ValueError("non-finite next-token entropy")
@@ -79,7 +83,7 @@ def predictions(logits):
 
 
 @torch.inference_mode()
-def forward(model, input_ids, *, verify_hooks=False, readouts=True, query_start=QUERY_START):
+def forward(model, input_ids, *, verify_hooks=False, readouts=True, query_start=QUERY_START, query_split=SUFFIX_START):
     """One batch of one context; return residuals and optional per-position/head readouts.
 
     Eager attention modules return their weights even with output_attentions
@@ -105,7 +109,7 @@ def forward(model, input_ids, *, verify_hooks=False, readouts=True, query_start=
         def hook(_module, _args, output):
             if not isinstance(output, tuple) or len(output) < 2 or output[1] is None:
                 raise RuntimeError("eager attention hook did not return a weight matrix")
-            attention[layer] = attention_sums(output[1], query_start)
+            attention[layer] = attention_sums(output[1], query_start, query_split)
         return hook
 
     handles = [embedding.register_forward_hook(capture_residual(0))]
@@ -132,7 +136,7 @@ def forward(model, input_ids, *, verify_hooks=False, readouts=True, query_start=
         raise ValueError("non-float32 or non-finite residual stream")
     if not readouts:
         return acts, None, None
-    stats = {name: torch.stack([attention[k][name] for k in range(1, len(blocks) + 1)]).cpu().numpy()
+    stats = {name: torch.stack([attention[k][name] for k in range(1, len(blocks) + 1)], dim=1).cpu().numpy()
              for name in attention[1]}
     if any(not np.isfinite(x).all() for x in stats.values()):
         raise ValueError("non-finite attention statistics")
@@ -163,8 +167,10 @@ def causal_check(model, inputs, reference, split):
         raise AssertionError(f"equal-shape causal check failed: prefix {prefix}, boundary {boundary}")
     del swap
     trunc, _, _ = forward(model, original[:split], readouts=False)
-    return dict(split=split, donor_context_id=donor, prefix_max_relative_l2=prefix.tolist(),
-                boundary_relative_l2=boundary.tolist(),
+    return dict(passed=True, split=split, donor_context_id=donor, original_cut_token_id=original[split],
+                replacement_cut_token_id=changed[split], replacement_suffix_ids=changed[split:],
+                relative_norm="L2 per state and position, relative to context 0",
+                prefix_max_relative_l2=prefix.tolist(), boundary_relative_l2=boundary.tolist(),
                 truncated_prefix_max_relative_l2=_relative_l2(reference[:, :split], trunc).max(axis=1).tolist())
 
 
@@ -187,19 +193,24 @@ def _save_atomic(path, save, *args, **kwargs):
             tmp.unlink(missing_ok=True)
 
 
-def extract_contexts(model, contexts, eot, root, model_key, *, query_start=QUERY_START, causal_split=CAUSAL_SPLIT):
+def extract_contexts(model, contexts, eot, root, model_key, *, query_start=QUERY_START, query_split=SUFFIX_START,
+                     causal_split=CAUSAL_SPLIT, model_revision=None, tokenizer_info=None):
     """Extract using a loaded model, including on CPU for tests."""
+    from transformers import __version__ as transformers_version
+
     contexts = list(contexts)
-    inputs = {c["id"]: [eot, *c["token_ids"]] for c in contexts}
-    if 0 not in inputs or len(inputs) != len(contexts) or query_start < 1:
-        raise ValueError("expected unique contexts including 0 and a non-separator query start")
+    inputs = {c["id"]: c.get("model_input_ids", {}).get(model_key, [eot, *c["token_ids"]]) for c in contexts}
+    if 0 not in inputs or len(inputs) != len(contexts) or any(len(seq) != len(inputs[0]) for seq in inputs.values()):
+        raise ValueError("expected unique equal-length contexts including 0")
+    ranges = query_ranges(len(inputs[0]), query_start, query_split)
     set_precision()
     model.eval()
     context_ids = sorted(inputs)
     act_files, pred_files, attn_file = output_paths(root, model_key, context_ids)
     attention = []
     for c in context_ids:
-        acts, pred, sums = forward(model, inputs[c], verify_hooks=(c == 0), query_start=query_start)
+        acts, pred, sums = forward(model, inputs[c], verify_hooks=(c == 0), query_start=query_start,
+                                   query_split=query_split)
         if c == 0:
             diagnostic = causal_check(model, inputs, acts, causal_split)
         _save_atomic(act_files[c], np.save, acts, allow_pickle=False)
@@ -208,15 +219,28 @@ def extract_contexts(model, contexts, eot, root, model_key, *, query_start=QUERY
         del acts, pred
     by_context = {name: np.stack([a[name] for a in attention]) for name in attention[0]}
     _save_atomic(attn_file, np.savez, context_ids=np.asarray(context_ids, dtype=np.int32),
-                 query_start=np.int32(query_start), layer_ids=np.arange(1, len(model.base_model.layers) + 1),
-                 **{name: value.sum(axis=0) for name, value in by_context.items()},
-                 **{f"context_{name}": value for name, value in by_context.items()})
-    return dict(contexts=len(contexts), hook_oracle_layers=list(range(1, len(model.base_model.layers))),
-                causal=diagnostic)
+                 query_ranges=np.asarray(ranges, dtype=np.int32), layer_ids=np.arange(1, len(model.base_model.layers) + 1),
+                 **by_context)
+    weight = model.get_input_embeddings().weight
+    report = dict(
+        model=dict(name_or_path=str(model.name_or_path), class_name=type(model).__name__, revision=model_revision,
+                   commit_metadata=getattr(model.config, "_commit_hash", None), eos_token_id=eot),
+        tokenizer=tokenizer_info,
+        libraries=dict(transformers=transformers_version, torch=torch.__version__, numpy=np.__version__,
+                       cuda=torch.version.cuda),
+        forward_pass=dict(eval=not model.training, dtype=str(weight.dtype), device=str(weight.device), batch_size=1,
+                          attention_implementation=model.config._attn_implementation,
+                          matmul_tf32=torch.backends.cuda.matmul.allow_tf32, cudnn_tf32=torch.backends.cudnn.allow_tf32),
+        contexts=len(contexts),
+        hook_equality=dict(passed=True, exact=True, context_id=0, layers=list(range(1, len(model.base_model.layers)))),
+        causal=diagnostic,
+    )
+    write_json_atomic(Path(root) / "acts" / model_key / "provenance.json", report)
+    return report
 
 
 def main(model_key, root, cache_dir, *, device="cuda"):
-    from transformers import AutoModelForCausalLM, __version__ as transformers_version
+    from transformers import AutoModelForCausalLM, AutoTokenizer, __version__ as transformers_version
 
     if transformers_version != TRANSFORMERS_VERSION or torch.__version__.split("+")[0] != TORCH_VERSION:
         raise RuntimeError(f"U1 requires Transformers {TRANSFORMERS_VERSION} and torch {TORCH_VERSION}")
@@ -224,17 +248,21 @@ def main(model_key, root, cache_dir, *, device="cuda"):
     model_meta = MODELS[model_key]
     probe_data = json.loads((root / "probe" / "probe.json").read_text(encoding="utf-8"))
     contexts = probe_data["contexts"]
-    if (probe_data["models"] != MODELS or [c["id"] for c in contexts] != list(range(POOL_SIZE + 4))
+    if (probe_data["schema_version"] != PROBE_SCHEMA_VERSION or probe_data["models"] != MODELS
+            or [c["id"] for c in contexts] != list(range(POOL_SIZE + 4))
             or any(len(c["token_ids"]) != CONTEXT_TOKENS or FORBIDDEN_IDS.intersection(c["token_ids"])
-                   for c in contexts)):
+                   or c["model_input_ids"][model_key] != [model_meta["eot"], *c["token_ids"]] for c in contexts)):
         raise ValueError("probe does not match the pinned extraction inputs")
-    model = AutoModelForCausalLM.from_pretrained(model_meta["id"], revision=model_meta["revision"], cache_dir=cache_dir,
-                                                 dtype=torch.float32, attn_implementation="eager",
-                                                 use_safetensors=True, trust_remote_code=False).to(device)
+    source = dict(revision=model_meta["revision"], cache_dir=cache_dir, trust_remote_code=False, token=False)
+    tokenizer = AutoTokenizer.from_pretrained(model_meta["id"], use_fast=True, **source)
+    if tokenizer.eos_token_id != model_meta["eot"]:
+        raise ValueError("loaded tokenizer does not match the pinned separator")
+    model = AutoModelForCausalLM.from_pretrained(model_meta["id"], dtype=torch.float32, attn_implementation="eager",
+                                                 use_safetensors=True, **source).to(device)
     if (model.config.num_hidden_layers, model.config.hidden_size, model.config.eos_token_id) != (16, 2048, model_meta["eot"]):
         raise ValueError("loaded model does not match the pinned architecture or separator")
-    report = extract_contexts(model, contexts, model_meta["eot"], root, model_key)
-    return dict(model=model_meta, transformers=transformers_version, torch=torch.__version__, **report)
+    return extract_contexts(model, contexts, model_meta["eot"], root, model_key,
+                            model_revision=model_meta["revision"], tokenizer_info=tokenizer_provenance(tokenizer, model_meta))
 
 
 if __name__ == "__main__":
@@ -244,4 +272,5 @@ if __name__ == "__main__":
     parser.add_argument("cache_dir", type=Path)
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args()
-    print(main(args.model, args.root, args.cache_dir, device=args.device))
+    report = main(args.model, args.root, args.cache_dir, device=args.device)
+    print(f"{args.model}: {report['contexts']} contexts; hook and causal checks passed")

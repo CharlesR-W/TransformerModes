@@ -7,8 +7,8 @@ After explicit approval (not needed for --help):
     uv run --with modal==1.6.2 python modal_app.py status [run_id]
     uv run --with modal==1.6.2 python modal_app.py fetch [out]
 
-U1 requires a completed U0. /state holds provenance, completion markers,
-and one ledger record per attempt. Only /analysis, /audit, /site are fetched.
+U1 requires a completed U0. /state holds completion markers, /ledger holds
+attempt and run records. Only /analysis, /audit_a, /ledger, /site are fetched.
 """
 from __future__ import annotations
 
@@ -23,32 +23,44 @@ import uuid
 
 import modal
 
-from probe import CONTEXT_TOKENS, CORPUS, MODELS, POOL_SIZE, write_json_atomic
+from probe import CONTEXT_TOKENS, CORPUS, MODELS, POOL_SIZE, PROBE_SCHEMA_VERSION, write_json_atomic
 
 HERE = Path(__file__).resolve().parent
 APP_NAME = "tm-exp1"
 ROOT = Path("/vol")
 CPU_RATE = 0.0000131
 MEM_RATE = 0.00000222
-L4_RATE = 0.000164
+GPU_RATES = {"L4": 0.000164, "A100-80GB": 0.000694}
 STARTUP_SECONDS = 120
 STAGE_A_CAP = 8.0
-EXTRACTION_VERSION = 1  # Bump when the U1 data or diagnostics change.
-# (GPU, reserved cores, GiB, timeout seconds, expected wall seconds incl. startup)
+EXTRACTION_VERSION = 2  # Bump when the U1 data or diagnostics change.
+# (GPU, reserved cores, GiB, timeout seconds, expected work seconds before startup)
 HW = {"U0": (None, 2, 8, 40 * 60, 20 * 60),
       "U1": ("L4", 4, 32, 50 * 60, 25 * 60),
       "coordinator": (None, 0.25, 1, 65 * 60, 0)}
 PROBE_PATH = ROOT / "probe" / "probe.json"
 CONTEXT_IDS = range(POOL_SIZE + 4)
-# Extension point: map a supported stage to its real workers and dependencies
-# here when census/Stage B are implemented. Do not register stages early.
-STAGES = {"probe": (("U0", None),), "extract": tuple(("U1", model) for model in MODELS)}
-FETCH_PREFIXES = ("analysis", "audit", "site")
+# Later units in order: A-pilot (GPU + CPU), UA census (one per model),
+# UA readout and UA audit. Register their actual workers only once implemented.
+STAGE_A_ORDER = ("probe", "extract", "A-pilot", "census", "readout", "audit-a")
+STAGE_A_WORKERS = {"probe": (("U0", None),), "extract": tuple(("U1", model) for model in MODELS)}
+STAGE_B_WORKERS = {}  # Future Stage B workers require the separate approval flag.
+FETCH_PREFIXES = ("analysis", "audit_a", "ledger", "site")
+
+
+def _stage_units(stage, approve_stage_b):
+    if stage in STAGE_B_WORKERS:
+        if not approve_stage_b:
+            raise ValueError("Stage B requires a separate --approve-stage-b flag")
+        return STAGE_B_WORKERS[stage]
+    if stage not in STAGE_A_WORKERS:
+        raise ValueError(f"stage {stage!r} has no implemented worker")
+    return STAGE_A_WORKERS[stage]
 
 
 def rate(kind):
     gpu, cpu, gib, _, _ = HW[kind]
-    return (L4_RATE if gpu == "L4" else 0.0) + cpu * CPU_RATE + gib * MEM_RATE
+    return (GPU_RATES[gpu] if gpu else 0.0) + cpu * CPU_RATE + gib * MEM_RATE
 
 
 base = (modal.Image.debian_slim(python_version="3.12")
@@ -84,7 +96,7 @@ def _probe_identity():
         return None
     raw = PROBE_PATH.read_bytes()
     probe = json.loads(raw)
-    if (probe["schema_version"] != 1 or probe["corpus"] != CORPUS or probe["models"] != MODELS
+    if (probe["schema_version"] != PROBE_SCHEMA_VERSION or probe["corpus"] != CORPUS or probe["models"] != MODELS
             or probe["context_tokens"] != CONTEXT_TOKENS
             or [c["id"] for c in probe["contexts"]] != list(CONTEXT_IDS)):
         raise ValueError("existing probe output does not match the U0 contract; inspect it before replacing")
@@ -103,7 +115,7 @@ def _complete(kind, model, probe_sha):
     record = _json_if_exists(_completion_path(model))
     if not record or record["probe_sha256"] != probe_sha or record["version"] != EXTRACTION_VERSION:
         return None
-    if not (ROOT / "attn" / f"{model}.npz").is_file():
+    if not ((ROOT / "attn" / f"{model}.npz").is_file() and (ROOT / "acts" / model / "provenance.json").is_file()):
         return None
     for c in CONTEXT_IDS:
         if not ((ROOT / "acts" / model / f"c{c:02d}.npy").is_file()
@@ -146,59 +158,68 @@ def u1_extract(model: str):
     summary = extract.main(model, ROOT, ROOT / "hf")
     # Publish the marker only after all output files have been synced.
     volume.commit()
-    record = dict(summary, cached=False, version=EXTRACTION_VERSION, probe_sha256=probe_sha)
+    record = dict(contexts=summary["contexts"], cached=False, version=EXTRACTION_VERSION, probe_sha256=probe_sha,
+                  provenance_path=f"/acts/{model}/provenance.json")
     write_json_atomic(marker, record)
     volume.commit()
     return dict(record, seconds=time.monotonic() - start)
 
 
 def _ledger_path(attempt):
-    return ROOT / "state" / "attempts" / attempt["run_id"] / f"{attempt['unit']}.json"
+    return ROOT / "ledger" / "attempts" / attempt["run_id"] / f"{attempt['unit']}.json"
 
 
 def _reservation(run_id, kind, model=None):
+    timeout = HW[kind][3]
     return dict(run_id=run_id, unit=kind if model is None else f"{kind}-{model}", model=model, kind=kind,
-                started_at=time.time(), status="reserved", rate_usd_per_second=rate(kind),
-                reserved_usd=(HW[kind][3] + STARTUP_SECONDS) * rate(kind))
+                started_at=time.time(), status="reserved", rate_usd_per_second=rate(kind), timeout_seconds=timeout,
+                reserved_usd=timeout * rate(kind), startup_allowance_usd=STARTUP_SECONDS * rate(kind))
 
 
 def _reconcile(attempt, status, seconds, **extra):
-    kind = attempt["kind"]
-    seconds = min(max(seconds, 0.0), HW[kind][3])
-    return dict(attempt, status=status, seconds=seconds, estimated_usd=(seconds + STARTUP_SECONDS) * rate(kind), **extra)
+    runtime = min(max(seconds, 0.0), attempt["timeout_seconds"])
+    billed = runtime + STARTUP_SECONDS
+    return dict(attempt, status=status, seconds=seconds, billed_seconds_estimate=billed,
+                estimated_usd=billed * attempt["rate_usd_per_second"], **extra)
+
+
+def _charge(row):
+    # A reconciled provider bill (if later available) supersedes the estimate.
+    if row.get("actual_usd") is not None:
+        return row["actual_usd"]
+    return row.get("estimated_usd", row["reserved_usd"] + row["startup_allowance_usd"])
 
 
 def _ledger_total():
-    total = 0.0
-    for path in (ROOT / "state" / "attempts").glob("*/*.json"):
-        row = _json_if_exists(path)
-        total += row.get("estimated_usd", row["reserved_usd"])
-    return total
+    return sum(_charge(_json_if_exists(path)) for path in (ROOT / "ledger" / "attempts").glob("*/*.json"))
+
+
+def _require_budget(committed, pending, cap=STAGE_A_CAP):
+    if committed + sum(_charge(row) for row in pending) > cap:
+        raise RuntimeError(f"Stage A ledger plus pending reservations exceeds the ${cap:g} cap")
 
 
 @app.function(image=coord_image, max_containers=1, **resources("coordinator"))
-def coordinator(run_id: str, stage: str):
+def coordinator(run_id: str, stage: str, approve_stage_b: bool = False):
     """Run even after the caller exits; reserve attempts durably before dispatch."""
+    units = _stage_units(stage, approve_stage_b)
     volume.reload()
     owner = _reservation(run_id, "coordinator")
     write_json_atomic(_ledger_path(owner), owner)
     volume.commit()
     status = "failed"
     try:
-        if stage not in STAGES:
-            raise ValueError(f"unregistered stage: {stage}")
         probe_sha = _probe_identity()
         if stage == "extract" and probe_sha is None:
             raise RuntimeError("launch probe and wait for success before extract")
         pending, skipped = [], []
-        for kind, model in STAGES[stage]:
+        for kind, model in units:
             attempt = _reservation(run_id, kind, model)
             if _complete(kind, model, probe_sha) is None:
                 pending.append(attempt)
             else:
                 skipped.append(attempt["unit"])
-        if _ledger_total() + sum(row["reserved_usd"] for row in pending) > STAGE_A_CAP:
-            raise RuntimeError("Stage A ledger plus pending reservation exceeds the $8 cap")
+        _require_budget(_ledger_total(), pending)
         for attempt in pending:
             write_json_atomic(_ledger_path(attempt), attempt)
         volume.commit()
@@ -223,7 +244,7 @@ def coordinator(run_id: str, stage: str):
             rows.append(row)
         status = "failed" if any(row["status"] == "failed" for row in rows) else "done"
         manifest = dict(run_id=run_id, stage=stage, status=status, skipped=skipped, attempts=rows)
-        write_json_atomic(ROOT / "state" / "runs" / f"{run_id}.json", manifest)
+        write_json_atomic(ROOT / "ledger" / "runs" / f"{run_id}.json", manifest)
         return manifest
     finally:
         write_json_atomic(_ledger_path(owner), _reconcile(owner, status, time.time() - owner["started_at"]))
@@ -238,14 +259,15 @@ def cmd_deploy():
     subprocess.run([sys.executable, "-m", "modal", "deploy", str(Path(__file__).resolve())], check=True)
 
 
-def cmd_launch(stage):
-    units = STAGES[stage]
-    wall = max(HW[k][4] for k, _ in units)
-    estimate = sum(rate(k) * HW[k][4] for k, _ in units) + rate("coordinator") * (wall + STARTUP_SECONDS)
+def cmd_launch(stage, approve_stage_b=False):
+    units = _stage_units(stage, approve_stage_b)
+    wall = max(HW[k][4] for k, _ in units) + STARTUP_SECONDS
+    estimate = (sum(rate(k) * (HW[k][4] + STARTUP_SECONDS) for k, _ in units)
+                + rate("coordinator") * (wall + STARTUP_SECONDS))
     print(f"Uncached estimate: ${estimate:.2f}, about {wall / 60:.0f} minutes (before queueing)", flush=True)
     run_id = time.strftime("%Y%m%d-%H%M%S", time.gmtime()) + "-" + uuid.uuid4().hex[:8]
     fn = modal.Function.from_name(APP_NAME, "coordinator")
-    call = fn.spawn(run_id, stage)
+    call = fn.spawn(run_id, stage, approve_stage_b)
     record = dict(run_id=run_id, stage=stage, call_id=call.object_id, projected_usd=estimate)
     write_json_atomic(_runs_dir() / f"{run_id}.json", record)
     print(json.dumps(record, indent=2))
@@ -263,7 +285,7 @@ def cmd_status(run_id):
     try:
         result = call.get(timeout=0)
     except TimeoutError:
-        print(f"{record['run_id']}: queued or running; attempt records are under /state/attempts on the Volume")
+        print(f"{record['run_id']}: queued or running; attempt records are under /ledger/attempts on the Volume")
     except Exception as error:
         raise SystemExit(f"Coordinator failed ({type(error).__name__}); inspect the tm-exp1 app logs") from None
     else:
@@ -299,15 +321,16 @@ def cli():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("deploy", help="deploy the app (requires spending approval)")
-    commands.add_parser("launch", help="spawn a worker coordinator (requires spending approval)").add_argument(
-        "stage", choices=STAGES)
+    launch = commands.add_parser("launch", help="spawn a worker coordinator (requires spending approval)")
+    launch.add_argument("stage", choices=(*STAGE_A_WORKERS, *STAGE_B_WORKERS))
+    launch.add_argument("--approve-stage-b", action="store_true", help="separate approval for future Stage B workers")
     commands.add_parser("status").add_argument("run_id", nargs="?")
     commands.add_parser("fetch").add_argument("out", nargs="?", default=HERE / "out")
     args = parser.parse_args()
     if args.command == "deploy":
         cmd_deploy()
     elif args.command == "launch":
-        cmd_launch(args.stage)
+        cmd_launch(args.stage, args.approve_stage_b)
     elif args.command == "status":
         cmd_status(args.run_id)
     else:

@@ -71,8 +71,8 @@ def model_input_ids(ids):
     return {key: [model["eot"], *ids] for key, model in MODELS.items()}
 
 
-def tokenizer_provenance(key, tokenizer):
-    return dict(MODELS[key], name_or_path=str(tokenizer.name_or_path), class_name=type(tokenizer).__name__,
+def tokenizer_provenance(tokenizer, model_meta):
+    return dict(model_meta, name_or_path=str(tokenizer.name_or_path), class_name=type(tokenizer).__name__,
                 is_fast=tokenizer.is_fast, eos_token_id=tokenizer.eos_token_id,
                 commit_metadata=tokenizer.init_kwargs.get("_commit_hash"),
                 transformers=version("transformers"), tokenizers=version("tokenizers"))
@@ -217,7 +217,7 @@ def node_sets():
         late = q_rng.choice(stop - SUFFIX_START, size=64, replace=False) + SUFFIX_START
         early = q_rng.choice(SUFFIX_START - QUERY_START, size=32, replace=False) + QUERY_START
         q.extend([c, int(p)] for p in (*late, *early))
-        audit.append([c, int(audit_rng.integers(SUFFIX_START, stop))])
+        audit.append([c, int(audit_rng.choice(late))])
     companions = {}
     for focal in (0, 1):
         draw = np.random.default_rng(100 + focal).permutation([i for i in range(POOL_SIZE) if i != focal]).tolist()
@@ -300,18 +300,18 @@ def main(out_path, cache_dir):
     from transformers import AutoTokenizer
 
     pythia, olmo = (AutoTokenizer.from_pretrained(m["id"], revision=m["revision"], cache_dir=cache_dir,
-                                                  use_fast=True, trust_remote_code=False)
+                                                  use_fast=True, trust_remote_code=False, token=False)
                     for m in MODELS.values())
     for tok, model in zip((pythia, olmo), MODELS.values()):
         if tok.eos_token_id != model["eot"]:
             raise TokenIdentityError(f"{model['id']}: unexpected end-of-text id")
     pile = Path(hf_hub_download(CORPUS["id"], CORPUS["filename"], revision=CORPUS["revision"],
-                                repo_type="dataset", cache_dir=cache_dir))
+                                repo_type="dataset", cache_dir=cache_dir, token=False))
     if pile.stat().st_size != CORPUS["size_bytes"]:
         raise ValueError("unexpected compressed corpus size")
     with tempfile.TemporaryFile() as spool:
         data = build_probe(_DocumentSpool(spool, read_pile(pile)), pythia, olmo)
-    data["tokenizer_provenance"] = {key: tokenizer_provenance(key, tok) for key, tok in zip(MODELS, (pythia, olmo))}
+    data["tokenizer_provenance"] = {key: tokenizer_provenance(tok, MODELS[key]) for key, tok in zip(MODELS, (pythia, olmo))}
     write_json_atomic(out_path, data)
     return dict(contexts=len(data["contexts"]), counts=data["counts"]["total"])
 
