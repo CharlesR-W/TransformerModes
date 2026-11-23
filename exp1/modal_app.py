@@ -515,11 +515,19 @@ def _held_verification(rows, plan):
     return held
 
 
+# The audit's work that does not scale with the number of full rows (loading and centring, saved pairs, the 1% token
+# sample, readout): its author's estimate at full size, not a measurement.
+AUDIT_FIXED_SECONDS = 12 * 60
+
+
 def _audit_rows(pilot, groups):
-    # Timer is one model/site/setting's complete lag sum, with all memories.
-    # Each selected audit query still visits both models, both sites and all masks.
-    seconds_per_query = pilot["audit_row_seconds"] * len(MODELS) * len(AUDIT_SITES) * len(groups)
-    return min(POOL_SIZE, math.floor(HW["audit-a"][3] / ((1 + PROJECTION_MARGIN) * seconds_per_query)))
+    # audit_a.time_one_row times one query at one site of one model for ALL groups (both readings, both centrings,
+    # all memories), so the number of approved groups does not multiply it. Each audit query visits both models and
+    # both audit sites.
+    del groups
+    seconds_per_query = pilot["audit_row_seconds"] * len(MODELS) * len(AUDIT_SITES)
+    budget = HW["audit-a"][3] - AUDIT_FIXED_SECONDS
+    return min(POOL_SIZE, math.floor(budget / ((1 + PROJECTION_MARGIN) * seconds_per_query)))
 
 
 def _remaining_groups(plan, model):
