@@ -44,6 +44,22 @@ def log(*a):
     print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
 
 
+def write_probe_summary(work: Path):
+    """The same field selection as exp1/modal_app.py _write_probe_summary; fields the fixture probe lacks are null."""
+    import census
+    path = work / "probe" / "probe.json"
+    probe = json.loads(path.read_text(encoding="utf-8"))
+    light = ("id", "kind", "subset", "file_index", "text_sha256", "eligible_shuffle_rank", "schedule", "segments")
+    summary = dict(
+        probe_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), corpus=probe.get("corpus"),
+        models=probe.get("models"), context_tokens=probe.get("context_tokens"), pool_size=probe.get("pool_size"),
+        counts=probe.get("counts"), seeds=probe.get("seeds"), token_identity=probe.get("token_identity"),
+        tokenizer_provenance=probe.get("tokenizer_provenance"),
+        contexts=[{k: c[k] for k in light if k in c} for c in probe["contexts"]],
+        stitch_sources=[{k: c[k] for k in light if k in c} for c in probe.get("stitch_sources", [])])
+    census.write_json(work / "analysis" / "probe_summary.json", summary)
+
+
 def build(work: Path):
     sys.path.insert(0, str(EXP1))
     import numpy as np
@@ -76,6 +92,11 @@ def build(work: Path):
             c["token_strings"] = [probe_mod.token_display(tokenizer, i) for i in c["token_ids"]]
             c["text"] = tokenizer.decode(c["token_ids"], clean_up_tokenization_spaces=False)
     data["models"] = {k: dict(id=v[0], revision=v[1], eot=0) for k, v in MODELS.items()}
+    # the audit fixture's two stitch sources (test_audit_a._probe): subset "subset A" / "subset B", line 100 + n
+    source_ids = t._texts(tokenizer)[4:6]
+    data["stitch_sources"] = [dict(source=label, subset=f"subset {label}", file_index=100 + n, token_ids=source_ids[n],
+                                   token_strings=[probe_mod.token_display(tokenizer, i) for i in source_ids[n]])
+                              for n, label in enumerate("AB")]
     data["description"] = "development fixture: four Python standard-library modules and one stitched text"
     data["corpus"] = dict(id="fixture (Python standard library source, not the Pile)")
     census.write_json(work / "probe" / "probe.json", data)
@@ -106,6 +127,8 @@ def build(work: Path):
     select_b.select(work, models=tuple(MODELS), sites=(4,), readout_sites=(4,), required_sites=1)
     log("pack")
     pack_site.run(work)
+    log("probe summary")
+    write_probe_summary(work)
     log("audit")
     report = audit_a.run(work, work / "audit_a" / "report.json", spec_parameters=False)
     log(f"audit passed: {report.get('passed')}")
@@ -140,7 +163,12 @@ def main():
         (out / "FIXTURE.json").write_text(json.dumps(dict(
             kind="development fixture", made=time.strftime("%Y-%m-%d %H:%M"), models={k: v[0] for k, v in MODELS.items()},
             note="not results; see site/dev_fixture.py"), indent=1))
-        log(f"wrote {out}")
+        # the copy must still match what the audit inventoried (the site's release gate checks the same)
+        import audit_a
+        differ = audit_a.verify_inventory(json.loads((out / "audit_a" / "report.json").read_text()), out)
+        if differ:
+            raise SystemExit(f"fixture copy differs from the audit inventory: {differ[:5]}")
+        log(f"wrote {out}; audit inventory verified ({len(json.loads((out / 'audit_a' / 'report.json').read_text())['inventory']['files'])} files)")
     finally:
         if not a.keep_work:
             shutil.rmtree(work, ignore_errors=True)

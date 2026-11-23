@@ -414,7 +414,23 @@ def a_readout(plan: dict):
     timed("synthetic", synthetic.run_synthetic, ROOT, device="cpu", groups=groups)
     timed("selection", select_b.select, ROOT)
     timed("pack_site", pack_site.run, ROOT)
+    _write_probe_summary()
     return _finish("readout", plan["probe_sha256"], started, stage_seconds=timings, approved_groups=plan["approved_groups"])
+
+
+def _write_probe_summary():
+    """Small, fetchable facts about the probe for the site's Method page (the probe file itself stays on the Volume)."""
+    path = ROOT / "probe" / "probe.json"
+    probe = json.loads(path.read_text(encoding="utf-8"))
+    light = ("id", "kind", "subset", "file_index", "text_sha256", "eligible_shuffle_rank", "schedule", "segments")
+    summary = dict(
+        probe_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), corpus=probe["corpus"],
+        models=probe["models"], context_tokens=probe["context_tokens"], pool_size=probe["pool_size"],
+        counts=probe["counts"], seeds=probe["seeds"], token_identity=probe["token_identity"],
+        tokenizer_provenance=probe["tokenizer_provenance"],
+        contexts=[{k: c[k] for k in light if k in c} for c in probe["contexts"]],
+        stitch_sources=[{k: c[k] for k in light if k in c} for c in probe["stitch_sources"]])
+    write_json_atomic(ROOT / "analysis" / "probe_summary.json", summary)
 
 
 def _audit_passed(report):

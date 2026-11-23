@@ -115,25 +115,53 @@ def run(data: Path, out: Path):
     o.fact("ledger.attempts", len(rows), source="ledger/attempts/*/*.json")
     o.fact("ledger.failed", sum(u["failed"] for u in by_unit.values()), source="ledger/attempts/*/*.json status")
     o.fact("ledger.cap", 8, source="SPEC.md section 11 (the Stage A hard cap)")
-    # ---------------------------------------------------------- probe documents
+    # ---------------------------------------------------------- probe documents (analysis/probe_summary.json, with
+    # how each text begins from the packed texts) and the rejection counts
+    probe = d.probe or {}
+    psrc = "analysis/probe_summary.json" if d.probe else "site/texts (probe summary absent: development build)"
+    light = {c["id"]: c for c in probe.get("contexts") or []}
+    by_index = {s.get("file_index"): s for s in probe.get("stitch_sources") or []}
     docs, subsets = [], OrderedDict()
     for t in d.manifest["texts"]:
         p = d.asset(t["text_file"])
+        c = {**p, **light.get(t["id"], {})}           # the probe summary wins where both have a field
         words = re.sub(r"\s+", " ", p.get("text", "")).strip()
         first = words[:70] + ("…" if len(words) > 70 else "")
+        rank = c.get("eligible_shuffle_rank")
         if t["kind"] == "stitched":
-            segs = p.get("segments", [])
-            docs.append(dict(cells=[dict(text=str(t["id"])), dict(text=f"stitched ({p.get('schedule')} segments)"), dict(text="—"),
-                                    dict(text=f"{len(segs)} segments, sources {', '.join(sorted({s['source'] for s in segs}))}"), dict(text=first)]))
+            segs = c.get("segments") or []
+            srcs = OrderedDict()
+            for g in segs:
+                info = by_index.get(g.get("source_file_index"), {})
+                srcs.setdefault(g["source"], f"{g['source']}: {info.get('subset') or 'subset unknown'}, line {g.get('source_file_index', '?')}")
+            docs.append(dict(cells=[dict(text=str(t["id"])), dict(text=f"stitched ({c.get('schedule')} segments)"), dict(text="—"), dict(text="—"),
+                                    dict(text=f"{len(segs)} segments; " + "; ".join(srcs.values())), dict(text=first)], source=psrc))
         else:
-            subsets[p.get("subset")] = subsets.get(p.get("subset"), 0) + 1
-            docs.append(dict(cells=[dict(text=str(t["id"])), dict(text=p.get("subset") or "—"), dict(text=str(p.get("file_index", "—"))),
-                                    dict(text=(p.get("text_sha256") or "")[:12]), dict(text=first)]))
-    o.chart("documents", dict(columns=[dict(label="Text"), dict(label="Subset"), dict(label="Line in test.jsonl"), dict(label="SHA-256 (start) / segments"), dict(label="Begins")],
-                              rows=docs))
+            subsets[c.get("subset")] = subsets.get(c.get("subset"), 0) + 1
+            docs.append(dict(cells=[dict(text=str(t["id"])), dict(text=c.get("subset") or "—"), dict(text=str(c.get("file_index", "—"))),
+                                    dict(text="—" if rank is None else f"{rank:,}"), dict(text=(c.get("text_sha256") or "")[:12]), dict(text=first)], source=psrc))
+    o.chart("documents", dict(columns=[dict(label="Text"), dict(label="Subset"), dict(label="Line in test.jsonl"), dict(label="Shuffle rank"),
+                                       dict(label="SHA-256 (start) / segments"), dict(label="Begins")], rows=docs,
+                              note="Shuffle rank: the document's place in the seeded shuffle of eligible documents; accepted texts are the first that pass every rule."))
+    counts = probe.get("counts") or {}
+    reasons = [("forbidden_text", "special tokens"), ("ascii", "under 95% ASCII"), ("too_short", "under 2,048 tokens"), ("whitespace", "mostly whitespace"),
+               ("internal_32gram", "repeats itself"), ("shared_32gram", "shares a passage"), ("subset_cap", "subset full"), ("stitch_same_subset", "stitch pair same subset")]
+    def crow(name, c, strong=False):
+        return dict(cells=[dict(text=name, strong=strong), dict(text=f"{c.get('walked', 0):,}"), dict(text=f"{c.get('accepted_pool', 0):,}"),
+                           dict(text=f"{c.get('accepted_stitch_source', 0):,}")] + [dict(text=f"{c.get(k, 0):,}") for k, _ in reasons])
+    crows = [crow("all subsets", counts["total"], True)] if counts.get("total") else []
+    crows += [crow(sub, c) for sub, c in (counts.get("by_subset") or {}).items() if c.get("walked") or c.get("accepted_pool") or c.get("accepted_stitch_source")]
+    o.chart("rejections", dict(columns=[dict(label="Subset"), dict(label="Examined"), dict(label="Accepted"), dict(label="Stitch sources")]
+                               + [dict(label=label) for _, label in reasons], rows=crows,
+                               note="Documents examined in shuffled order until 32 texts and 4 stitch sources were accepted; each rejection is counted under its first failed rule."
+                               if crows else "Rejection counts are not available in this build."))
+    total = counts.get("total") or {}
+    o.fact("probe.examined", total.get("walked"), source=psrc + " counts.total.walked", missing="not recorded")
+    o.fact("probe.eligible", total.get("eligible"), source=psrc + " counts.total.eligible", missing="not recorded")
     o.fact("probe.texts", sum(t["kind"] != "stitched" for t in d.manifest["texts"]), source="site/manifest.json texts")
-    o.fact("probe.subsets", len(subsets), source="site/texts/*.json subset")
+    o.fact("probe.subsets", len(subsets), source=psrc + " contexts[].subset")
     o.fact("probe.description", d.manifest.get("description") or "—", source="site/manifest.json description")
+    o.fact("probe.sha", (probe.get("probe_sha256") or d.manifest.get("probe_sha256") or "—")[:16], source=psrc + " probe_sha256")
     # ---------------------------------------------------------- SPEC section 0 diagnostic (exp1/local_pilot.json)
     pilot_path = SITE.parent / "exp1" / "local_pilot.json"
     if pilot_path.is_file():

@@ -66,12 +66,14 @@ def sha256_file(path):
 
 def canonical_digest(files):
     import hashlib
-    return hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
 
 
 def inventory_problems(data: Path, report):
     """The audit must have verified exactly the files this build publishes: every file under analysis/ and site/ is
     hashed here, independently of the audit's own helper, and compared with the report's inventory."""
+    if report.get("inventory_error"):
+        return [f"the audit could not record its file inventory ({report['inventory_error']})"]
     inv = report.get("inventory")
     if not isinstance(inv, dict) or inv.get("algorithm") != "sha256" or not isinstance(inv.get("files"), dict):
         return ["the audit report has no sha256 inventory of the files it verified, so it cannot vouch for these files"]
@@ -93,10 +95,10 @@ def inventory_problems(data: Path, report):
         sys.path.insert(0, str(ROOT / "exp1"))
         from audit_a import verify_inventory  # noqa: PLC0415
         differ = verify_inventory(report, data)
-        if differ and not (unlisted or changed or missing):
-            problems.append(f"audit_a.verify_inventory reports {len(differ)} differing file(s): {', '.join(map(str, differ[:5]))}")
+        if differ:
+            problems.append(f"audit_a.verify_inventory reports {len(differ)} problem(s): {', '.join(map(str, differ[:5]))}")
     except ImportError:
-        pass
+        problems.append("exp1/audit_a.py has no verify_inventory, so the audit's own inventory check could not run")
     except Exception as e:                   # noqa: BLE001 - report, do not crash the check
         problems.append(f"audit_a.verify_inventory failed: {type(e).__name__}: {e}")
     finally:
@@ -120,6 +122,8 @@ def release_problems(data: Path):
         if report.get("spec_parameters") is not True:
             problems.append("the audit was not run with the spec's parameters (spec_parameters is not true)")
         problems += inventory_problems(data, report)
+    if not (data / "analysis" / "probe_summary.json").is_file():
+        problems.append("analysis/probe_summary.json is missing (document table, rejection counts, stitched sources)")
     manifest = build_x.read_json(data / "site" / "manifest.json")
     if set(manifest.get("models", [])) != EXPECTED_MODELS:
         problems.append(f"models are {manifest.get('models')}, expected Pythia and OLMo")

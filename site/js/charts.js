@@ -490,7 +490,7 @@ export function tableChart(container, o) {
       td.append(c.strong ? h("b", { text: c.text }) : document.createTextNode(c.text));
       if (c.small) td.append(h("small", { text: c.small }));
       if (c.note) td.append(h("small", { class: "warn", text: c.note }));
-      if (k === 0 && r.detail && r.detail.length) td.append(h("details", { class: "x-cell-more" }, h("summary", { text: `${r.detail.length} checks` }), h("code", { text: r.detail.join(" ") })));
+      if (k === 0 && r.detail && r.detail.length) td.append(h("details", { class: "x-cell-more" }, h("summary", { text: `${r.detail.length} check${r.detail.length === 1 ? "" : "s"}` }), h("code", { text: r.detail.join(" ") })));
       tr.append(td);
     });
     tb.append(tr);

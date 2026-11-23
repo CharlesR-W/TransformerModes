@@ -59,6 +59,15 @@ and position. Positions 1 to {{fact:x.viewer.burn_in}} are burn-in: part of ever
   <tr><td>audit queries</td><td>one of each text's suffix queries, drawn with another seed</td><td>the independent audit</td></tr>
   </tbody>
 </table></div>
+<p>Documents examined before the sample filled: {{fact:x.method.probe.examined}}. The probe file's SHA-256 begins
+<code>{{fact:x.method.probe.sha}}</code>; the census groups and the viewer export record the same hash.</p>
+<details class="m-more">
+  <summary>Why documents were rejected, by subset</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#rejections">
+    <div class="live-body"></div>
+    <figcaption>From analysis/probe_summary.json (counts).</figcaption>
+  </figure>
+</details>
 <details class="m-more">
   <summary>The {{fact:x.method.probe.texts}} texts and the stitched controls</summary>
   <figure class="live" data-live="table" data-src="assets/x/method.json#documents">

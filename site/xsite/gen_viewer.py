@@ -25,15 +25,18 @@ def run(data: Path, out: Path):
     texts = {}
     for t in m["texts"]:
         payload = d.asset(t["text_file"])
+        sources = None
         if t["kind"] == "stitched":
-            label = f"{t['id']} · stitched, {payload.get('schedule', '?')} segments"
+            sources = d.stitch_subsets(payload)
+            names = " / ".join(f"{k}: {v}" for k, v in sources.items() if v)
+            label = f"{t['id']} · stitched, {payload.get('schedule', '?')} segments" + (f" · {names}" if names else "")
             short = f"Stitched text {t['id']}"
             subset = None
         else:
             subset = payload.get("subset")
             label = f"{t['id']} · {subset} · “{_words(payload.get('text', ''))}”" if subset else f"Text {t['id']}"
             short = f"Text {t['id']}"
-        texts[str(t["id"])] = dict(label=label, short=short, subset=subset)
+        texts[str(t["id"])] = dict(label=label, short=short, subset=subset, **({"sources": sources} if sources else {}))
     removed = {}
     for model in d.models:
         for centring in ("C", "O"):
@@ -55,6 +58,7 @@ def run(data: Path, out: Path):
     o.fact("text_tokens", max(t["positions"][1] - 1 for t in m["texts"]), source="site/manifest.json texts[].positions")
     names = [d.model_name(x) for x in d.models]
     o.fact("models", " and ".join(names) if len(names) < 3 else ", ".join(names), source="site/manifest.json models, model_metadata")
+    o.fact("arch", "16 blocks, width 2,048", source="SPEC.md section 2 (typed from the spec; the viewer data do not record architecture)", tier="S")
     o.fact("shown", m["viewer_k"], source="site/manifest.json viewer_k")
     o.write()
 

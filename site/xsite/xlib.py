@@ -92,13 +92,13 @@ class Out:
         self.charts[key] = clean(obj)
         return key
 
-    def fact(self, name, value, digits=None, pct=False, *, source, missing="n/a"):
+    def fact(self, name, value, digits=None, pct=False, *, source, missing="n/a", tier=None):
         """Register a value and its display text. A value of None is recorded as missing and shown as `missing`."""
         if not re.fullmatch(r"[a-z0-9_]+(?:\.[a-z0-9_]+)*", name) or name in self.facts:
             raise ValueError(f"expected a unique lower-case dotted fact name, got {name!r}")
         value = clean(value)
         text = missing if value is None else fmt(value, digits, pct)
-        self.facts[name] = {"value": value, "text": text, "source": source}
+        self.facts[name] = {"value": value, "text": text, "source": source, **({"tier": tier} if tier else {})}
         return text
 
     def write(self):
@@ -157,6 +157,20 @@ class Data:
         if len(raw) != spec["decoded_bytes"]:
             raise ValueError(f"{path}: size differs from the manifest")
         return json.loads(raw)
+
+    @property
+    def probe(self):
+        """analysis/probe_summary.json (light probe fields), or None when absent (allowed only in --dev builds)."""
+        path = self.root / "analysis" / "probe_summary.json"
+        return read_json(path) if path.is_file() else None
+
+    def stitch_subsets(self, text_payload):
+        """{source label: subset} for a stitched text, from its segments and the probe summary's stitch sources."""
+        by_index = {s.get("file_index"): s.get("subset") for s in ((self.probe or {}).get("stitch_sources") or [])}
+        out = {}
+        for seg in text_payload.get("segments") or []:
+            out.setdefault(seg["source"], by_index.get(seg.get("source_file_index")))
+        return out
 
     def stitched(self):
         return [t["id"] for t in self.manifest["texts"] if t["kind"] == "stitched"]

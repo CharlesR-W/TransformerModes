@@ -488,7 +488,8 @@ export class Viewer {
         const d = x.pos - p, near = Math.abs(d) <= NEAR;
         const words = `same text, ${nf.format(Math.abs(d))} position${Math.abs(d) === 1 ? "" : "s"} ${d < 0 ? "earlier" : "later"}`;
         const src = t.kind === "stitched" ? this.sourceOf(this.cur.text, x.pos) : null, qsrc = t.kind === "stitched" ? this.sourceOf(this.cur.text, p) : null;
-        return [h("i", { class: `sw ${near ? "near" : "far"}` }), words, src ? h("span", { class: "vw-src", text: ` · source ${src}${src === qsrc ? " (same source)" : ""}` }) : null];
+        const sub = src ? t.info.sources?.[src] : null;
+        return [h("i", { class: `sw ${near ? "near" : "far"}` }), words, src ? h("span", { class: "vw-src", text: ` · source ${src}${sub ? ` (${sub})` : ""}${src === qsrc ? ", same as the clicked token's" : ""}` }) : null];
       }
       const info = this.text(x.text)?.info || {};
       return [h("i", { class: "sw other" }), `text ${x.text}, position ${nf.format(x.pos)}`, info.subset ? h("span", { class: "vw-src", text: ` · ${info.subset}` }) : null];
@@ -552,7 +553,7 @@ export class Viewer {
       h("tbody", {}, ...text.segments.map((s, i) => h("tr", {}, h("td", { text: i + 1 }), h("td", { text: s.source }), h("td", { text: `${s.position_start}–${s.position_stop - 1}` }), h("td", { text: `${s.source_start + 1}–${s.source_stop}` }))))) : null;
     body.replaceChildren(
       h("section", {}, h("h3", { text: "This text" }), dl([
-        ["Text", `${t.id}${t.kind === "stitched" ? ` (stitched, ${text.schedule} segments)` : ""}`], ["Subset", text.subset || (t.kind === "stitched" ? "two sources, A and B (see segments)" : "—")],
+        ["Text", `${t.id}${t.kind === "stitched" ? ` (stitched, ${text.schedule} segments)` : ""}`], ["Subset", text.subset || (t.kind === "stitched" ? Object.entries(t.info.sources || {}).map(([k, v]) => `${k}: ${v || "unknown"}`).join(" · ") || "two sources, A and B (see segments)" : "—")],
         ["File index", text.file_index ?? "—"], ["SHA-256 of the document", h("code", { text: text.text_sha256 || "—" })],
         ["Tokens", `${nf.format(text.token_ids.length)}; positions ${range.start}–${range.stop - 1} are analysed, earlier ones are burn-in`]]), segs),
       h("section", {}, h("h3", { text: "This setting" }), dl([

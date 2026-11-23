@@ -293,10 +293,11 @@ def test_readout_worker_routes_groups_sites_and_stitch_readings(env, monkeypatch
     monkeypatch.setitem(sys.modules, "synthetic", SimpleNamespace(run_synthetic=synthetic))
     monkeypatch.setitem(sys.modules, "select_b", SimpleNamespace(select=select))
     monkeypatch.setitem(sys.modules, "pack_site", SimpleNamespace(run=pack))
+    monkeypatch.setattr(a, "_write_probe_summary", lambda: seen.append("probe_summary"))
     with pytest.warns(UserWarning, match="executing locally"):
         result = a.a_readout.local(plan)
     assert result["approved_groups"] == plan["approved_groups"]
-    assert seen == [(m, part) for m in a.MODELS for part in ("prediction", "timescales", "stitches")] + ["synthetic", "select", "pack_site"]
+    assert seen == [(m, part) for m in a.MODELS for part in ("prediction", "timescales", "stitches")] + ["synthetic", "select", "pack_site", "probe_summary"]
 
 
 def test_cpu_audit_uses_only_explicit_independent_report(env, monkeypatch):
@@ -338,3 +339,19 @@ def test_fetch_requires_current_passing_report_even_if_local_report_is_stale(tmp
         a.cmd_fetch(tmp_path)
     paths[report_path] = passing
     a.cmd_fetch(tmp_path)
+
+
+def test_probe_summary_keeps_light_fields_only(env):
+    heavy = dict(token_ids=[1, 2], model_input_ids={}, token_strings=["a"], text="secret body", source_positions=[None])
+    probe = dict(corpus={"repo": "x"}, models={"pythia": {}}, context_tokens=2047, pool_size=32, counts={"total": {}},
+                 seeds={"q": 21}, token_identity=["text", "position"], tokenizer_provenance={},
+                 contexts=[dict(heavy, id=0, kind="pool", subset="ArXiv", file_index=7, text_sha256="ab"),
+                           dict(heavy, id=32, kind="stitched", schedule="long", segments=[{"source": "A"}])],
+                 stitch_sources=[dict(heavy, file_index=9, subset="Github", text_sha256="cd")])
+    a.write_json_atomic(env.root / "probe" / "probe.json", probe)
+    a._write_probe_summary()
+    out = json.loads((env.root / "analysis" / "probe_summary.json").read_text())
+    assert out["contexts"][0] == dict(id=0, kind="pool", subset="ArXiv", file_index=7, text_sha256="ab")
+    assert out["contexts"][1] == dict(id=32, kind="stitched", schedule="long", segments=[{"source": "A"}])
+    assert out["stitch_sources"] == [dict(subset="Github", file_index=9, text_sha256="cd")]
+    assert "secret body" not in json.dumps(out) and len(out["probe_sha256"]) == 64
