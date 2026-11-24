@@ -27,6 +27,7 @@ def env(tmp_path, monkeypatch):
     # they keep exercising the same planner logic whatever the production settings are.
     monkeypatch.setattr(a, "STAGE_A_CAP", 8.0)
     monkeypatch.setitem(a.HW, "census", ("A100-80GB", 8, 64, 40 * 60, 25 * 60))
+    monkeypatch.setitem(a.HW, "readout", (None, 16, 64, 40 * 60, 40 * 60))
     monkeypatch.setattr(a, "volume", vol)
     monkeypatch.setattr(a, "_probe_identity", lambda: "probe-sha")
     monkeypatch.setattr(a, "_complete", lambda kind, model, sha: model in extracted or None)

@@ -46,7 +46,8 @@ HW = {"U0": (None, 2, 8, 40 * 60, 20 * 60),
       "pilot-cpu": (None, 16, 64, 10 * 60, 10 * 60),
       # Ceiling 55 min: 40 passes at the pilot's 63 s are 42 min before margin.
       "census": ("A100-80GB", 8, 64, 55 * 60, 42 * 60),
-      "readout": (None, 16, 64, 40 * 60, 40 * 60),
+      # 80 min: the first attempt hit a 40-minute limit in selection and packing, which the pilot had not timed.
+      "readout": (None, 16, 64, 80 * 60, 60 * 60),
       "audit-a": (None, 16, 64, 30 * 60, 30 * 60),
       "coordinator": (None, 0.25, 1, 65 * 60, 0)}
 PROBE_PATH = ROOT / "probe" / "probe.json"
@@ -400,16 +401,32 @@ def a_readout(plan: dict):
 
     def timed(key, fn, *args, **kwargs):
         t = time.monotonic()
+        print(f"[readout] {key}: start", flush=True)
         value = fn(*args, **kwargs)
         timings[key] = time.monotonic() - t
+        # Publish each step, so a later timeout does not lose it and the log shows where the time goes.
+        volume.commit()
+        print(f"[readout] {key}: {timings[key]:.0f} s", flush=True)
         return value
 
     readings = tuple(r for r, c in groups if c == "C")
+    expected = len(groups) * len(READOUT_SITES) * len(MEMORIES) * len(MASKS)
     for model in MODELS:
-        paths = timed(f"{model}_predictions", readout.run_readout, ROOT, model, groups=groups)
-        if len(paths) != len(groups) * len(READOUT_SITES) * len(MEMORIES) * len(MASKS):
-            raise RuntimeError(f"incomplete prediction readout for {model}")
-        timed(f"{model}_timescales", readout.run_timescales, ROOT, model)
+        # Resume: the first attempt (run 20261123-231754) finished predictions and timescales for both models and
+        # timed out later. A step is reused only if its summary exists and every per-setting file is present.
+        have = sum(1 for _ in (ROOT / "readout" / model).rglob("*.npz")) if (ROOT / "readout" / model).is_dir() else 0
+        if (ROOT / "analysis" / "prediction" / f"{model}.json").is_file() and have == expected:
+            timings[f"{model}_predictions"] = 0.0
+            print(f"[readout] {model}_predictions: reused {have} files", flush=True)
+        else:
+            paths = timed(f"{model}_predictions", readout.run_readout, ROOT, model, groups=groups)
+            if len(paths) != expected:
+                raise RuntimeError(f"incomplete prediction readout for {model}")
+        if (ROOT / "analysis" / f"{model}_timescales.json").is_file():
+            timings[f"{model}_timescales"] = 0.0
+            print(f"[readout] {model}_timescales: reused", flush=True)
+        else:
+            timed(f"{model}_timescales", readout.run_timescales, ROOT, model)
         timed(f"{model}_stitches", census.run_stitches, ROOT, model, device="cpu", readings=readings)
     timed("synthetic", synthetic.run_synthetic, ROOT, device="cpu", groups=groups)
     timed("selection", select_b.select, ROOT)
