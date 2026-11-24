@@ -559,13 +559,20 @@ def _plan_path():
     return ROOT / "analysis" / "stage_a_plan.json"
 
 
+# Attempts allowed per verification unit. The readout gets a third: its first two attempts (2026-11-23) failed on
+# limits that were set too short (a 40-minute unit limit, then the coordinator's 65-minute limit after a worker
+# restart), not on its results; the third still fits under the owner's cap with the audit's two attempts held.
+MAX_ATTEMPTS = {"readout": 3, "audit-a": 2}
+
+
 def _held_verification(rows, plan):
     if not plan or plan.get("status") != "approved":
         return {}
     held = {}
     for kind in VERIFICATION:
         attempts = [r for r in rows if r["kind"] == kind]
-        slots = 0 if any(r["status"] in ("done", "cached") for r in attempts) else max(0, 2 - len(attempts))
+        slots = (0 if any(r["status"] in ("done", "cached") for r in attempts)
+                 else max(0, MAX_ATTEMPTS[kind] - len(attempts)))
         if slots:
             held[kind] = slots * _charge(_reservation("hold", kind))
     return held
