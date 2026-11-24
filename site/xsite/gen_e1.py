@@ -52,7 +52,7 @@ def run(data: Path, out: Path):
     lead, _ = stack_panels(d, models, "cosine", "origin", LEAD_SITE)
     o.chart("lead", lead)
     screen, _ = stack_panels(d, models, "cosine", "screen_mass", LEAD_SITE, whiskers=False)
-    screen["ylabel"] = "share of the walk weight (suffix sample)"
+    screen["ylabel"] = "share of graph weight (last 512 tokens of each text)"
     o.chart("screen", screen)
     dot, _ = stack_panels(d, models, "dot", "origin", LEAD_SITE)
     o.chart("dot", dot)
@@ -73,16 +73,28 @@ def run(data: Path, out: Path):
                    source=f"analysis/geometry/{m}/cosine_C.json origin[2], mask none, mean over inputs site*")
             o.fact(f"m{d.models.index(m) + 1}.layermean.mem_{mem}.own", v[1] + v[2] if v else None, pct=True,
                    source=f"analysis/geometry/{m}/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*")
-    for inp, label in (("random", "random token vectors"), ("embedding", "embedding output")):
+    for inp, label in (("random", "random vector per token"), ("embedding", "input embeddings")):
         for m, name in models:
             if inp == "random" and m != models[0][0]:
                 continue                               # the same vectors for both models (one per token id)
             vals = [(d.geo_row(m, "cosine", "C", inp, mem, "none")[0] or {}).get("origin") for mem in MEMORIES]
-            tpanels.append(dict(title=label if inp == "random" else f"{label}, {name}", sub="same kernel, same texts", values=vals, whisker=None, zero_near=False))
+            tpanels.append(dict(title=label if inp == "random" else f"{label}, {name}", sub="same comparison, same texts", values=vals, whisker=None, zero_near=False))
             key = "random" if inp == "random" else f"emb{d.models.index(m) + 1}"
             for mem, v in zip(MEMORIES, vals):
                 o.fact(f"{key}.mem_{mem}.near", v[2] if v else None, pct=True, source=f"analysis/geometry/{m}/cosine_C.json input {inp}, origin[2], mask none")
                 o.fact(f"{key}.mem_{mem}.other", v[0] if v else None, pct=True, source=f"analysis/geometry/{m}/cosine_C.json input {inp}, origin[0], mask none")
+                if inp == "random":
+                    o.fact(f"random.mem_{mem}.own", 1 - v[0] if v else None, pct=True,
+                           source=f"analysis/geometry/{m}/cosine_C.json input random, 1 − origin[0], mask none")
+    lead2, _ = stack_panels(d, models, "cosine", "origin", LEAD_SITE, accountings=[("C", "none")], removed=False)
+    for (m, name), p in zip(models, lead2["panels"]):
+        p["title"] = name
+        p["companion"] = [(d.geo_row(m, "cosine", "C", "random", mem, "none")[0] or {}).get("origin") for mem in MEMORIES]
+        site = d.site_or_nearest(m, LEAD_SITE, "cosine", "C")
+        row = d.geo_row(m, "cosine", "C", f"site{site:02d}", "none", "none")[0] if site is not None else None
+        p["chance"] = ((row or {}).get("chance_origin") or [None])[0]
+    lead2.update(cols=2, mobile_stack=True)
+    o.chart("lead2", lead2)
     o.chart("textonly", dict(categories=MEMORY_LABELS, xlabel="memory", segments=ORIGINS, segcolors=["other", "far", "near"],
                              ylabel="share of the 64 neighbours", cols=len(tpanels), panels=tpanels))
 
@@ -92,11 +104,11 @@ def run(data: Path, out: Path):
         site = d.site_or_nearest(m, LEAD_SITE)
         rows = [d.geo_row(m, "cosine", "C", f"site{site:02d}", mem, "none")[0] if site else None for mem in MEMORIES]
         get = lambda i: [r["overlap_expected"][i] if r and len(r.get("overlap_expected", [])) > i else None for r in rows]
-        panels.append(dict(title=name, sub=f"layer {site} · corpus mean", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
+        panels.append(dict(title=name, sub=f"layer {site} · one average removed", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
                            ylabel="neighbours shared (of 64)", yrange=[0, 1], fmt="pct",
-                           series=[dict(name="random token vectors", y=get(1), dots=True, color="ink"),
-                                   dict(name="embedding output", y=get(2), dots=True, color="ink", dash=True),
-                                   dict(name="same model, memory none", y=get(0), dots=True, color="mute", dash="dot")]))
+                           series=[dict(name="random vector per token", y=get(1), dots=True, color="ink"),
+                                   dict(name="input embeddings", y=get(2), dots=True, color="ink", dash=True),
+                                   dict(name="same model, no memory", y=get(0), dots=True, color="mute", dash="dot")]))
     o.chart("adversary", dict(panels=panels, shared=False))
 
     # same current token, by mask (other-texts-only lives here)
@@ -104,12 +116,12 @@ def run(data: Path, out: Path):
     for m, name in models:
         site = d.site_or_nearest(m, LEAD_SITE)
         series = []
-        for mask, label, dash in (("none", "every token eligible", None), ("window", "window", True), ("other_texts", "other texts only", "dot")):
+        for mask, label, dash in (("none", "nothing barred", None), ("window", "nearby barred", True), ("other_texts", "own text barred", "dot")):
             ys = [(d.geo_row(m, "cosine", "C", f"site{site:02d}", mem, mask)[0] or {}).get("same_token") if site else None for mem in MEMORIES]
             series.append(dict(name=label, y=ys, dots=True, color="ink", dash=dash))
         chance = [(d.geo_row(m, "cosine", "C", f"site{site:02d}", mem, "none")[0] or {}).get("chance_same_token") if site else None for mem in MEMORIES]
-        series.append(dict(name="chance (every token eligible)", y=chance, color="mute2", width=1.5))
-        panels.append(dict(title=name, sub=f"layer {site} · corpus mean", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
+        series.append(dict(name="chance (nothing barred)", y=chance, color="mute2", width=1.5))
+        panels.append(dict(title=name, sub=f"layer {site} · one average removed", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
                            ylabel="neighbours with the same current token", yrange=[0, 1], fmt="pct", series=series))
     o.chart("same_token", dict(panels=panels))
 
@@ -126,8 +138,8 @@ def run(data: Path, out: Path):
                                color="ink" if n_c < 2 else "mute"))
             for mem, y in zip(MEMORIES, ys):
                 beyond.setdefault((m, mem), []).append(y)
-        panels.append(dict(title=name, sub="corpus mean, every token eligible", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
-                           ylabel="same-source share minus position baseline", fmt="pct", refline=dict(y=0, label="position alone"),
+        panels.append(dict(title=name, sub="real texts' average removed · each spliced text alone", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
+                           ylabel="same-source share beyond position", fmt="pct", refline=dict(y=0, label="position alone", at="left"),
                            series=series))
     o.chart("stitched", dict(panels=panels))
 
@@ -146,10 +158,10 @@ def run(data: Path, out: Path):
             rs = [d.geo_row(n, "cosine", "C", f"site{site:02d}", mem, "none")[0] for n in names]
             rs = [r["origin"] for r in rs if r and r.get("origin")]
             values.append(np.mean(rs, axis=0).tolist() if rs else None)
-        syn_panels.append(dict(title=vlabel[v], sub=f"{len(names)} seed{'s' * (len(names) != 1)} · site {site}", values=values, whisker=None, zero_near=False))
+        syn_panels.append(dict(title=vlabel[v], sub=f"{len(names)} seed{'s' * (len(names) != 1)} · layer {site}", values=values, whisker=None, zero_near=False))
     done = d.root / "analysis" / "synthetic" / "_done.json"
     groups = __import__("json").loads(done.read_text()).get("groups") if done.is_file() else None
-    o.fact("synthetic.groups", "; ".join(f"{r} reading, {'corpus' if c == 'C' else 'own-text'} mean" for r, c in groups) if groups else "not recorded",
+    o.fact("synthetic.groups", "; ".join(("compared by angle" if r == "cosine" else "lengths kept (dot)") + (", one average removed" if c == "C" else ", each text's own average removed") for r, c in groups) if groups else "not recorded",
            source="analysis/synthetic/_done.json groups")
     o.fact("synthetic.runs", len(list(geo_dir.glob("synthetic_*"))) if geo_dir.is_dir() else 0, source="analysis/geometry/synthetic_*")
     o.chart("synthetic", dict(categories=MEMORY_LABELS, xlabel="memory", segments=ORIGINS, segcolors=["other", "far", "near"],
@@ -171,8 +183,8 @@ def run(data: Path, out: Path):
         panels.append(dict(title=name, x=x, xlabel="layer", ylabel="tokens (log scale)", yscale="log", fmt="3g",
                            reflines=[dict(y=2, label="2"), dict(y=8, label="8"), dict(y=64, label="64")],
                            series=[dict(name="attention distance, median over heads", y=med, band=band, dots=True, join=True, color="ink"),
-                                   dict(name="residual half-similarity lag, corpus mean", y=res["C"], dots=True, join=True, color="mute"),
-                                   dict(name="residual half-similarity lag, own-text mean", y=res["O"], dots=True, join=True, dash=True, color="mute")]))
+                                   dict(name="half-similarity distance, one average removed", y=res["C"], dots=True, join=True, color="mute"),
+                                   dict(name="half-similarity distance, own average removed", y=res["O"], dots=True, join=True, dash=True, color="mute")]))
         o.fact(f"m{d.models.index(m) + 1}.censored", int(ts["censored_count"]["C"]), source=f"analysis/{m}_timescales.json censored_count.C")
     o.chart("timescales", dict(panels=panels))
 
@@ -208,6 +220,8 @@ def run(data: Path, out: Path):
             ys = [y for y in beyond.get((m, mem), []) if y is not None]
             o.fact(f"{k}.stitch.{mk}", float(np.mean(ys)) if ys else None, pct=True,
                    source=f"analysis/geometry/{m}_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts")
+            o.fact(f"{k}.stitch_pp.{mk}", 100 * float(np.mean(ys)) if ys else None, digits=1,
+                   source=f"analysis/geometry/{m}_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points")
     o.fact("stitched_texts", len(d.stitched()), source="site/manifest.json texts (kind stitched)")
     o.fact("models", len(models), source="site/manifest.json models")
     o.chart("card", dict(answer=("With memory, a token's nearest neighbours move into its own text and next to it "

@@ -6,13 +6,13 @@ import { manifest, asset, json, poolIndex } from "./data.js";
 import { h, showTip, hideTip } from "./charts.js";
 
 const ACC = [
-  { key: "C-none", centring: "C", mask: "none", label: "Corpus mean", words: "corpus mean, every other token eligible" },
-  { key: "C-window", centring: "C", mask: "window", label: "Corpus mean + window", words: "corpus mean, no neighbour within 64 positions in the same text" },
-  { key: "O-window", centring: "O", mask: "window", label: "Own-text mean + window", words: "own-text mean removed, no neighbour within 64 positions in the same text" },
+  { key: "C-none", centring: "C", mask: "none", label: "One average removed" },
+  { key: "C-window", centring: "C", mask: "window", label: "One average removed, nearby tokens barred" },
+  { key: "O-window", centring: "O", mask: "window", label: "Each text's own average removed, nearby tokens barred" },
 ];
 const MEMS = ["none", "2", "8", "64", "whole"];
 const MEM_WORDS = { none: "no memory (the current token only)", "2": "memory 2", "8": "memory 8", "64": "memory 64", whole: "the whole prefix" };
-const PAST = 24, SHOW = 8, NEAR = 64;
+const PAST = 24, NEAR = 64;
 const nf = new Intl.NumberFormat("en");
 const pct = v => `${Math.round(100 * v)}%`;
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -101,14 +101,14 @@ export class Viewer {
     this.segModel = seg("model", "Model", this.models, v => modelName(this.m.model_metadata?.[v]?.id, v));
     this.segLayer = seg("layer", "Layer", this.m.viewer_sites);
     this.segMem = seg("memory", "Memory", MEMS);
-    this.selAcc = h("select", { "aria-label": "Accounting" });
+    this.selAcc = h("select", { "aria-label": "Settings" });
     for (const a of ACC) this.selAcc.append(h("option", { value: a.key, text: a.label }));
     this.selAcc.addEventListener("change", () => this.change({ acc: this.selAcc.value }));
     this.note = h("p", { class: "vw-note", "aria-live": "polite" });
     const bar = h("div", { class: "vw-bar" },
       h("div", { class: "vw-controls" },
         field("Text", "texts", this.selText), field("Model", "models", this.segModel), field("Layer", "layer", this.segLayer),
-        field("Memory", "memory", this.segMem), field("Accounting", "accounting", this.selAcc)),
+        field("Memory", "memory", this.segMem), field("Settings", "accounting", this.selAcc)),
       this.note);
     // legend
     this.tri = h("canvas", { class: "vw-tri", width: 132, height: 116, "aria-hidden": "true" });
@@ -207,7 +207,7 @@ export class Viewer {
         for (const acc of [st.acc, ...accs]) for (const memory of [st.memory, ...MEMS]) tries.push({ ...st, acc, layer, model, memory });
       const ok = tries.find(has);
       if (ok) {
-        if (ok.acc !== st.acc) notes.push(`${ACC.find(a => a.key === st.acc).label} is not computed for ${t.kind === "stitched" ? "a stitched text" : "this text"}`);
+        if (ok.acc !== st.acc) notes.push(`${ACC.find(a => a.key === st.acc).label} is not computed for ${t.kind === "stitched" ? "a spliced text" : "this text"}`);
         if (ok.layer !== st.layer) notes.push(`layer ${st.layer} has no data for ${modelName(this.m.model_metadata?.[ok.model]?.id, ok.model)}`);
         if (ok.model !== st.model) notes.push(`${modelName(this.m.model_metadata?.[st.model]?.id, st.model)} has no data for this text`);
         if (ok.memory !== st.memory) notes.push(`memory ${st.memory} has no data here`);
@@ -321,7 +321,7 @@ export class Viewer {
     if (!this.cur) return null;
     const c = this.counts(p);
     const head = `position ${nf.format(p)}`;
-    if (!c) return `<div class="tt-head">${head}</div><div class="tt-row"><span class="tt-k">burn-in: not analysed</span></div>`;
+    if (!c) return `<div class="tt-head">${head}</div><div class="tt-row"><span class="tt-k">history only: never a query or neighbour</span></div>`;
     const n = c[0] + c[1] + c[2];
     if (!n) return `<div class="tt-head">${head}</div><div class="tt-row"><span class="tt-k">no eligible neighbours</span></div>`;
     const row = (k, v, cls) => `<div class="tt-row"><span class="tt-k"><i class="sw ${cls}"></i>${k}</span><span class="tt-v">${v} of ${n}</span></div>`;
@@ -352,15 +352,15 @@ export class Viewer {
     const st = this.state, acc = ACC.find(a => a.key === st.acc), stitched = this.cur.t.kind === "stitched";
     const parts = [h("p", {}, h("b", { text: "Background: where a token's 64 nearest neighbours are." }), " Darker means more of them in the token's own text; paper means all of them in other texts. ",
       "The hue splits the own-text part: ", h("b", { class: "k-far", text: "blue" }), " far away in it, ", h("b", { class: "k-near", text: "orange" }), " within 64 positions; an even split is greyish mauve.")];
-    if (acc.mask === "window") parts.push(h("p", { class: "vw-rule" }, h("b", { text: "Window rule: " }), "no neighbour may sit within 64 positions in the same text, so orange cannot appear. That is imposed, not found."));
-    if (stitched) parts.push(h("p", { class: "vw-rule" }, h("b", { text: "Stitched text: " }), "it is compared only with itself (two documents cut into alternating segments), so no neighbour can come from another text. Dashed marks show where a segment starts."));
-    parts.push(h("p", { class: "vw-small" }, "Near means within 64 positions. Grey text: burn-in, not analysed. Hatched: no eligible neighbour."));
+    if (acc.mask === "window") parts.push(h("p", { class: "vw-rule" }, h("b", { text: "Nearby tokens barred: " }), "no neighbour may sit within 64 positions in the same text, so orange cannot appear. That is imposed, not found."));
+    if (stitched) parts.push(h("p", { class: "vw-rule" }, h("b", { text: "Spliced text: " }), "it is compared only with itself (two documents cut into alternating segments), so no neighbour can come from another text. Dashed marks show where a segment starts."));
+    parts.push(h("p", { class: "vw-small" }, "Near means within 64 positions. Grey text: history only, never a query or neighbour. Hatched: no allowed neighbour."));
     this.legendText.replaceChildren(...parts);
     this.legendTriangle();
     const key = [st.model, acc.centring, st.layer, st.memory].join("|"), rm = this.aux.removed?.[key];
     this.removed.hidden = acc.mask !== "window" || stitched;
-    this.removed.replaceChildren(...(rm == null ? [h("b", { text: "Removed by the window: " }), "not available for this setting."] :
-      [h("b", { text: `Removed by the window: ${pct(rm)}` }), ` of a row's walk weight, on average, sat on same-text tokens within 64 positions before the rule removed them (sampled suffix queries of all texts, ${modelName(this.m.model_metadata?.[st.model]?.id, st.model)}, layer ${st.layer}, ${MEM_WORDS[st.memory]}). It is an average, not shown per token.`]));
+    this.removed.replaceChildren(...(rm == null ? [h("b", { text: "Removed by barring: " }), "not available for this setting."] :
+      [h("b", { text: `Removed by barring: ${pct(rm)}` }), ` of a token's graph weight, on average, sat on same-text tokens within 64 positions before the rule removed them (sampled queries from the last 512 tokens of every text, ${modelName(this.m.model_metadata?.[st.model]?.id, st.model)}, layer ${st.layer}, ${MEM_WORDS[st.memory]}). It is an average, not shown per token.`]));
   }
 
   // ---------------------------------------------------------------- strip (shares along position; also a minimap)
@@ -499,12 +499,12 @@ export class Viewer {
     const head = h("div", { class: "vw-card-head" },
       h("div", { class: "vw-card-title" }, h("b", { class: "vw-tok", text: `“${showTok(tokText(t.id, p))}”` }), h("span", { text: ` text ${t.id}, position ${nf.format(p)}` })),
       h("button", { type: "button", class: "vw-close", "aria-label": "Close the card", text: "×", onclick: () => this.select(null) }));
-    const sub = h("p", { class: "vw-card-sub", text: `${modelLabel} · layer ${st.layer} · ${MEM_WORDS[st.memory]} · ${acc.words}` });
+    const sub = h("p", { class: "vw-card-sub", text: `${modelLabel} · layer ${st.layer} · ${MEM_WORDS[st.memory]} · ${acc.label}` });
     const bar = h("div", { class: "vw-bar3", role: "img", "aria-label": `${c[2]} within 64, ${c[1]} far, ${c[0]} other texts` });
     if (n) for (const [v, cls] of [[c[0], "other"], [c[1], "far"], [c[2], "near"]]) if (v) bar.append(h("i", { class: cls, style: { flexGrow: v } }));
     const counts = h("div", { class: "vw-counts" }, n ? bar : null,
       h("p", {}, ...(n ? [h("b", { text: `Its ${n} nearest neighbours: ` }), `${c[2]} in the same text within 64 positions, ${c[1]} in the same text further away, ${c[0]} in other texts.`]
-        : [h("b", { text: "No eligible neighbours" }), " under this accounting."])));
+        : [h("b", { text: "No eligible neighbours" }), " under this setting."])));
     const notes = [];
     if (n && n < 64) notes.push(`Only ${n} tokens were eligible, so the list is shorter than 64.`);
     if (cutTie) notes.push(`The 64th place is tied${leftOut ? "; some tied tokens were left out, chosen by (text, position)" : ""}. ${tiedShown ? `Marked ≈ below: the shown ranks inside that tie.` : "The tie lies beyond the ranks shown."}`);
@@ -529,7 +529,7 @@ export class Viewer {
       list.append(li);
     }
     const back = this.trail && (this.trail.text !== st.text || this.trail.pos !== p) ? h("a", { class: "vw-back", href: this.hashFor(this.trail), text: `← back to text ${this.trail.text}, position ${nf.format(this.trail.pos)}` }) : null;
-    const listHead = h("p", { class: "vw-list-head" }, h("b", { text: `The ${nb.length} nearest` }), ` of the ${n}, with similarity (1 − cosine distance between the two memory-weighted pasts). `, h("span", { class: "vw-small", text: "Bold prediction = also in the clicked token's top 3." }));
+    const listHead = h("p", { class: "vw-list-head" }, h("b", { text: `${nb.length} shown of ${n} counted` }), `. Compared by cosine similarity between the two memory-weighted pasts. `, h("span", { class: "vw-small", text: "Bold prediction = also in the clicked token's top 3." }));
     card.replaceChildren(...[head, back, sub, counts, ...notes.map(t => h("p", { class: "vw-tienote", text: t })), listHead, ruler, list].filter(Boolean));
     card.dataset.p = p;
     // hovering any earlier token highlights the same lag in every row
@@ -553,19 +553,19 @@ export class Viewer {
       h("tbody", {}, ...text.segments.map((s, i) => h("tr", {}, h("td", { text: i + 1 }), h("td", { text: s.source }), h("td", { text: `${s.position_start}–${s.position_stop - 1}` }), h("td", { text: `${s.source_start + 1}–${s.source_stop}` }))))) : null;
     body.replaceChildren(
       h("section", {}, h("h3", { text: "This text" }), dl([
-        ["Text", `${t.id}${t.kind === "stitched" ? ` (stitched, ${text.schedule} segments)` : ""}`], ["Subset", text.subset || (t.kind === "stitched" ? Object.entries(t.info.sources || {}).map(([k, v]) => `${k}: ${v || "unknown"}`).join(" · ") || "two sources, A and B (see segments)" : "—")],
+        ["Text", `${t.id}${t.kind === "stitched" ? ` (spliced, ${text.schedule} segments)` : ""}`], ["Subset", text.subset || (t.kind === "stitched" ? Object.entries(t.info.sources || {}).map(([k, v]) => `${k}: ${v || "unknown"}`).join(" · ") || "two sources, A and B (see segments)" : "—")],
         ["File index", text.file_index ?? "—"], ["SHA-256 of the document", h("code", { text: text.text_sha256 || "—" })],
-        ["Tokens", `${nf.format(text.token_ids.length)}; positions ${range.start}–${range.stop - 1} are analysed, earlier ones are burn-in`]]), segs),
+        ["Tokens", `${nf.format(text.token_ids.length)}; positions ${range.start}–${range.stop - 1} are analysed, earlier ones are history only`]]), segs),
       h("section", {}, h("h3", { text: "This setting" }), dl([
         ["Model", `${meta.id || st.model}${meta.revision ? ` @ ${String(meta.revision).slice(0, 10)}` : ""}`], ["Layer", `hidden state ${st.layer} (block output)`],
-        ["Memory", `${MEM_WORDS[st.memory]}, weight a = ${setting.alpha} per step back`], ["Accounting", ACC.find(a => a.key === st.acc).words],
-        ["Reading", "cosine: each centred token vector scaled to unit length, then the memory-weighted past scaled to unit length"], ["Candidates", `${nf.format(this.pools[setting.candidate_pool].size)} tokens (${setting.candidate_pool === "corpus" ? "every analysed token of every text" : "this stitched text only"})`],
+        ["Memory", `${MEM_WORDS[st.memory]}, weight a = ${setting.alpha} per step back`], ["Settings", ACC.find(a => a.key === st.acc).label],
+        ["Compared by", "angle (cosine): each token vector has one average removed and is scaled to length 1, then each memory-weighted past is scaled to length 1"], ["Candidates", `${nf.format(this.pools[setting.candidate_pool].size)} tokens (${setting.candidate_pool === "corpus" ? "every analysed token of every text" : "this spliced text only"})`],
         ["Stored file", h("code", { text: setting.source })]])),
       h("section", {}, h("h3", { text: "This text under this setting" }), dl([
         ["Mean shares over its tokens", q ? `${pct(n / q)} same text within 64 · ${pct(f / q)} same text far · ${pct(o / q)} other texts` : "—"],
-        ["Tokens with fewer than 64 eligible neighbours", nf.format(short)]])),
-      h("section", {}, h("h3", { text: "Not in the viewer" }), h("p", {}, "The dot reading (loud tokens count more), the other-texts-only accounting, own-text mean without the window, and layers 2, 6, 10 and 14 are summarised in ",
-        h("a", { href: "#experiments/x-e1-neighbours", text: "Experiments, E1" }), ". The viewer shows the 8 nearest of the 64 for each token; the colours use all 64.")));
+        ["Tokens with fewer than 64 allowed neighbours", nf.format(short)]])),
+      h("section", {}, h("h3", { text: "Not in the viewer" }), h("p", {}, "The 'dot' setting (distance between histories with vector lengths kept, so loud tokens count more), own text barred, each text's own average removed with nothing barred, and layers 2, 6, 10 and 14 are summarised in ",
+        h("a", { href: "#experiments/x-e1-neighbours", text: "Experiments, E1" }), `. Up to ${this.m.viewer_k} shown of 64 counted per token; the colours use all counted neighbours.`)));
   }
 
   prefetch() {

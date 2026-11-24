@@ -1,12 +1,12 @@
-// Live charts: <figure class="live" data-live="lines|heatmap|stack|points|table|bars|dots|hist"
+// Live charts: <figure class="live" data-live="lines|heatmap|stack|points|table|bars|dots|hist|agreement|paired"
 // data-src="assets/x/<id>.json#<key>" [data-height="240"]><div class="live-body"></div><figcaption>…</figcaption></figure>.
 // The payload is one chart object, or {"panels": [{title, sub, …chart…}], cols, shared} for small multiples, which share
 // one legend drawn above them. Colours are named by role and read from tokens.css, so both themes work:
 // other / far / near (where neighbours come from), corpus / own (the centring), ink / mute (neutral series).
-import { h, lineChart, heatmap, barChart, dotChart, histChart, stackChart, pointChart, tableChart } from "./charts.js";
+import { h, lineChart, heatmap, barChart, dotChart, histChart, stackChart, pointChart, tableChart, agreementChart, pairedChart } from "./charts.js";
 
 const css = (v, d) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || d;
-const ROLE = { other: "--o-other", far: "--o-far", near: "--o-near", corpus: "--c-corpus", own: "--c-own", ink: "--fg", mute: "--mute", mute2: "--mute-2", accent: "--accent" };
+const ROLE = { other: "--o-other", far: "--o-far", near: "--o-near", corpus: "--c-corpus", own: "--c-own", ink: "--fg", mute: "--mute", mute2: "--mute-2", wash: "--line", accent: "--accent" };
 const colour = (name, i = 0) => name && ROLE[name] ? css(ROLE[name], "#888") : name && name.startsWith("#") ? name : css(["--fg", "--mute", "--mute-2"][i % 3], "#555");
 const hexRgb = x => { const v = parseInt(x.replace("#", ""), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; };
 const mix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
@@ -35,6 +35,8 @@ const RENDER = {
   },
   heatmap(box, o, H) { return heatmap(box, { ...o, height: H, zfmt: o.fmt === "pct" ? (v => `${Math.round(100 * v)}%`) : undefined, color: t => seq(t) }); },
   stack(box, o, H) { return stackChart(box, { ...o, height: H || o.height || 210, colors: (o.segcolors || []).map(c => colour(c)) }); },
+  agreement(box, o, H) { return agreementChart(box, { ...o, height: H, series: paint(o.series), colors: o.segcolors.map(c => colour(c)) }); },
+  paired(box, o) { return pairedChart(box, { ...o, series: paint(o.series) }); },
   points(box, o, H) { return pointChart(box, { ...o, height: H || o.height || 230, series: paint(o.series) }); },
   table(box, o) { return tableChart(box, o); },
   bars(box, o, H) { return barChart(box, { ...o, ytitle: o.ylabel, height: H || o.height || 220, series: paint(o.series) }); },
@@ -45,19 +47,26 @@ const RENDER = {
 // one legend for a whole figure: segments (stack), series (lines, points)
 function legendFor(kind, o) {
   const first = o.panels ? o.panels[0] : o, items = [];
-  if (kind === "stack") {
+  if (!first) return null;
+  if (kind === "stack" || kind === "agreement") {
     const segs = o.segments || first.segments || [], cols = o.segcolors || first.segcolors || [];
     segs.forEach((s, i) => items.push(h("span", { class: "k" }, h("i", { class: "box", style: { background: colour(cols[i]) } }), s)));
-    if ((o.panels || [o]).some(p => p.whisker && p.whisker.some(Boolean))) items.push(h("span", { class: "k" }, h("i", { class: "whisk" }), `5–95% over documents (${segs[0]})`));
+    if ((o.panels || [o]).some(p => !p.companion && p.whisker && p.whisker.some(Boolean))) items.push(h("span", { class: "k" }, h("i", { class: "whisk" }), `5–95% over documents (${segs[0]})`));
     if ((o.panels || [o]).some(p => p.zero_near)) items.push(h("span", { class: "k" }, h("i", { class: "hatch", style: { "--c": colour(cols[cols.length - 1]) } }), `${segs[segs.length - 1]}: zero by rule`));
-  } else if (kind === "lines" || kind === "points") {
+    if (first.companion) {
+      items.push(h("span", { class: "k" }, h("i", { class: "box", style: { width: "13px", background: colour("ink") } }), "Wide: model"));
+      items.push(h("span", { class: "k" }, h("i", { class: "box", style: { width: "6px", opacity: ".6", background: colour("ink") } }), "Narrow: same tokens, random vectors"));
+    }
+  }
+  if (["lines", "points", "agreement", "paired"].includes(kind)) {
     (first.series || []).forEach((s, i) => {
       const c = colour(s.color, i);
-      const key = kind === "points" ? h("i", { class: `mk ${s.marker || "circle"}`, style: { "--c": c } })
+      const key = kind === "paired" ? h("i", { class: `mk ${i ? "square" : "circle hollow"}`, style: { "--c": c } })
+        : kind === "points" ? h("i", { class: `mk ${s.marker || "circle"}`, style: { "--c": c } })
         : h("i", { class: "ln", style: { background: s.dash ? `repeating-linear-gradient(90deg, ${c} 0 ${s.dash === "dot" ? 2 : 4}px, transparent ${s.dash === "dot" ? 2 : 4}px ${s.dash === "dot" ? 5 : 7}px)` : c } });
       items.push(h("span", { class: "k" }, key, s.name));
     });
-    if (kind === "points" && (o.panels || [o]).some(p => p.series.some(s => (s.hollow || []).some(Boolean)))) items.push(h("span", { class: "k" }, h("i", { class: "mk circle hollow", style: { "--c": colour("mute") } }), "hollow: ineligible (coverage rule)"));
+    if (kind === "points" && (o.panels || [o]).some(p => p.series.some(s => (s.hollow || []).some(Boolean)))) items.push(h("span", { class: "k" }, h("i", { class: "mk circle hollow", style: { "--c": colour("mute") } }), "hollow: fails the completeness rule (E3)"));
     if (kind === "points") items.push(h("span", { class: "k" }, h("i", { class: "whisk" }), "5–95% over documents"));
     if ((first.series || []).some(s => s.band)) items.push(h("span", { class: "k" }, h("i", { class: "band" }), "band: middle half over heads"));
   }
@@ -80,19 +89,24 @@ export async function render(fig) {
     if (lg) body.append(lg);
     if (Array.isArray(o.panels)) {
       if (!o.panels.length) { body.append(h("p", { class: "chart-sub", text: "No data in this build." })); return; }
-      const grid = h("div", { class: "chart-panels", style: { "--cols": o.cols || Math.min(o.panels.length, 2) } });
+      const grid = h("div", { class: `chart-panels${o.mobile_stack ? " mobile-stack" : ""}`, style: { "--cols": o.cols || Math.min(o.panels.length, 2) } });
       body.append(grid);
       const boxes = o.panels.map(p => { const b = h("div", { class: "chart-box" }); grid.append(h("div", { class: "chart-panel" }, p.title ? h("p", { class: "chart-title", text: p.title }) : null, p.sub ? h("p", { class: "chart-sub", text: p.sub }) : null, b)); return b; });
-      const shared = k => ({ categories: o.categories, segments: o.segments, segcolors: o.segcolors, ylabel: o.ylabel, xlabel: o.xlabel, short: o.short })[k];
+      const shared = ["categories", "segments", "segcolors", "ylabel", "xlabel", "short", "maxAgreement"];
       const reserveTop = o.panels.some(p => p.notes || p.zero_near);
-      const draw = () => o.panels.forEach((p, i) => { const q = { ...p, reserveTop }; for (const k of ["categories", "segments", "segcolors", "ylabel", "xlabel", "short"]) if (q[k] == null && shared(k) != null) q[k] = shared(k); fn(boxes[i], q, H); });
+      const draw = () => o.panels.forEach((p, i) => {
+        const q = { ...p, reserveTop };
+        for (const k of shared) if (q[k] == null && o[k] != null) q[k] = o[k];
+        fn(boxes[i], q, H);
+      });
       draw(); onResize(body, draw);
     } else {
       const box = h("div", { class: "chart-box" }); body.append(box);
       const draw = () => fn(box, o, H);
       draw(); if (kind !== "table") onResize(body, draw);
     }
-    if (o.ylabel && kind === "stack") body.prepend(h("p", { class: "chart-sub chart-ytitle", text: `↑ ${o.ylabel}` }));
+    if (kind === "agreement") body.append(h("p", { class: "chart-sub coverage-key", text: "Groups used are listed under each memory. Far = same text, more than 64 tokens away. Frequent (freq.) = the neighbour's token occurs 20 or more times among the analysed tokens." }));
+    if (o.ylabel && ["stack", "paired", "agreement"].includes(kind)) body.prepend(h("p", { class: "chart-sub chart-ytitle", text: `${kind === "paired" ? "" : "↑ "}${o.ylabel}` }));
   } catch (e) {
     console.error("live chart:", src, e);
     body.replaceChildren(h("div", { class: "live-error", text: `Chart not drawn: ${e.message}` }));

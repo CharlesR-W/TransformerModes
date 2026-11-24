@@ -6,7 +6,7 @@ let viewer = null;
 function resolveHash() {
   const raw = decodeURIComponent(location.hash.slice(1));
   const qi = raw.indexOf("?"), path = qi < 0 ? raw : raw.slice(0, qi), qs = qi < 0 ? "" : raw.slice(qi + 1);
-  let [tab, id] = path.split("/");
+  let [tab, id] = path ? path.split("/") : ["experiments", null];
   if (!TABS.includes(tab)) {       // a bare #id: the tab that holds it, else the viewer
     const e = tab && document.getElementById(tab), p = e && e.closest(".tab-panel");
     id = p ? tab : null; tab = p ? p.dataset.tab : "viewer";
@@ -34,8 +34,8 @@ async function route() {
     return;
   }
   document.title = `${tab[0].toUpperCase()}${tab.slice(1)} · TransformerModes`;
-  if (tab === "experiments") { xpView(id, anchor); figures(); return; }
-  figures();
+  if (tab === "experiments") { xpView(id, anchor); figures(); renderVisibleSoon(); return; }
+  figures(); renderVisibleSoon();
   xp.cur = undefined;
   if (anchor) scrollToAnchor(anchor); else window.scrollTo(0, 0);
 }
@@ -112,6 +112,15 @@ function figures() {
     else io.observe(f);
   });
 }
+// Also draw every visible figure soon after load, not only when scrolled near, so full-page captures and printing
+// show them (figures in hidden tabs or closed <details> wait, since they have no width yet).
+function renderVisibleSoon() {
+  const idle = window.requestIdleCallback || (fn => setTimeout(fn, 200));
+  idle(() => document.querySelectorAll("#tab-experiments figure.live, #tab-method figure.live").forEach(f => {
+    if (!f.dataset.rendered && f.offsetParent !== null && !f.closest("details:not([open])")) { io?.unobserve(f); renderFigure(f); }
+  }));
+}
+window.addEventListener("beforeprint", () => document.querySelectorAll("figure.live").forEach(f => { if (f.offsetParent !== null && !f.closest("details:not([open])")) renderFigure(f); }));
 async function renderFigure(f) {
   if (f.dataset.rendered) return; f.dataset.rendered = "1";
   try { await (await import("./live.js")).render(f); } catch (e) { console.error("figure:", e); }

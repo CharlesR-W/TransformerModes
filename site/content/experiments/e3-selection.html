@@ -1,97 +1,85 @@
 <section class="experiment" id="x-e3-selection">
-<h2>What does the screen select for Stage B, and why?</h2>
-<p class="x-scope"><b>Tested:</b> {{fact:x.e3-selection.candidates}} candidate memory constructions (memory 2, 8, 64 or
-whole × cosine or dot reading × corpus or own-text mean × no mask or the window), both models, all
-{{fact:x.e3-selection.sites}} measured layers, on the rows Stage B would solve: the sampled suffix queries against
-every token in the last 512 positions of every text. The rules were fixed before any number existed.</p>
+<h2>What did this decide for the next stage?</h2>
+<p class="x-scope"><b>Tested:</b> {{fact:x.e3-selection.candidates}} candidate ways to build a memory-based similarity graph: memories 2, 8, 64, or the whole past; compared by angle (cosine) or by the distance between histories with vector lengths kept (the "dot" setting, where louder vectors count more); one average removed or each text's own average removed; nothing barred, or nearby tokens barred (tokens within 64 positions in the same text not allowed as neighbours). Evaluated on both models at all {{fact:x.e3-selection.sites}} measured layers. The tests use <b>late queries</b>: 2,048 tokens sampled from the last 512 positions of each text. They are compared with all 16,384 <b>late candidates</b>, the tokens in those last 512 positions of the {{fact:x.viewer.texts}} texts. This is the pool the old Stage B graph would have used. The selection rule was written before any results existed.</p>
 
-<p class="x-answer"><strong>The fixed rule picked {{fact:x.e3-selection.m}} as Stage B's memory construction, with
-{{fact:x.e3-selection.l}} as its local counterpart; {{fact:x.e3-selection.passing}} of the
-{{fact:x.e3-selection.candidates}} candidates passed in both models.</strong> The rule looks first at candidates that
-subtract the corpus mean and forbid nothing; no cosine candidate passes there (memory 2 stays too close to no memory,
-memory 8 meets all four conditions together at only {{fact:x.e3-selection.cand.cosine_c_8_none.m1.passing}} of
-{{fact:x.e3-selection.m1.name}}'s {{fact:x.e3-selection.sites}} layers where {{fact:x.e3-selection.required}} are
-needed, and at the longer memories more than a quarter of the walk weight sits within 64 positions at most of those
-layers), and of the two dot
-candidates that do, memory 64 has the smaller overlap with the text-only inputs
-({{fact:x.e3-selection.cand.dot_c_64_none.worst}} against {{fact:x.e3-selection.cand.dot_c_8_none.worst}} at worst).
-The screen weighs each row by walk weight over the last 512 tokens of every text, which spreads well beyond the 64
-nearest: for the chosen construction {{fact:x.e3-selection.m.m1.screen_mass_other}} of that weight lies in other texts
-in {{fact:x.e3-selection.m1.name}} ({{fact:x.e3-selection.m.m2.screen_mass_other}} in {{fact:x.e3-selection.m2.name}}),
-against {{fact:x.e3-selection.m.m1.screen_top_other}} of the 64 nearest on the same rows and
-{{fact:x.e3-selection.m.m1.census_other}} in the full census.</p>
+<p class="x-answer"><strong>The rule written in advance picked {{fact:x.e3-selection.m}}. The project owner set that pick aside and redesigned Stage B instead.</strong> Out of {{fact:x.e3-selection.candidates}} candidates, {{fact:x.e3-selection.passing}} passed in both models, clearing all four tests together on at least {{fact:x.e3-selection.required}} of the {{fact:x.e3-selection.sites}} measured layers in each.</p>
 
-<figure class="live" data-live="stack" data-src="assets/x/e3-selection.json#lead" data-height="210">
+<h3>The four tests</h3>
+<p>The tests look at the graph the old Stage B would have built. In that graph each late query spreads a total <b>graph weight</b> of 1 over all late candidates, more to the more similar ones. The spread is tuned to be about as concentrated as an even split over 64 tokens. At each layer a candidate passes if: (1) at least a quarter of the graph weight goes to other texts; (2) not too much goes to nearby tokens (at most {{fact:x.e3-selection.m.near_mass_limit}} within 64 positions, or, when nearby tokens are barred, barring removes at most half); (3) memory changes the neighbours (at most half of the 64 nearest are the same as with no memory); and (4) at most half of the 64 nearest match those from either text-only input. Text-only inputs are vectors that know only which token is where: a fixed random vector per token id, or the model's input embeddings.</p>
+
+<h3>How the rule decided</h3>
+<p>The rule preferred candidates with no extra fixes (one average removed and nothing barred), then angle over lengths kept. No angle-based candidate passed without extra fixes. With angle comparison, memory 2 stayed too close to no memory; memory 8 passed on only {{fact:x.e3-selection.cand.cosine_c_8_none.m1.passing}} of {{fact:x.e3-selection.m1.name}}'s {{fact:x.e3-selection.sites}} layers; and longer memories put too much graph weight within 64 tokens. With lengths kept, two candidates passed without extra fixes, at memories 8 and 64. Memory 64 won because its neighbours overlapped less with the text-only inputs. Its worst overlap (the largest with either text-only input, at any layer, in either model) was {{fact:x.e3-selection.cand.dot_c_64_none.worst}}, against {{fact:x.e3-selection.cand.dot_c_8_none.worst}} for memory 8.</p>
+<p>Even that pick barely cleared the bar. It passed in {{fact:x.e3-selection.m1.name}} on exactly {{fact:x.e3-selection.cand.dot_c_64_none.m1.passing}} of {{fact:x.e3-selection.sites}} layers, the minimum (and {{fact:x.e3-selection.cand.dot_c_64_none.m2.passing}} in {{fact:x.e3-selection.m2.name}}). Its closest call was layer 10, where {{fact:x.e3-selection.m.m1.layer10.near_mass}} of its graph weight sat within 64 tokens, against a limit of {{fact:x.e3-selection.m.near_mass_limit}}. Below, <b>M</b> is the rule's pick, <b>L</b> is the same lengths-kept setup with no memory, and <b>R</b> is the angle-based reference with no memory.</p>
+<p>No second construction was added: there was no eligible passing alternative. The rule allowed one optional extra example, chosen by E2's prediction advantage. To be eligible, a passing alternative needed E2's completeness rule to hold at all {{fact:x.e3-selection.m.m1.layers}} E2 layers in both models (every non-empty group with enough stand-ins, and at least half of all pairs with one). None did. Had any been eligible, the one with the best advantage would have been added only if its resampling 5th percentile was above zero.</p>
+
+<h3>Why graph weight and the 64 nearest disagree</h3>
+<p>Graph weight does not go only to the 64 nearest tokens. In high-dimensional space, thousands of tokens are only moderately similar and sit at nearly equal distances. Each gets a sliver of weight, and together those slivers can outweigh the few close ones: about half or more of the weight ends up in other texts.</p>
+<p>Averaged across all {{fact:x.e3-selection.sites}} measured layers for the rule's pick (M), {{fact:x.e3-selection.m.m1.screen_mass_other}} of graph weight in {{fact:x.e3-selection.m1.name}} lands in other texts ({{fact:x.e3-selection.m.m2.screen_mass_other}} in {{fact:x.e3-selection.m2.name}}). On those exact same late queries and late candidates, only {{fact:x.e3-selection.m.m1.screen_top_other}} of the 64 nearest tokens sit in other texts. For the same pick (lengths kept) over all {{fact:x.viewer.pool_tokens}} analysed tokens instead of the late pool, the share is {{fact:x.e3-selection.m.m1.census_other}}. Under angle comparison at the whole past, the split is even sharper: {{fact:x.e3-selection.flat.m1.walk_other}} of graph weight in {{fact:x.e3-selection.m1.name}} sits in other texts, versus {{fact:x.e3-selection.flat.m1.top_other}} of the 64 nearest on the same queries.</p>
+
+<figure class="live x-wide-fig" data-live="paired" data-src="assets/x/e3-selection.json#paired" data-height="230">
   <div class="live-body"></div>
-  <figcaption><b>Plotted:</b> for the reference construction R (no memory, cosine, corpus mean: DepthEmbedding's), the
-  chosen construction M and its local counterpart L (M with no memory), the walk weight Stage B's dense row would put on
-  other texts (grey), the same text far away (blue) and within 64 positions (orange), averaged over the sampled suffix
-  queries; one panel per model, layer 8. Hover a bar for the top-64 shares on the same rows.</figcaption>
+  <figcaption><b>Plotted:</b> paired comparison on the exact same late queries and late candidates, averaged over all {{fact:x.e3-selection.sites}} measured layers, one panel per model. Each row compares the share of the 64 nearest tokens in other texts (hollow grey circle) with the share of graph weight in other texts (dark square). The first five rows compare by angle at the five memories (one average removed, no tokens barred); the bottom row, set apart, is the rule's pick (M: lengths kept, memory 64).</figcaption>
 </figure>
 
 <div class="x-numbers">
-  <div><b>{{fact:x.e3-selection.recommend}}</b><span>the prespecified screen's result</span><small>analysis/stage_b_selection.json</small></div>
-  <div><b>{{fact:x.e3-selection.passing}} of {{fact:x.e3-selection.candidates}}</b><span>candidates passed in both models</span><small>at least {{fact:x.e3-selection.required}} of {{fact:x.e3-selection.sites}} layers each</small></div>
-  <div class="x-num-text"><b>{{fact:x.e3-selection.m}}</b><span>the chosen construction M</span><small>least intervention first, then cosine, then text-only overlap, then shorter memory</small></div>
-  <div class="x-num-text"><b>{{fact:x.e3-selection.x}}</b><span>the one extra example X, screened for prediction concordance</span><small>{{fact:x.e3-selection.x_reason}}</small></div>
+  <div><b>{{fact:x.e3-selection.passing}} of {{fact:x.e3-selection.candidates}}</b><span>candidates passed all four tests in both models</span><small>at least {{fact:x.e3-selection.required}} of {{fact:x.e3-selection.sites}} layers each</small></div>
+  <div class="x-num-text"><b>{{fact:x.e3-selection.m}}</b><span>picked by the rule written in advance (M)</span><small>set aside; Stage B redesigned</small></div>
+  <div><b>{{fact:x.e3-selection.m.m1.screen_mass_other}} vs {{fact:x.e3-selection.m.m1.screen_top_other}}</b><span>other-text share on the same late queries: graph weight vs 64 nearest</span><small>{{fact:x.e3-selection.m1.name}} · picked setup (M) · {{fact:x.e3-selection.sites}}-layer mean</small></div>
+  <div><b>{{fact:x.e3-selection.m.m1.score}} vs {{fact:x.e3-selection.l.m1.score}}</b><span>prediction advantage (E2), for comparison: M vs L (lengths kept, no memory)</span><small>{{fact:x.e3-selection.m1.name}} · {{fact:x.e3-selection.m.m1.layers}}-layer mean</small></div>
 </div>
+
+<h3>What happens next: a redesigned Stage B</h3>
+<p>After seeing Stage A's results, the project owner chose not to run Stage B on the rule's pick. The owner judged barring nearby tokens and removing each text's own average to be fixes for how the texts were sampled. The pick itself used neither fix; the owner changed what counts as a data point, from many positions per document to one independent chunk per document. He also asked for a construction that uses the model's prediction. For comparison, on E2's prediction advantage across the {{fact:x.e3-selection.m.m1.layers}} E2 layers, the pick (M) scores {{fact:x.e3-selection.m.m1.score}} versus {{fact:x.e3-selection.l.m1.score}} for the same lengths-kept setup with no memory (L) in {{fact:x.e3-selection.m1.name}}, and {{fact:x.e3-selection.m.m2.score}} versus {{fact:x.e3-selection.l.m2.score}} in {{fact:x.e3-selection.m2.name}}.</p>
+<p>Stage B has been redesigned around independent text chunks—each the 64 tokens ending at a random cut in a different Pile test document—so nearby tokens from the same document cannot take over the graph. The new design removes one global average, compares by angle (cosine) with no tokens barred (deferring the lengths-kept setting), tests three summaries of each chunk (the state at the cut, the recent past at memory 8, and the average over the last 64 states), and builds the model's next-token prediction at the cut into the graph itself. This design is written and reviewed, not yet run, and neither the rule's pick nor the all-texts graph will be computed. <a href="https://github.com/CharlesR-W/TransformerModes/blob/main/SPEC_B.md">Read the Stage B design (SPEC_B.md) →</a></p>
 
 <h3 id="x-e3-selection-what">What was computed</h3>
 <div class="x-tablewrap">
 <table class="x-defs">
-  <thead><tr><th>Quantity</th><th>Definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <thead><tr><th>Test</th><th>Plain description and rule</th><th>Symbols and choices</th><th>Code</th></tr></thead>
   <tbody>
-  <tr><td>Condition 1: elsewhere</td><td>$\overline{\sum_{j \in \text{other texts}} q(j \mid i)} \ge 0.25$</td>
-      <td>mean over sampled suffix queries of the walk weight on other texts</td><td>exp1/select_b.py: screen_site</td></tr>
-  <tr><td>Condition 2: not mostly nearby</td><td>window: removed weight $\le 0.5$; no mask: weight within 64 positions $\le 0.25$</td>
-      <td>the window must not have removed most of the row; without it, the row must not sit mostly next to the token</td><td>exp1/select_b.py: screen_site</td></tr>
-  <tr><td>Condition 3: memory changes it</td><td>$\overline{\max|A \cap A_\text{none}|} / 64 \le 0.5$</td>
-      <td>$A_\text{none}$: the same accounting with no memory; the largest overlap any tie-breaking allows, so a candidate cannot pass by tie-breaking</td><td>exp1/select_b.py: screen_site</td></tr>
-  <tr><td>Condition 4: not text alone</td><td>$\overline{\max|A \cap A_\text{adv}|} / 64 \le 0.5$ for both adversaries</td>
-      <td>adversaries: random vectors per token id, and the embedding output, under the same memory and accounting</td><td>exp1/select_b.py: screen_site</td></tr>
-  <tr><td>Passing</td><td>all four conditions at the same layer, for at least {{fact:x.e3-selection.required}} of {{fact:x.e3-selection.sites}} layers, in both models</td>
-      <td>then ordered: corpus mean without mask, with window, own-text mean without, with; cosine before dot; smaller text-only overlap; shorter memory</td><td>exp1/select_b.py: select</td></tr>
+  <tr><td>Test 1: enough weight in other texts</td><td>At least a quarter of the average graph weight must sit on tokens from other texts.<br>$\overline{\sum_{j \in \text{other texts}} q(j \mid i)} \ge 0.25$</td>
+      <td>$q(j \mid i)$: graph weight from late query $i$ to late candidate $j$, averaged over the sampled late queries</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Test 2: not mostly nearby</td><td>Without barring nearby tokens, at most {{fact:x.e3-selection.m.near_mass_limit}} of graph weight may sit within 64 tokens; when barring them, the bar may remove at most half of the unbarred weight.<br>unbarred: $\overline{w_\text{near}} \le 0.25$ · barred: $\overline{w_\text{removed}} \le 0.5$</td>
+      <td>$w_\text{near}$: a query's graph weight on same-text tokens within 64 positions; $w_\text{removed}$: the unbarred graph weight removed by barring nearby tokens</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Test 3: memory changes the neighbours</td><td>At most half of the 64 nearest late tokens may stay the same as with no memory.<br>$\overline{\max|A \cap A_\text{none}|} / 64 \le 0.5$</td>
+      <td>$A$: candidate's 64 nearest late tokens; $A_\text{none}$: same setup with no memory; uses the largest overlap any tie-breaking allows</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Test 4: not text alone</td><td>At most half of the 64 nearest late tokens may match either text-only input (random vectors per token, or input embeddings).<br>$\overline{\max|A \cap A_\text{text}|} / 64 \le 0.5$</td>
+      <td>$A_\text{text}$: 64 nearest late tokens from each text-only input under the same memory and settings; largest overlap ties allow</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Passing and ranking</td><td>Pass all four tests at the same layer on at least {{fact:x.e3-selection.required}} of {{fact:x.e3-selection.sites}} layers in both models.</td>
+      <td>ordered by: fewest fixes (one average removed and nothing barred, then nearby barred, then each text's own average, then each text's own average with nearby barred); then angle before lengths kept; then smaller worst text-only overlap; then shorter memory</td>
+      <td>exp1/select_b.py: select</td></tr>
   </tbody>
 </table>
 </div>
 
-<h3 id="x-e3-selection-table">Every candidate</h3>
-<figure class="live x-table" data-live="table" data-src="assets/x/e3-selection.json#table">
-  <div class="live-body"></div>
-  <figcaption>Each row is one candidate; per model, the layers passing all four conditions together, and on the small
-  line the layers where each condition held on its own. Rows from groups the spending cap dropped are greyed. Hover a
-  row for its source.</figcaption>
-</figure>
-
-<details class="x-more">
-  <summary>Every number behind the screen: each candidate, model and layer</summary>
+<details class="x-more" id="x-e3-selection-table">
+  <summary>Full candidate tables and layer-8 graph-weight bars <span class="x-count">(3)</span></summary>
+  <figure class="live" data-live="stack" data-src="assets/x/e3-selection.json#lead" data-height="210">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> layer-8 graph weight on other texts (grey), same text more than 64 tokens away (blue), and within 64 tokens (orange), averaged over the sampled late queries, one panel per model. Shown for the angle-based reference with no memory (R), the rule's pick (M: memory 64, lengths kept, one average removed, nothing barred), and the same lengths-kept setup with no memory (L). Hover any bar for the 64-nearest shares on the same queries.</figcaption>
+  </figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/e3-selection.json#table">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> every candidate construction (one row each); per model, the layers passing all four tests together and, underneath, the layers clearing each test on its own. Rows dropped by the spending cap are greyed out. Hover a row for its source file.</figcaption>
+  </figure>
   <figure class="live x-table" data-live="table" data-src="assets/x/e3-selection.json#sites">
     <div class="live-body"></div>
-    <figcaption>The stored values each condition compared with its threshold, per candidate, model and layer, with the
-    expected overlap beside the largest overlap the ties allow. Hover a row for its source in
-    analysis/stage_b_selection.json.</figcaption>
+    <figcaption><b>Plotted:</b> every stored value compared against the four thresholds, by candidate, model, and layer, showing expected overlap beside the largest overlap ties allow. Hover a row for its entry in <code>analysis/stage_b_selection.json</code>.</figcaption>
   </figure>
 </details>
 
 <h3 id="x-e3-selection-caveats">Caveats</h3>
 <ul class="x-caveats">
-  <li><b>The screen is geometric.</b> Passing says the neighbourhood is not mostly nearby, not memoryless and not text
-  alone; it says nothing yet about through-depth modes.</li>
-  <li><b>Condition 1 hardly selects.</b> It held at every layer in both models for
-  {{fact:x.e3-selection.cond1.cosine_c_none_full}} of the {{fact:x.e3-selection.cond1.cosine_c_none}} cosine corpus-mean
-  candidates without a mask, because the walk weight is very flat: at the whole prefix
-  {{fact:x.e3-selection.flat.m1.walk_other}} of it lies in other texts in {{fact:x.e3-selection.m1.name}} while
-  {{fact:x.e3-selection.flat.m1.top_other}} of the 64 nearest on the same rows do.</li>
-  <li><b>What the pick does not show:</b> its neighbours share the model's predictions with matched controls less than its
-  no-memory counterpart's do (concordance score {{fact:x.e3-selection.m.m1.score}} against
-  {{fact:x.e3-selection.l.m1.score}} in {{fact:x.e3-selection.m1.name}}, {{fact:x.e3-selection.m.m2.score}} against
-  {{fact:x.e3-selection.l.m2.score}} in {{fact:x.e3-selection.m2.name}}, means over the readout layers; <a
-  href="#experiments/x-e2-concordance">E2</a>). The screen is geometric and does not use this.</li>
-  <li><b>Thresholds were fixed in advance</b> (0.25 and 0.5); a candidate close to a threshold is not singled out.</li>
-  <li><b>Groups dropped by the spending cap</b> ({{fact:x.e3-selection.dropped}} here) would be greyed in the table and
-  could not pass.</li>
+  <li><b>Passing limits graph weight, not the 64 nearest.</b> At the pick's closest call (layer 10, {{fact:x.e3-selection.m1.name}}) {{fact:x.e3-selection.m.m1.layer10.near_mass}} of its graph weight was within 64 tokens, yet {{fact:x.e3-selection.m.m1.layer10.top_near}} of its 64 nearest late tokens were. Test 4 only bounds overlap with two text-only inputs. The rule tests geometry only: it does not use prediction agreement (E2) or later-stage patterns.</li>
+  <li><b>Test 1 never excluded the {{fact:x.e3-selection.cond1.cosine_c_none}} angle-based candidates with one average removed and nothing barred.</b> Because graph weight spreads thinly across many moderately similar tokens, Test 1 held at every layer in both models for {{fact:x.e3-selection.cond1.cosine_c_none_full}} of those {{fact:x.e3-selection.cond1.cosine_c_none}} candidates.</li>
+  <li><b>Thresholds were fixed in advance.</b> The limits in the table above were set before any runs, and the rule does not separate candidates far past a limit from ones right on it. The pick itself sat on a boundary: it passed in {{fact:x.e3-selection.m1.name}} on exactly {{fact:x.e3-selection.cand.dot_c_64_none.m1.passing}} of {{fact:x.e3-selection.sites}} layers, the minimum, with {{fact:x.e3-selection.m.m1.layer10.near_mass}} of its layer-10 graph weight within 64 tokens against the {{fact:x.e3-selection.m.near_mass_limit}} limit.</li>
+  <li><b>No candidate was skipped for budget reasons</b> ({{fact:x.e3-selection.dropped}} dropped in this run).</li>
 </ul>
 
-<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/select_b.py">Code: select_b.py</a> ·
-<a href="#method/census">Method: choosing Stage B's construction</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/select_b.py">Code: select_b.py</a> · <a href="#method/census">Method: census</a> · <a class="x-top" href="#experiments">All experiments</a></p>
 </section>
+

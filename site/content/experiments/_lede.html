@@ -1,10 +1,128 @@
 <div class="xp-lede">
-<p><strong>Stage A, the neighbour census.</strong> For every analysed token of {{fact:x.viewer.texts}} texts, under each
-memory and each way of accounting for which text a token comes from: are its 64 nearest tokens in other texts, far
-away in its own text, or nearby? On a fixed sample, do neighbours share the model's next-token predictions more than
-matched controls? And which memory construction, if any, should Stage B's through-depth modes use?</p>
-<p>Each entry asks one question and answers it in two or three sentences. Every number is read from the stored outputs
-when the site is built, and every token behind them can be clicked in the <a href="#viewer">Viewer</a>. An independent
-audit recomputed a sample of them from the raw activations: see <a href="#method/check">How to check</a>. Stage B
-(through-depth modes, entries E4 and E5) needs a separate approval and is not built yet.</p>
+<p class="xp-kicker">TransformerModes · Stage A</p>
+<h1>What do a language model's similar tokens have in common?</h1>
+
+<p>The long-term goal of this project is a map of what a language model does to a text, layer by layer. The plan is to
+connect the positions of tokens (a token is a word or piece of a word) whose internal states are similar, then find the
+main patterns of that graph. Whether such a map is useful depends on what "similar" ends up meaning. We wanted
+similarity to include each token's recent past, a setting we call <strong>memory</strong>. A small pilot suggested a
+catch: memory might simply make every token resemble its neighbours in the same text. The map would then say little
+more than "where am I in which document". Stage A (this site) checks that worry. It measures neighbours, graph weights
+and prediction agreement; it does not build the map. Stage B, the later stage that would build the map, is designed but
+not run. Decisions about the plan were made by the project's owner, Charles R-W.</p>
+
+<p>We ran two 1-billion-parameter language models, {{fact:x.e1-neighbours.m1.name}} and
+{{fact:x.e1-neighbours.m2.name}}. Their tokenizers split these texts into identical tokens. Each model read the first
+{{fact:x.viewer.text_tokens}} tokens of {{fact:x.viewer.texts}} long documents from the Pile test set. The documents
+come from {{fact:x.method.probe.subsets}} sources, at most four per source. We analysed each token's hidden state after
+every second block (2, 4, …, 16). The main results use the state after block {{fact:x.e1-neighbours.m1.layer}} of 16
+("layer {{fact:x.e1-neighbours.m1.layer}}"). Nothing was trained.</p>
+
+<div class="x-numbers">
+  <div><b>{{fact:x.e1-neighbours.models}} models</b><span>{{fact:x.e1-neighbours.m1.name}} and {{fact:x.e1-neighbours.m2.name}}, identical tokens on these texts</span><small>{{fact:x.viewer.arch}}</small></div>
+  <div><b>{{fact:x.viewer.texts}} texts</b><span>the first {{fact:x.viewer.text_tokens}} tokens of long Pile test documents</span><small>{{fact:x.method.probe.subsets}} sources · at most 4 per source</small></div>
+  <div><b>{{fact:x.viewer.pool_tokens}} tokens</b><span>analysed, from position {{fact:x.viewer.first_position}} on; the first {{fact:x.viewer.burn_in}} are history only</span><small>each compared with all the others</small></div>
+  <div><b>5 memories</b><span>none, about 2, about 8, about 64 tokens, or the whole past equally weighted</span><small>main results at layer {{fact:x.e1-neighbours.m1.layer}}</small></div>
+</div>
+
+<h2>How we counted neighbours</h2>
+<ol class="xp-steps">
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: vectors with the average removed, scaled to unit length">
+      <circle class="sk-line" cx="80" cy="46" r="32"/>
+      <path class="sk-ink" d="M80 46l26-19M80 46l-30 11M80 46l9 31"/>
+      <path class="sk-mute sk-dash" d="M80 46l38-28M80 46l-18 7"/>
+      <circle class="sk-dot" cx="80" cy="46" r="2.6"/>
+      <text x="80" y="93" text-anchor="middle">average removed, length 1</text>
+    </svg>
+    <strong>Prepare each token's vector.</strong> At a chosen layer, subtract one average hidden state, taken over all
+    {{fact:x.viewer.texts}} texts, so that what every token shares does not swamp the comparison. Then scale each vector
+    to length 1, so loud and quiet tokens count equally (comparison by angle, or cosine).
+  </li>
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: two pasts lined up at their right ends and compared lag by lag">
+      <g class="sk-cells"><rect x="20" y="16" width="16" height="14"/><rect x="40" y="16" width="16" height="14"/><rect x="60" y="16" width="16" height="14"/><rect x="80" y="16" width="16" height="14"/><rect x="100" y="16" width="16" height="14"/><rect class="sk-cur" x="120" y="16" width="16" height="14"/></g>
+      <g class="sk-cells"><rect x="40" y="52" width="16" height="14"/><rect x="60" y="52" width="16" height="14"/><rect x="80" y="52" width="16" height="14"/><rect x="100" y="52" width="16" height="14"/><rect class="sk-cur" x="120" y="52" width="16" height="14"/></g>
+      <g class="sk-link"><path d="M128 30v22" style="opacity:1"/><path d="M108 30v22" style="opacity:.62"/><path d="M88 30v22" style="opacity:.38"/><path d="M68 30v22" style="opacity:.24"/><path d="M48 30v22" style="opacity:.15"/></g>
+      <text x="4" y="27">t</text><text x="4" y="63">t′</text>
+      <text x="128" y="80" text-anchor="middle">now</text>
+      <text x="80" y="93" text-anchor="middle">← older steps count less</text>
+    </svg>
+    <strong>Compare two pasts end to end.</strong> To compare token <em>t</em> with token <em>t′</em>, line up their
+    histories at the right end: <em>t</em> with <em>t′</em>, <em>t</em>−1 with <em>t′</em>−1, and so on going back. Add
+    the step-by-step similarities, with weights that fade by a fixed factor per step. <strong>Memory</strong> sets how
+    fast they fade, that is, how far back the comparison looks: none, about 2, about 8, about 64 tokens, or the whole
+    past equally weighted. Then divide by the size of each weighted past, so the result is the cosine between the two
+    weighted pasts. With no memory, only the two current vectors are compared; each already reflects earlier text,
+    through attention. Because each step pairs matching lags, a token is never compared with its own position, so
+    tokens <em>t</em> and <em>t</em>+1 are not similar just because their pasts overlap.
+  </li>
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: a query token and the ring of its nearest tokens">
+      <g class="sk-pts"><circle cx="18" cy="20" r="2.4"/><circle cx="34" cy="70" r="2.4"/><circle cx="50" cy="14" r="2.4"/><circle cx="140" cy="18" r="2.4"/><circle cx="148" cy="64" r="2.4"/><circle cx="122" cy="80" r="2.4"/><circle cx="24" cy="46" r="2.4"/><circle cx="132" cy="44" r="2.4"/><circle cx="58" cy="78" r="2.4"/><circle cx="110" cy="10" r="2.4"/></g>
+      <g class="sk-pts sk-in"><circle cx="70" cy="38" r="2.6"/><circle cx="92" cy="34" r="2.6"/><circle cx="96" cy="54" r="2.6"/><circle cx="74" cy="58" r="2.6"/><circle cx="64" cy="48" r="2.6"/><circle cx="86" cy="62" r="2.6"/></g>
+      <circle class="sk-ring" cx="80" cy="46" r="23"/>
+      <circle class="sk-q" cx="80" cy="46" r="3.6"/>
+      <text x="80" y="93" text-anchor="middle">the 64 most similar</text>
+    </svg>
+    <strong>Take the 64 most similar tokens.</strong> The first {{fact:x.viewer.burn_in}} tokens of each text are part of
+    later tokens' histories, but are never selected as queries or neighbours. For each of the {{fact:x.viewer.pool_tokens}} remaining
+    tokens, find the 64 most similar among all the others: from any text, earlier or later in the passage.
+  </li>
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: the 64 neighbours sorted into three places, as one stacked bar">
+      <rect class="sk-other" x="14" y="30" width="62" height="20"/><rect class="sk-far" x="76" y="30" width="38" height="20"/><rect class="sk-near" x="114" y="30" width="32" height="20"/>
+      <text x="45" y="64" text-anchor="middle">other text</text><text x="95" y="64" text-anchor="middle">far</text><text x="130" y="64" text-anchor="middle">near</text>
+      <path class="sk-mute" d="M78 70v4h66v-4"/><text x="111" y="84" text-anchor="middle">same text</text>
+      <text x="80" y="20" text-anchor="middle">shares of the 64</text>
+    </svg>
+    <strong>Sort the 64 by where they sit.</strong> Each neighbour is in another text, in the same text more than 64
+    tokens away, or in the same text within 64 tokens (before or after). Average those shares over all analysed tokens.
+    If the 64 were drawn at random, {{fact:x.e1-neighbours.m1.c.mem_none.chance_other}} would sit in other texts.
+  </li>
+</ol>
+
+<h2>Three findings</h2>
+
+<p class="xp-finding"><strong>Memory pulls neighbours into the same text, and right next door.</strong> Even with no
+memory, most of a token's 64 nearest tokens sit in its own text: {{fact:x.e1-neighbours.m1.c.mem_none.own}} in
+{{fact:x.e1-neighbours.m1.name}} and {{fact:x.e1-neighbours.m2.c.mem_none.own}} in {{fact:x.e1-neighbours.m2.name}}
+at layer {{fact:x.e1-neighbours.m1.layer}}, where chance would put {{fact:x.e1-neighbours.m1.c.mem_none.chance_other}}
+in other texts. Memory moves them right next door: in {{fact:x.e1-neighbours.m1.name}} the share within 64 tokens goes
+from {{fact:x.e1-neighbours.m1.c.mem_none.near}} with no memory to {{fact:x.e1-neighbours.m1.c.mem_64.near}} at memory
+64. Now give each token a fixed random vector instead and run the same comparison. At memory 64 those vectors still keep
+{{fact:x.e1-neighbours.random.mem_64.own}} of neighbours in the same text, because texts reuse their vocabulary. But
+they put only {{fact:x.e1-neighbours.random.mem_64.near}} within 64 tokens, against the model's
+{{fact:x.e1-neighbours.m1.c.mem_64.near}}. At the whole past, random vectors already put
+{{fact:x.e1-neighbours.random.mem_whole.near}} within 64 tokens. <a href="#experiments/x-e1-neighbours">E1: Where are a token's most similar tokens? →</a></p>
+
+<p class="xp-finding"><strong>Neighbours agree on what comes next, until memory grows.</strong> With no memory, a
+token's neighbours share its top next-token prediction about twice as often as stand-ins do:
+{{fact:x.e2-concordance.m1.c.mem_none.top1}} versus {{fact:x.e2-concordance.m1.c.mem_none.top1_control}} in
+{{fact:x.e2-concordance.m1.name}} at layer {{fact:x.e2-concordance.m1.layer}} ({{fact:x.e2-concordance.m2.name}}:
+{{fact:x.e2-concordance.m2.c.mem_none.top1}} versus {{fact:x.e2-concordance.m2.c.mem_none.top1_control}}). A stand-in
+is another occurrence of the neighbour's token in the neighbour's text, picked at random from tokens that are not
+neighbours. If neighbour and query share a text, the stand-in must also be in the same distance band from the query as
+the neighbour. The advantage shrinks as memory grows, to
+nearly nothing for the whole past. One limit: the comparison uses only pairs that found a stand-in, in groups where at
+least half the pairs (and at least 200) found one. That is {{fact:x.e2-concordance.m1.c.mem_none.used}} of all pairs with no memory, and
+{{fact:x.e2-concordance.m1.c.mem_whole.used}} for the whole past. <a href="#experiments/x-e2-concordance">E2: Do
+similar tokens agree about what comes next? →</a></p>
+
+<p class="xp-finding"><strong>A rule written in advance picked a setup; the owner then redesigned Stage B.</strong> A
+rule written before any results existed was applied to {{fact:x.e3-selection.candidates}} ways of building the
+similarity graph. It had four tests: enough of the graph's link weight goes to other texts; not too much goes to
+nearby tokens; memory changes the neighbours; and the neighbours differ from what the tokens alone give. It picked
+{{fact:x.e3-selection.m}}. The "dot" setting measures the distance between histories with vector lengths kept, so
+louder vectors count more. "Barred" tokens are not allowed as neighbours; "nothing barred" means every analysed token
+may be one. After seeing Stage A's findings, the owner set that pick aside. Stage B was redesigned around independent
+text chunks, one per document, compared by angle with nothing barred. The new
+Stage B is designed, not yet run. <a href="#experiments/x-e3-selection">E3: What did this decide for the next stage?
+→</a></p>
+
+<p class="x-links">The release uses the audited Stage A outputs, including the corrected prediction readout. The pilot
+(a separate local run) and the design settings are identified separately in Method. An independent
+audit recomputed the results for {{fact:x.method.audit.rows}} sample tokens, one per text, from the raw hidden states
+({{fact:x.method.audit.checks}} checks, {{fact:x.method.audit.failed}} failures). <a href="#method/check">How the numbers
+were checked</a> · <a href="#viewer">Inspect any token in the Viewer</a></p>
 </div>

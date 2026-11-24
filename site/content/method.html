@@ -1,31 +1,47 @@
 <p class="lede">Two language models read the same {{fact:x.viewer.texts}} texts once, and every hidden state is stored.
 For each token we ask where its most similar tokens are, when similarity compares two tokens' recent pasts. Stage A
-(this site) is that census and the checks around it; Stage B (through-depth modes) waits for its own approval.</p>
+(this site) counts where those similar tokens sit and checks whether they share the model's next-token predictions.
+Stage B has since been redesigned around independent chunks of text, one per document; it is written up and reviewed,
+but nothing of it has been run.</p>
 
 <p class="m-callout"><b>On this page:</b> <a href="#method/why">why neighbours first</a> ·
 <a href="#method/models">models and extraction</a> · <a href="#method/texts">texts and tokens</a> ·
-<a href="#method/similarity">similarity</a> · <a href="#method/census">the census</a> ·
+<a href="#method/similarity">similarity</a> · <a href="#method/census">what was measured</a> ·
 <a href="#method/controls">controls</a> · <a href="#method/timescales">reference timescales</a> ·
 <a href="#method/check">how to check there is nothing odd going on</a> · <a href="#method/decisions">decisions</a> ·
 <a href="#method/deferred">deferred</a> · <a href="#method/spending">spending</a></p>
 
 <h2 id="why">Why measure neighbours first</h2>
-<p>A free diagnostic on a smaller model ({{fact:x.method.pilot.model}}: four Wikipedia articles, two Python
-standard-library files and two licence texts, {{fact:x.method.pilot.tokens}} tokens each, layers 3, 6 and 9, each
-token's 64 nearest neighbours, positions from {{fact:x.method.pilot.burn}}) showed that with memory, a token's nearest
-neighbours are usually nearby in its own text. A through-depth picture built on such neighbours might then be mostly
-about position within each text; that was not measured. So the experiment first measures where neighbours are, under
-a small set of accounting choices, before paying for modes.</p>
+<p class="m-lead">The long-term aim is a map of what a language model does to a text, layer by layer. Each token is a point. Two points are linked when the model's hidden states there are similar, and the
+map is the main patterns of that graph. The owner asked that similarity should include each token's recent past, not
+only its current state. Here that is called <b>memory</b>: how far back the comparison looks, with older positions
+counting less. A free pilot on a small model ({{fact:x.method.pilot.model}}) found that with memory, a token's nearest
+neighbours moved into its own text and closer to it. The median distance to same-text neighbours (one average removed,
+range over the pilot's three layers) was {{fact:x.method.pilot.gap.mem_none}} positions with no memory, {{fact:x.method.pilot.gap.mem_8}} at memory 8, {{fact:x.method.pilot.gap.mem_64}} at memory 64
+and {{fact:x.method.pilot.gap.mem_whole}} at the whole past. A map built on such links might say little more than
+where in which text a token sits. So Stage A builds no map. It measures where neighbours are, and whether they share
+the model's next-token predictions, on two larger models and texts from the Pile.</p>
+<p>The pilot used four Wikipedia articles, two Python standard-library files and two licence texts,
+{{fact:x.method.pilot.tokens}} tokens each. It looked at layers 3, 6 and 9, and at each token's 64 nearest neighbours
+from position {{fact:x.method.pilot.burn}} on. Whether a map built on such neighbours would be mostly about position
+within each text was not measured.</p>
 <figure class="live" data-live="table" data-src="assets/x/method.json#pilot">
   <div class="live-body"></div>
-  <figcaption><b>Plotted:</b> the local diagnostic (exp1/local_pilot.json), not Stage A's texts or models: the share of
-  a token's 64 neighbours in its own text by memory, under the corpus mean, with the own-text mean removed, and with
-  the own-text mean and no neighbour within 64 positions; and how often a neighbour has the same most likely next token
-  (unmatched, so not Stage A's matched comparison).</figcaption>
+  <figcaption><b>Plotted:</b> the small pilot (exp1/local_pilot.json), on other texts and a smaller model than Stage
+  A. For each memory: the share of a token's 64 neighbours in its own text, with one average removed, with each text's
+  own average removed, and with each text's own average removed and nearby tokens (within 64 positions) barred; and
+  how often a neighbour has the same most likely next token. There are no stand-ins here, so the last column is not
+  Stage A's prediction check.</figcaption>
 </figure>
-<p>Memory 2 was added between none and 8 as an interpolation point, not because of a finding.</p>
+<p>Memory 2 was added between none and 8 to fill the gap, not because of any finding.</p>
 
 <h2 id="models">Models and extraction</h2>
+<p class="m-lead">Nothing is trained. Two models of about a billion parameters, Pythia-1b and OLMo-1B, each read every
+text once. Their tokenizers give identical ids on every accepted text, and the run stops if they do not; only their
+end-of-text ids differ. From that one pass we keep, at every position, the hidden state after each of the 16 blocks
+and the model's 20 most likely next tokens. The analysis uses the states after blocks 2, 4, ..., 16. The main figures
+show layer 8, the state after 8 of the 16 blocks. Pythia's training held out the Pile test split; OLMo's training data
+may include these texts.</p>
 <div class="tablewrap"><table class="m-table">
   <thead><tr><th></th><th>Pythia</th><th>OLMo</th></tr></thead>
   <tbody>
@@ -35,140 +51,219 @@ a small set of accounting choices, before paying for modes.</p>
   <tr><td>Training data</td><td>the Pile (its test split held out)</td><td>Dolma 1.7 (not guaranteed to exclude these texts)</td></tr>
   </tbody>
 </table></div>
-<p>One forward pass per text and model in float32, eager attention, TF32 off. The stored hidden states are the block
-outputs (hidden state 16 is before the final normalisation), checked equal to the library's own outputs; a causal
-check confirms that changing the second half of a text leaves the first half's states unchanged. Also stored per
-position: the top 20 next-token predictions with their full-softmax probabilities, and attention summaries per head
-(never the full attention). Both tokenizers give the same ids for every accepted text; texts that contain special or
-placeholder tokens are rejected.</p>
+<p>One forward pass per text and model in float32, eager attention, TF32 off. "Layer $k$" is the raw hidden state at
+the output of block $k$: after block $k$, before block $k+1$. Layer 16 is before the final normalisation and output
+head, and layer 0 is the output of the token embedding. On the first text, layers 1 to 15 were checked equal, bit for
+bit, to the library's own hidden states. A causal check confirms that changing the second half of a text leaves the
+first half's states unchanged (to one part in 100,000). Also stored per position: the top 20 next-token predictions
+with their probabilities under the full softmax (not renormalised over the 20), and per-head attention summaries
+(never the full attention). Texts that contain special or placeholder strings are rejected.</p>
 
 <h2 id="texts">Texts and tokens</h2>
-<p>The texts are {{fact:x.method.probe.description}}: from the Pile's test file, documents that are at least 95% ASCII
-and at least 2,048 tokens long, shuffled with a fixed seed, taking each document's first 2,047 tokens; rejected if
-mostly whitespace, highly repetitive, sharing a 32-token passage with an accepted text, or from a subset that already
-has four. {{fact:x.method.probe.texts}} texts from {{fact:x.method.probe.subsets}} subsets were accepted; four more
-documents make the stitched controls.</p>
-<p>Each model reads its own end-of-text token at position 0, which is excluded everywhere. A token is named by its text
-and position. Positions 1 to {{fact:x.viewer.burn_in}} are burn-in: part of every later token's past, but not analysed.</p>
+<p class="m-lead">Each text is the first {{fact:x.viewer.text_tokens}} tokens of a long, mostly ASCII document from
+the Pile's test split. There are {{fact:x.viewer.texts}} texts from {{fact:x.method.probe.subsets}} Pile sources, at
+most four from each. Before each text, the model reads its own end-of-text token at position 0; that position is left
+out of every average and every comparison. The first {{fact:x.viewer.burn_in}} text tokens are part of later tokens'
+histories, but are never selected as queries or neighbours. That leaves {{fact:x.viewer.pool_tokens}} analysed tokens, from position
+{{fact:x.viewer.first_position}} to the end of each text. Fixed samples of them are the queries for the prediction
+check, the graph-weight test and the audit.</p>
+<p>The texts are {{fact:x.method.probe.description}}. A document in the Pile's test file was eligible if it contains
+no special or placeholder strings, is at least 95% ASCII and is at least 2,048 tokens long. The eligible documents
+were shuffled with a fixed seed and taken in that order, keeping the first {{fact:x.viewer.text_tokens}} tokens of
+each. A document was skipped if more than 30% of those tokens are whitespace only, if more than 10% of its 32-token
+passages repeat an earlier one, if it shares a 32-token passage with an accepted text, or if its source already has
+four accepted texts. {{fact:x.method.probe.texts}} texts from {{fact:x.method.probe.subsets}} sources were accepted.
+Four more documents, in two pairs from different sources, make the {{fact:x.viewer.stitched}} spliced texts (see
+<a href="#method/controls">Controls</a>).</p>
+<p>A token is named by its text and position. Positions 1 to {{fact:x.viewer.burn_in}} are read by the model, count in
+the averages that are removed, and are part of every later token's past, but they are never queries or candidate
+neighbours.</p>
 <div class="tablewrap"><table class="m-table">
   <thead><tr><th>Set</th><th>Tokens</th><th>Used for</th></tr></thead>
   <tbody>
-  <tr><td>census pool</td><td>positions 256 to 2,047 of every text</td><td>every token's 64 neighbours (E1)</td></tr>
-  <tr><td>suffix</td><td>the last 512 positions of every text</td><td>the screen on Stage B's own rows (E1, E3)</td></tr>
-  <tr><td>query sample</td><td>per text, 64 positions in the suffix and 32 earlier, drawn with a fixed seed</td><td>the screen's queries and the prediction readout (E2)</td></tr>
-  <tr><td>audit queries</td><td>one of each text's suffix queries, drawn with another seed</td><td>the independent audit</td></tr>
+  <tr><td>analysed tokens</td><td>positions {{fact:x.viewer.first_position}} to {{fact:x.viewer.text_tokens}} of every text ({{fact:x.viewer.pool_tokens}} in all)</td><td>every token's 64 neighbours (E1)</td></tr>
+  <tr><td>last 512</td><td>the last 512 positions of every text</td><td>the candidates of the graph-weight test (E3)</td></tr>
+  <tr><td>query sample</td><td>per text, 64 positions from the last 512 and 32 from earlier, drawn with a fixed seed. Two thirds of it is in the last 512 positions, so it is not uniform over positions</td><td>the prediction check (E2); its 64 late positions per text are also the graph-weight test's queries</td></tr>
+  <tr><td>audit queries</td><td>one of each text's late queries, drawn with another seed ({{fact:x.method.audit.rows}} in all)</td><td>the independent audit</td></tr>
   </tbody>
 </table></div>
-<p>Of {{fact:x.method.probe.documents}} documents in the test file, {{fact:x.method.probe.eligible}} passed the
-filters, and {{fact:x.method.probe.walked}} were walked in the shuffled order before the sample filled. The probe file's SHA-256 begins
-<code>{{fact:x.method.probe.sha}}</code>; the census groups and the viewer export record the same hash.</p>
+<p>Of {{fact:x.method.probe.documents}} documents in the test file, {{fact:x.method.probe.eligible}} were eligible, and
+{{fact:x.method.probe.walked}} were examined in the shuffled order before the texts and the four splice sources were
+all found. The probe file's SHA-256 begins <code>{{fact:x.method.probe.sha}}</code>; the census groups and the viewer
+export record the same hash.</p>
 <details class="m-more">
-  <summary>Why documents were rejected, by subset</summary>
+  <summary>Why documents were rejected, by source</summary>
   <figure class="live x-table" data-live="table" data-src="assets/x/method.json#rejections">
     <div class="live-body"></div>
     <figcaption>From analysis/probe_summary.json (counts).</figcaption>
   </figure>
 </details>
 <details class="m-more">
-  <summary>The {{fact:x.method.probe.texts}} texts and the stitched controls</summary>
+  <summary>The {{fact:x.method.probe.texts}} texts and the spliced texts</summary>
   <figure class="live x-table" data-live="table" data-src="assets/x/method.json#documents">
     <div class="live-body"></div>
-    <figcaption><b>Plotted:</b> one row per text: its Pile subset, its line in the test file, the start of its
-    SHA-256, and how it begins; stitched texts list their segments.</figcaption>
+    <figcaption><b>Plotted:</b> one row per text: its Pile source, its line in the test file, the start of its
+    SHA-256, and how it begins; spliced texts list their segments.</figcaption>
   </figure>
 </details>
 
 <h2 id="similarity">Similarity</h2>
-<h3>Memory: two pasts aligned at their ends</h3>
-<p>With $y_u$ a token's hidden state after centring (in the cosine reading also scaled to unit length; $y_u = 0$
-before position 1), the similarity of tokens $t$
-and $t'$ lays their pasts side by side, aligned at the end, and compares them step by step back:</p>
+<p class="m-lead">Every result here depends on how the similarity of two tokens is defined. Four choices set it: how
+far back into each token's past the comparison reaches (memory); whether vectors are compared by angle (cosine) or by
+the distance between histories with vector lengths kept (the "dot" setting); which average is removed, and whether some tokens are barred as neighbours; and how exact ties are
+broken. The same comparison is also run on text-only inputs, vectors that know only which token is where, to show
+what the token sequence and the formula give by themselves.</p>
+<h3>Memory: two pasts lined up at their ends</h3>
+<p class="m-lead">To compare token $t$ with token $t'$, line up their pasts so that the two tokens sit at the right-hand
+end. Compare $t$ with $t'$, then $t-1$ with $t'-1$, then $t-2$ with $t'-2$, and so on, and add up these step
+similarities with weights that fade going back. Memory $m$ sets how fast they fade: roughly, the last $m$ tokens
+count. "None" compares only the two current states, each of which already reflects earlier text through attention.
+"Whole" weights every earlier position equally. Each step pairs two positions the same distance apart, so two
+adjacent tokens are not similar merely because their pasts overlap.</p>
+<p>With $y_u$ the hidden state at position $u$ after the average is removed (and, when comparing by angle, scaled to
+unit length; $y_u = 0$ before position 1), the similarity of tokens $t$ and $t'$ is:</p>
 <p>$$K_a(t,t') = \sum_{s \ge 0} a^s\, \langle y_{t-s},\, y_{t'-s} \rangle = \langle y_t, y_{t'} \rangle + a\, K_a(t-1,\, t'-1).$$</p>
 <p>Memory $m$ sets $a = 1 - 1/m$: none ($a = 0$, the current token only), 2 ($a = 0.5$), 8 ($0.875$), 64
-($0.984375$) and the whole prefix ($a = 1$). The <b>cosine reading</b> (the viewer's) normalises twice: each centred
-token vector to unit length before the sum, so every token counts equally, and then the weighted past,
-$d = 1 - K_a(t,t')/\sqrt{K_a(t,t)K_a(t',t')}$. The <b>dot reading</b> keeps the centred vectors' lengths, so loud
-tokens count more, and its distance is $\big[(K_a(t,t) + K_a(t',t'))/2 - K_a(t,t')\big]/\bar K$, with $\bar K$ the mean
-of $K_a(t,t)$ over the census pool. Three properties matter when reading results: a chance agreement between two pasts persists along the
-alignment ($K(t,t')$ and $K(t+1,t'+1)$ share most of their terms), so neighbours come in runs; at the whole prefix
-pasts of different lengths are compared over the shorter one, so similarity depends on position even for
-structureless text; and the recursion is computed exactly, in float64, never through a closed form that overflows.</p>
-<h3>Accounting: what is subtracted, and what is forbidden</h3>
+($0.984375$) and the whole past ($a = 1$). <b>Compared by angle (cosine)</b>, the viewer's setting, the vectors are
+normalised twice: each token's vector to unit length before the sum, so every token counts equally, and then the
+weighted past, $d = 1 - K_a(t,t')/\sqrt{K_a(t,t)K_a(t',t')}$. <b>With lengths kept</b> (the "dot" setting), louder vectors
+count more, and the distance is half the squared distance between the two weighted histories, scaled: $\big[(K_a(t,t) + K_a(t',t'))/2 - K_a(t,t')\big]/\bar K$, with
+$\bar K$ the mean of $K_a(t,t)$ over the analysed tokens. Three properties matter when reading results. Neighbours
+come in runs: $K(t,t')$ and $K(t+1,t'+1)$ share all but one term, so a chance agreement between two pasts persists
+along the alignment. At the whole past, pasts of different lengths are compared only over the shorter one: compared by
+angle, tokens at positions $t &lt; t'$ can be at most $\sqrt{t/t'}$ similar, so neighbours sit at similar positions
+even for text with no structure; with lengths kept, the earliest analysed tokens end up close to everyone. And
+the recursion is computed exactly, in float64, never through a closed form that overflows.</p>
+<h3>What is removed, and which tokens are barred</h3>
+<p class="m-lead">Before comparing, an average hidden state is removed, so that what every token shares does not swamp
+the comparison. The main setting removes one average, taken over all {{fact:x.viewer.texts}} texts, and lets every
+other analysed token be a neighbour. Two kinds of contrast are also run: removing each text's own average instead,
+and barring either nearby tokens (same text, within 64 positions) or the token's whole own text. These contrasts are
+not corrections. A bar sets the barred share to zero by rule, so it says nothing about the model there.</p>
 <div class="tablewrap"><table class="m-table">
   <thead><tr><th>Choice</th><th>What it does</th><th>The question it answers</th></tr></thead>
   <tbody>
-  <tr><td>corpus mean</td><td>subtract the mean state over all texts</td><td>which passages does this state resemble, as the model holds it?</td></tr>
-  <tr><td>own-text mean</td><td>subtract the token's own text's mean, over all its positions</td><td>which passages resemble it once each whole text's average is removed? A look back: it uses later tokens, removes topic with the offsets, and makes two positions of one text slightly anti-correlated</td></tr>
-  <tr><td>window</td><td>no neighbour within 64 positions in the same text</td><td>imposed, not found: the within-64 share is zero by definition (the Theiler window of recurrence analysis)</td></tr>
-  <tr><td>other texts only</td><td>only tokens of other texts are eligible</td><td>imposed: the other-text share is one; shown in Experiments only</td></tr>
+  <tr><td>one average removed</td><td>subtract the average state over all {{fact:x.viewer.texts}} texts, positions 1 to {{fact:x.viewer.text_tokens}} (the first {{fact:x.viewer.burn_in}} included)</td><td>which passages does this state resemble, as the model holds it?</td></tr>
+  <tr><td>each text's own average removed</td><td>subtract the average over the token's own text, all its positions</td><td>which passages resemble it once each whole text's average is removed? It looks ahead (it uses later tokens), removes topic along with the offset, and makes two positions of one text slightly anti-correlated</td></tr>
+  <tr><td>nearby tokens barred</td><td>no neighbour within 64 positions in the same text</td><td>imposed, not found: the within-64 share is zero by rule (the "Theiler window" of recurrence analysis)</td></tr>
+  <tr><td>own text barred</td><td>only tokens of other texts may be neighbours</td><td>imposed: the other-text share is one; shown in Experiments only</td></tr>
   </tbody>
 </table></div>
-<p>Neither centring is the corrected version of the other; they ask different questions and are shown side by side.
-Both depend only on the token's own text, so two tokens' similarity never depends on which other texts are present.</p>
-<h3>Text-only adversaries</h3>
-<p>The same computation on vectors that know only the tokens: a fixed random vector per token id, and each model's
-embedding output (hidden state 0). Where a model's neighbours overlap these, the neighbourhood could have come from
-the text alone.</p>
+<p>Neither average is the corrected version of the other; they ask different questions and are shown side by side.
+The one average is computed once, from the {{fact:x.viewer.texts}} real texts, and is the same in every comparison,
+including for the spliced texts, which are analysed alone. Each text's own average depends only on that text.</p>
+<h3>Text-only inputs</h3>
+<p class="m-lead">To separate what the model computes from what repeated tokens and the comparison formula give on
+their own, the same pipeline is run on two inputs that know only which token is where. One gives each token id a fixed
+random vector. The other is each model's input embedding (layer 0), before any block runs. Where a model's neighbours
+match these, the pattern could have come from the text alone.</p>
+<p>The random vectors are Gaussian, width 2,048, drawn once with a fixed seed, and the same at every position and in
+both models; they have no layers. Neither model adds a position embedding at the input, so layer 0 also depends only
+on the token id. Both inputs go through the same averaging, scaling and memory sum as the hidden states.</p>
 <h3>Ties</h3>
+<p class="m-lead">Real model states almost never tie. The text-only inputs do: with no memory, two copies of the same
+token are at distance exactly zero, so a frequent token can have hundreds of tied candidates.</p>
 <p>Two candidates are tied if their distances differ by at most one part in $10^{12}$. The 64 neighbours are every
-candidate strictly closer than the 64th distance, plus tied candidates at the cutoff taken in (text, position) order.
-Overlaps between two neighbour sets are computed as the expected overlap under random tie-breaking,
-$\mathbb{E}|A \cap B| = \sum_j P(j \in A)\, P(j \in B)$, and the screen uses the largest overlap the ties allow, so a
-candidate cannot pass by tie-breaking.</p>
+candidate strictly closer than the 64th distance, plus tied candidates at the cutoff taken in (text, position) order,
+lowest text first. For the text-only inputs with no memory, this order partly reflects how the texts are numbered; the
+size of that effect was not measured. Overlaps between two neighbour lists are computed as the expected overlap under
+random tie-breaking, $\mathbb{E}|A \cap B| = \sum_j P(j \in A)\, P(j \in B)$. The rule for Stage B (below) instead
+uses the largest overlap the ties allow, so a candidate cannot pass by tie-breaking.</p>
 
-<h2 id="census">The census</h2>
-<p><b>Every analysed token, every setting</b> (2 models × 2 readings × 2 centrings × 5 memories × 3 masks × 8 layers
-and 2 adversaries): the shares of its 64 neighbours in other texts, the same text far away and within 64 positions;
-the median position gap of same-text neighbours; the share with the same current token; overlap with the text-only
-adversaries and with the same setting at no memory. Chance levels come from the eligible counts. (<a
-href="#experiments/x-e1-neighbours">E1</a>)</p>
-<p><b>The screen on Stage B's own rows.</b> For the sampled suffix queries against every suffix token, the dense walk
-row Stage B would use, $q(j \mid i) \propto \exp(-\beta_i (d_{ij} - \min_j d_{ij}))$ with $\beta_i$ set so that
-$1/\sum_j q(j \mid i)^2 = 64$, and its weight on each origin; for the window, the weight the unmasked row put on what
-the window forbids. Nothing $N \times N$ is stored and no eigenproblem is solved. (<a
+<h2 id="census">What was measured</h2>
+<p class="m-lead">Stage A computes no graph patterns. It makes four measurements on the stored hidden states. First,
+for every analysed token and every setting, its 64 nearest neighbours and where they sit: in another text, in the same
+text more than 64 positions away, or within 64 positions. Second, for sampled tokens near the end of each text, how
+the weight of the graph a later stage would have used is spread over those same three places. Third, on a fixed sample
+of tokens, whether neighbours share more of the model's next-token prediction than stand-ins do. Fourth, a rule
+written before any results, which used the graph weights and neighbour lists on those late tokens to choose a
+setting for Stage B. The owner later set its pick
+aside.</p>
+<p><b>Every analysed token, every setting</b> (2 models × 2 ways of comparing × 2 averages × 5 memories × 3 bar rules
+× 8 layers, plus the 2 text-only inputs): the shares of its 64 neighbours in other texts, in the same text more than
+64 positions away, and within 64 positions on either side, each averaged over tokens; each token's median position gap to its
+same-text neighbours, averaged over tokens; the share whose current token is the same as the query's; and the overlap with the text-only
+inputs' lists and with the same setting's list at no memory. Chance levels are the shares among the tokens allowed as
+neighbours. (<a href="#experiments/x-e1-neighbours">E1</a>)</p>
+<p><b>Graph weight on the last 512 positions.</b> In the graph the original Stage B would have built, each token
+spreads a total weight of 1 over all other tokens, more to closer ones:
+$q(j \mid i) \propto \exp(-\beta_i (d_{ij} - \min_j d_{ij}))$, with $\beta_i$ set so that
+$1/\sum_j q(j \mid i)^2 = 64$. That is as concentrated as an even split over 64 tokens, yet much of the weight can
+still sit in a long, thin tail. For the sampled queries in the last 512 positions, against every token in the last 512
+positions of every text, we record the weight on each of the three places; with nearby tokens barred, also the weight
+the unbarred row had put on them. Nothing $N \times N$ is stored and no eigenproblem is solved. (<a
 href="#experiments/x-e3-selection">E3</a>)</p>
-<p><b>The prediction readout</b> on the query sample at layers 4, 8, 12 and 16: each neighbour's shared prediction mass
-against a control matched on text, current token and distance band, in six strata. (<a
+<p><b>The prediction check</b> on the query sample, with neighbours from layers 4, 8, 12 and 16. For a query and one
+of its neighbours, the prediction overlap is the probability both positions give to the same next tokens, within
+their top-20 lists. It is compared with the same overlap for a <b>stand-in</b>: another occurrence of the neighbour's
+token in the neighbour's text, not on the query's neighbour list, chosen at random. If the neighbour is in the query's
+text, the stand-in must also be at a similar distance from the query (1–8, 9–64, 65–512 or over 512 positions). The
+difference is the <b>prediction advantage</b>. Pairs fall into six groups, by where the neighbour sits and whether its
+token is frequent (at least 20 occurrences among the analysed tokens) or rare. A group counts only if at least 200 of
+its pairs, and at least half of them, found a stand-in; the score is the plain average over the groups that count. (<a
 href="#experiments/x-e2-concordance">E2</a>)</p>
-<p><b>Choosing Stage B's construction</b> is fixed in advance: of the 32 candidates, those meeting all four conditions
-at the same layer for most layers in both models pass; among them the least intervention comes first, then the cosine
-reading, then the smallest overlap with the text-only adversaries, then the shorter memory. Its local counterpart is
-the same with no memory. Concordance can add at most one descriptive example.</p>
+<p><b>The rule for Stage B</b>, written before any results. Each of the {{fact:x.e3-selection.candidates}} candidate
+settings (memory 2, 8, 64 or whole × angle or lengths kept × the two averages × nearby tokens barred or not) is tested
+at each layer on four conditions: at least a quarter of its graph weight on other texts; not too much weight on nearby
+tokens; a neighbour list at most half the same as at no memory; and a list at most half the same as each text-only
+input's. A candidate passes if it meets all four at {{fact:x.e3-selection.required}} or more of the
+{{fact:x.e3-selection.sites}} layers, in both models. Passing candidates are ranked by fewest interventions first (one
+average and nothing barred, then one average with nearby tokens barred, then each text's own average, then that with
+nearby tokens barred), then angle before lengths kept, then the smallest overlap with the text-only inputs, then the
+shorter memory. The prediction advantage could add at most one extra example. The rule picked lengths kept (dot) at memory
+64, with one average removed and nothing barred. The owner set this pick aside and redesigned Stage B (see <a
+href="#method/deferred">Deferred</a>).</p>
 
 <h2 id="controls">Controls</h2>
-<p><b>Hard checks before any spending</b> (exp1/test_census.py): the streamed kernel against the explicit feature map
-and a direct double loop; the three masks against eligible sets written by hand; planted exact ties at the cutoff,
-including 64 taken from 1,024 tied against a set tying all 1,024 (expected overlap 0.0625, largest 1); matched
-controls never equal to the query, its neighbour or another neighbour, and replayable from their seeds; statistics,
-bootstrap and the stitched baseline against hand values.</p>
-<p><b>Stitched texts</b> with expected answers: two pairs of documents from different subsets, each cut into
-alternating segments of 384 to 640 tokens or 48 to 80 tokens. A token's neighbours should come from its own source more
-often than position alone explains, at little or no memory; at memory 64 less so for the short segments.</p>
-<p><b>Synthetic texts</b> with a planted hidden regime, a position drift or pure noise, run through the same census, so
-a known structure can be seen as neighbours. Only the {{fact:x.e1-neighbours.synthetic.groups}} settings were run on
-them ({{fact:x.e1-neighbours.synthetic.runs}} runs), not all four reading and centring groups.</p>
+<p class="m-lead">Three kinds of check sit beside the real texts. Automated tests compared each step with slow direct
+versions and hand-worked cases before any money was spent. Spliced texts, made by cutting two documents into
+alternating segments, test whether neighbours follow their source document beyond what position alone gives.
+Synthetic texts with a planted hidden structure show what a known structure looks like as neighbours.</p>
+<p><b>Tests before any spending</b> (exp1/test_census.py): the memory sum as streamed, against an explicit feature map
+and a direct double loop; the three bar rules against allowed sets written by hand; planted exact ties at the cutoff,
+including 64 taken from 1,024 tied candidates against a set tying all 1,024 (expected overlap 0.0625, largest 1);
+stand-ins never equal to the query, its neighbour or another neighbour, and replayable from their seeds; statistics,
+document resampling and the spliced-text baseline against hand values.</p>
+<p><b>Spliced texts</b> with expected answers: two pairs of documents, each pair from two different sources, cut into
+alternating segments of 384 to 640 tokens or of 48 to 80 tokens, giving {{fact:x.viewer.stitched}} spliced texts. Each
+is analysed alone: its candidates are only its own tokens, and the one average of the {{fact:x.viewer.texts}} real
+texts is removed. The expectation: a token's neighbours should come from its own source more often than position
+alone explains, at little or no memory; at memory 64, less so for the short segments.</p>
+<p><b>Synthetic texts</b> with a planted hidden regime, a slow position drift or pure noise, run through the same
+census, so a known structure can be seen as neighbours. Only comparison by angle with one average removed was run on
+them ({{fact:x.e1-neighbours.synthetic.runs}} runs), not every combination of comparison and average.</p>
 
 <h2 id="timescales">Reference timescales</h2>
-<p>Beside the memory grid, two descriptive scales per layer: how far back each attention head looks directly (the
-attention-weighted mean distance, its median over heads), and the lag at which residual similarity within a text
-falls halfway to its level between texts. Neither is an effective context length. (E1, more figures.)</p>
+<p class="m-lead">Two simple scales per layer, for reference beside the memory settings: how far back attention heads
+look, and how quickly hidden states change along a text. Neither measures how much context the model uses.</p>
+<p>Per layer: how far back each attention head looks directly (its attention-weighted mean distance, leaving out
+attention to position 0; the median over heads), and the hidden-state half distance: the first lag at which the mean similarity (by angle) of two states of one text
+falls halfway from its lag-one value to the mean between texts. The half distance was measured at even layers only;
+odd layers were not measured, and every even layer reached halfway within 1,024 tokens. Neither is an effective context
+length. (E1, more figures.)</p>
 
 <h2 id="check">How to check there is nothing odd going on</h2>
-<p><b>An independent audit</b> (exp1/audit_a.py: numpy only, importing nothing from the pipeline) recomputes, for
-{{fact:x.method.audit.rows}} audit queries, the complete distance rows from the raw activations by the explicit lag sum,
-then the masks, the 64 neighbours with ties, the screen's walk weights and the removed short-range weight; replays the
-matched controls from their seeds; recomputes census statistics from the stored lists for a sample of tokens, the
-readout from its stored contributions and the Stage B selection; and compares 1,000 random pairs per pass with values
-the census saved before it discarded its distance blocks. The site does not build as a release unless this report is
-present and passing.</p>
-<p><b>The audit has failed once, for a real reason.</b> Its first full run on these data failed one check,
-<code>readout.document_contributions</code>, in every model and settings group: the prediction readout's stored
+<p class="m-lead">An independent audit recomputes the results from the raw hidden states, with code that shares nothing
+with the pipeline. Its first report found a real bug: an integer overflow had zeroed the prediction overlap for
+neighbours and stand-ins in the later texts. The bug was fixed, the affected steps were re-run, and the audit then
+passed: {{fact:x.method.audit.checks}} checks, {{fact:x.method.audit.failed}} failed. The release uses the audited Stage A outputs, including the corrected
+prediction readout. The pilot (a separate local run) and the design settings are identified separately. You can also click any token in the viewer to see its neighbours, and a browser test checks the pages
+themselves.</p>
+<p><b>An independent audit</b> (exp1/audit_a.py: numpy only, importing nothing from the pipeline) takes
+{{fact:x.method.audit.rows}} audit queries. For each, it recomputes the complete distance row from the raw hidden
+states by the explicit step-by-step sum, then the bar rules, the 64 neighbours with ties, the graph weights and the
+weight removed by barring nearby tokens. It replays the stand-ins from their seeds. It recomputes the census
+statistics from the stored lists for a sample of tokens, the prediction check from its stored per-document sums, and
+the rule for Stage B. It also compares 1,000 random pairs per pass with values the census saved before it discarded
+its distance blocks. The site does not build as a release unless this report is present and passing.</p>
+<p><b>The audit has failed once, for a real reason.</b> Its first report on these data failed one check,
+<code>readout.document_contributions</code>, in every model and settings group: the prediction check's stored
 per-document sums did not match the audit's own recomputation. The cause was an int32 overflow in the pipeline
-(exp1/readout.py, the lookup key of the prediction overlap), which recorded zero overlap for any neighbour or control in
-texts 24 to 31 and the end of text 23; the small test case could not reach those indices. The fix uses 64-bit keys and
-adds two regression tests; the readout, selection and viewer export were re-run, and the audit then passed. Concordance
-scores rose; top-1 match rates, coverage and the choice of Stage B's construction did not change. Everything on this
-site comes from the re-run (<a href="#experiments/x-e2-concordance">E2</a>).</p>
+(exp1/readout.py, the lookup key of the prediction overlap), which recorded zero overlap for any neighbour or stand-in
+in texts 24 to 31 and the end of text 23; the small test case could not reach those indices. The fix uses 64-bit keys
+and adds two regression tests; the prediction check, the rule for Stage B and the viewer export were re-run, and the
+audit then passed. Prediction advantages rose; top-1 match rates, the share of pairs with a stand-in and the rule's
+pick did not change. The release uses the audited outputs, including the corrected prediction readout (<a href="#experiments/x-e2-concordance">E2</a>).</p>
 <p class="m-callout">Audit result: <b>{{fact:x.method.audit.passed}}</b>. {{fact:x.method.audit.checks}} checks over
 {{fact:x.method.audit.compared}} compared values, {{fact:x.method.audit.failed}} failed; models
 {{fact:x.method.audit.models}}; run with {{fact:x.method.audit.spec_parameters}}.<br>
@@ -188,53 +283,67 @@ every file it reads or copies and refuses to build if any differs from this list
 </details>
 <p><b>By clicking.</b> In the <a href="#viewer">viewer</a>, any token's card lists its nearest neighbours as text, with
 the stretch of past the comparison weighs and the model's predictions beside theirs; each neighbour opens in its own
-text. <b>The selection table</b> in <a href="#experiments/x-e3-selection">E3</a> shows every number behind the choice
-for Stage B. <b>The page itself</b> is checked in headless Chrome (site/check_browser.py) over every control, a token
-click and its neighbours (compared with the stored rows decoded independently), both screen sizes, failing on any
+text. <b>The selection table</b> in <a href="#experiments/x-e3-selection">E3</a> shows every number behind the rule's
+pick. <b>The page itself</b> is checked in headless Chrome (site/check_browser.py) over every control, a token click
+and its neighbours (compared with the stored rows decoded independently), at desktop and phone widths, failing on any
 console error or external request.</p>
 
-<h2 id="decisions">Decisions made on the owner's behalf</h2>
+<h2 id="decisions">Design choices (made by the analysis, not the owner)</h2>
+<p class="m-lead">Some choices were not set by the owner, Charles R-W, and were made during the analysis. Each is
+listed with the main alternative that was not taken.</p>
 <div class="tablewrap"><table class="m-table">
   <thead><tr><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
   <tbody>
-  <tr><td>Staging</td><td>census first; modes only for what its screen supports</td><td>modes for every construction</td></tr>
-  <tr><td>Texts</td><td>32, first 2,047 tokens, at most 4 per subset</td><td>windows inside documents; uniform among long documents</td></tr>
-  <tr><td>Census</td><td>every analysed token, 64 neighbours, all settings</td><td>sampled tokens</td></tr>
-  <tr><td>Prediction readout</td><td>a fixed stratified sample of 3,072 queries, four layers</td><td>every token (about 3.5 billion pairs)</td></tr>
+  <tr><td>Staging</td><td>measure neighbours first; graph patterns only for what that supports</td><td>graph patterns for every setting</td></tr>
+  <tr><td>Texts</td><td>{{fact:x.viewer.texts}}, first {{fact:x.viewer.text_tokens}} tokens, at most 4 per source</td><td>stretches from inside documents; uniform among long documents</td></tr>
+  <tr><td>Neighbour census</td><td>every analysed token, 64 neighbours, all settings</td><td>sampled tokens</td></tr>
+  <tr><td>Prediction check</td><td>a fixed sample of 3,072 queries, chosen per text and position range, four layers</td><td>every token (about 3.5 billion pairs)</td></tr>
   <tr><td>Layers</td><td>8 even layers measured, 4 in the viewer</td><td>all 16</td></tr>
-  <tr><td>Memory grid</td><td>none, 2, 8, 64, whole</td><td>lengths derived from the models</td></tr>
-  <tr><td>Accounting</td><td>corpus or own-text mean × no mask, a 64-position window, other texts only</td><td>position-wise centring; windows scaled with memory</td></tr>
-  <tr><td>Stage B choice</td><td>a geometric screen on Stage B's own rows, least intervention first; concordance adds at most one example</td><td>ranking by concordance</td></tr>
-  <tr><td>Viewer</td><td>cosine reading, 4 layers, 3 accountings, 8 neighbours shown per token</td><td>every setting (over 1 GB)</td></tr>
-  <tr><td>Viewer colour</td><td>all three origins in one background: lightness for the own-text share, hue for near versus far</td><td>the other-text share alone on one sequential scale</td></tr>
+  <tr><td>Memory settings</td><td>none, 2, 8, 64, whole</td><td>lengths derived from the models</td></tr>
+  <tr><td>Averages and bars</td><td>one average or each text's own average, × nothing barred, nearby tokens (64 positions) barred, or own text barred</td><td>a separate average per position; bars that grow with memory</td></tr>
+  <tr><td>Rule for Stage B</td><td>a test on the graph weight Stage B would use, fewest interventions first; prediction advantage adds at most one example (the owner later set the pick aside)</td><td>ranking by prediction advantage</td></tr>
+  <tr><td>Viewer</td><td>compared by angle, 4 layers, 3 combinations of average and bar, {{fact:x.viewer.shown}} neighbours shown per token</td><td>every setting (over 1 GB)</td></tr>
+  <tr><td>Viewer colour</td><td>where neighbours sit, in one background: lightness for the own-text share, hue for nearby versus far</td><td>the other-text share alone on one sequential scale</td></tr>
   </tbody>
 </table></div>
 
 <h2 id="deferred">Deferred</h2>
+<p class="m-lead">Several extensions were left out of Stage A; they are listed below. The Stage B planned when Stage A
+ran has been replaced. After seeing Stage A's results, the owner set the rule's pick aside and asked for a new design,
+described at the end of this section. That design has been written up and reviewed, but none of it has been run.</p>
 <ul>
-  <li><b>Truncated rows</b> (keeping each row's nearest neighbours only): measured to move the walk's balance point by
-  about 15% on a synthetic graph, so Stage B stays dense.</li>
+  <li><b>Keeping only each token's nearest neighbours</b> in the graph, instead of weights on every token: on a
+  synthetic graph this was measured to shift the result (SPEC.md), so the planned graph kept every link.</li>
   <li>Model-derived lag weights; a recurrent random sketch; attention-weighted links across layers; a
-  training-checkpoint axis; a width sweep; windows scaled with memory; mixed readings; longer contexts; more models.</li>
+  training-checkpoint axis; a width sweep; bars that grow with memory; mixing angle and lengths-kept comparison; longer
+  contexts; more models.</li>
   <li>The owner's later list: a sentence-embedding or vector-database baseline on the same texts, and the Hankel
   predictive-state construction of Golowich, Liu and Shetty.</li>
 </ul>
-<p><b>Stage B, if approved,</b> adds to this site: a mode colouring and mode card in the viewer, a one-text versus
-all-texts graph choice, and entries E4 (do the models share through-depth structure outside the tested text features?)
-and E5 (does a text's picture change with its company?). None of it exists yet.</p>
+<p><b>Stage B as now designed</b> (SPEC_B.md) uses independent chunks instead of long texts. Each of 2,048 Pile test
+documents not used in Stage A is cut once at a random position. The model reads the document up to the cut, and the
+chunk is the last 64 tokens up to and including the cut. No two chunks share a document, so the chains of neighbours
+along one text seen in Stage A cannot form. One average is removed, chunks are compared by angle (the lengths-kept "dot" setting is
+deferred), and nothing is barred. A chunk is summarised three ways: its state at the cut (the main one), its recent
+past at memory 8, and the average of its 64 states. The model's next-token prediction at the cut is built into the
+graph, and the main test asks whether cross-layer patterns pay a smaller prediction-disagreement penalty with the
+correct chunk-prediction pairing than with shuffled pairings. If run, it would add a "Through depth" tab and entries E4 to E6. Nothing of it has been run.</p>
 
 <h2 id="spending">Spending</h2>
-<p class="m-note">Stage A charged about <b>${{fact:x.method.ledger.spent}}</b> by the ledger. The cap was
-${{fact:x.method.ledger.cap_initial}} at approval; the owner raised it to ${{fact:x.method.ledger.cap_pilot}} after the
-timing pilot measured {{fact:x.method.run.pass_seconds}} s per census pass, more than planned, and to
-${{fact:x.method.ledger.cap}} for the readout re-run after the fix described above. The census was stopped once by the
-Modal workspace's spend limit and resumed from the settings groups already saved
-({{fact:x.method.ledger.census.attempts}} census attempts). The readout took {{fact:x.method.ledger.readout.attempts}}
-attempts (twice a time limit set too short, once a coordinator limit, then the re-run after the fix) and the audit
-{{fact:x.method.ledger.audit.attempts}} (a 30-minute limit reached during its inventory step, then the genuine failure,
-then the pass); README run log. The ledger's figures are estimates from runtimes and published rates, not Modal's bill. The viewer's
-data come to {{fact:x.method.viewer.mb}} MB in {{fact:x.method.viewer.files}} files.</p>
+<p class="m-lead">Stage A cost about ${{fact:x.method.ledger.spent}} of GPU time, estimated from run times and
+published rates. The spending cap was raised twice: once when a timing pilot found each pass slower than planned, and
+once to re-run the prediction check after the audit's bug fix.</p>
+<p class="m-note">The cap was ${{fact:x.method.ledger.cap_initial}} at approval. The owner raised it to
+${{fact:x.method.ledger.cap_pilot}} after the timing pilot measured {{fact:x.method.run.pass_seconds}} s per census
+pass, more than planned, and to ${{fact:x.method.ledger.cap}} for the prediction-check re-run after the fix described
+above. The census was stopped once by the Modal workspace's spend limit and resumed from the settings groups already
+saved ({{fact:x.method.ledger.census.attempts}} census attempts). The prediction check took
+{{fact:x.method.ledger.readout.attempts}} attempts: twice a time limit set too short, once a coordinator limit, then
+the re-run after the fix. The audit took {{fact:x.method.ledger.audit.attempts}}: a 30-minute limit reached during its
+inventory step, then the genuine failure, then the pass (README run log). The ledger's figures are estimates from run
+times and published rates, not Modal's bill. The viewer's data come to {{fact:x.method.viewer.mb}} MB in
+{{fact:x.method.viewer.files}} files.</p>
 <details class="m-more">
   <summary>By unit</summary>
-  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#ledger"><div class="live-body"></div><figcaption>Source: ledger/attempts. "Not finished" counts attempts that stopped or reported failure; the last audit attempt reports failure because one of its checks failed.</figcaption></figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#ledger"><div class="live-body"></div><figcaption>Source: ledger/attempts. "Not finished" counts attempts that stopped or reported failure: for the audit, the run that hit its time limit and the run that found the overflow; the last audit attempt passed.</figcaption></figure>
 </details>

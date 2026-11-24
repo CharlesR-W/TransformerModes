@@ -7,6 +7,7 @@ facts for content/experiments/e2-concordance.html.
 from __future__ import annotations
 
 import sys
+from math import ceil, isclose
 from pathlib import Path
 
 from xlib import ACC_LABEL, ACCOUNTINGS, Data, MEMORIES, MEMORY_LABELS, Out, read_json
@@ -17,11 +18,40 @@ STRATA = [("other/rare", "other texts · rare token"), ("other/frequent", "other
           ("far/rare", "same text far · rare"), ("far/frequent", "same text far · frequent"),
           ("near/rare", "within 64 · rare"), ("near/frequent", "within 64 · frequent")]
 
+GROUP_ORIGINS = {"other": "in other texts", "far": "far in the same text", "near": "within 64 in the same text"}
+SHORT_ORIGINS = {"other": "Other", "far": "Far", "near": "Near"}
+READOUT_LAYERS = (4, 8, 12, 16)
+FAILURES = ("no_same_token_in_text", "empty_lag_bin", "all_candidates_excluded")
+
+
+def coverage_strip(row, source):
+    if row is None:
+        return None, None, []
+    strata = row["strata"]
+    total = sum(v["pairs"] for v in strata.values())
+    covered = [k for k, _ in STRATA if strata[k]["status"] == "covered"]
+    used = sum(strata[k]["matched"] for k in covered)
+    dropped = sum(v["matched"] for k, v in strata.items() if k not in covered)
+    unmatched = sum(v[reason] for v in strata.values() for reason in FAILURES)
+    if not total:
+        return None, "no pairs", []
+    shares = [n / total for n in (used, dropped, unmatched)]
+    if not isclose(sum(shares), 1, abs_tol=1e-9, rel_tol=0):
+        raise ValueError(f"{source}: used + dropped + unmatched = {sum(shares):.12g}, expected 1")
+    groups = [(origin, freq) for origin, freq in (k.split("/") for k in covered)]
+    full = "; ".join(f"{freq} tokens {GROUP_ORIGINS[origin]}" for origin, freq in groups) or "no groups"
+    short = []
+    for origin in GROUP_ORIGINS:
+        freqs = {freq for key, freq in groups if key == origin}
+        if freqs:
+            short.append(f"{SHORT_ORIGINS[origin]}: " + ("both" if len(freqs) == 2 else next(iter(freqs))))
+    return shares, full, short
+
 
 def run(data: Path, out: Path):
     d = Data(data)
     o = Out(XID, out)
-    lead, cov_panels, top_panels = [], [], []
+    lead, lead2, cov_panels, top_panels = [], [], [], []
     for i, m in enumerate(d.models, 1):
         name = d.model_name(m)
         path = d.root / "analysis" / "prediction" / f"{m}.json"
@@ -43,19 +73,43 @@ def run(data: Path, out: Path):
                 hollow.append(bool(r) and not r.get("eligible"))
             series.append(dict(name=ACC_LABEL[c, mk], values=vals, lo=lo, hi=hi, hollow=hollow,
                                color="corpus" if c == "C" else "own", marker="circle" if mk == "none" else "diamond"))
-        lead.append(dict(title=name, sub=layer, categories=MEMORY_LABELS, xlabel="memory", ylabel="concordance score",
+        lead.append(dict(title=name, sub=layer, categories=MEMORY_LABELS, xlabel="memory", ylabel="prediction advantage",
                          refline=dict(y=0, label="no advantage"), series=series, fmt="3f"))
         # coverage by stratum (corpus mean, no mask)
         z = []
         for key, _ in STRATA:
             z.append([((get("C", "none", mem)[1] or {}).get("strata", {}).get(key) or {}).get("coverage") for mem in MEMORIES])
-        cov_panels.append(dict(title=name, sub=f"{layer} · corpus mean", rows=[s for _, s in STRATA], cols=MEMORY_LABELS, z=z, zrange=[0, 1],
-                               zlabel="share of pairs with a matched control", rowlabel="", collabel="memory", fmt="pct", ml=170))
-        top_panels.append(dict(title=name, sub=f"{layer} · corpus mean", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
+        cov_panels.append(dict(title=name, sub=f"{layer} · one average removed", rows=[s for _, s in STRATA], cols=MEMORY_LABELS, z=z, zrange=[0, 1],
+                               zlabel="share of pairs with a stand-in", rowlabel="", collabel="memory", fmt="pct", ml=170))
+        top_panels.append(dict(title=name, sub=f"{layer} · one average removed", x=list(range(5)), xticklabels=MEMORY_LABELS, xlabel="memory",
                                ylabel="same top-1 prediction", fmt="pct",
                                series=[dict(name="neighbour", y=[(get("C", "none", mem)[1] or {}).get("top1_neighbour") for mem in MEMORIES], dots=True, color="ink"),
-                                       dict(name="its matched control", y=[(get("C", "none", mem)[1] or {}).get("top1_control") for mem in MEMORIES], dots=True, dash=True, color="ink")]))
+                                       dict(name="its stand-in", y=[(get("C", "none", mem)[1] or {}).get("top1_control") for mem in MEMORIES], dots=True, dash=True, color="ink")]))
         k = f"m{i}"
+        strip, short_groups, agreement = [], [], []
+        for mem in MEMORIES:
+            j, r = idx.get(("cosine", "C", LEAD_SITE, mem, "none"), (None, None))
+            src = f"analysis/prediction/{m}.json settings[{j}].strata, layer {LEAD_SITE}, weighted pairs"
+            shares, groups, short = coverage_strip(r, src)
+            strip.append(shares)
+            short_groups.append(short)
+            agreement.append(r)
+            base = f"{k}.c.mem_{mem}"
+            for j0, (suffix, desc) in enumerate((("used", "matched in covered groups"), ("dropped", "matched in uncovered groups"),
+                                                 ("unmatched", "sum of the three match-failure counts"))):
+                o.fact(f"{base}.{suffix}", shares[j0] if shares else None, pct=True, source=f"{src}: {desc} / all pairs")
+            o.fact(f"{base}.groups", groups, source=f"{src}: status = covered")
+            pooled = [idx.get(("cosine", "C", s, mem, "none"), (None, None))[1] for s in READOUT_LAYERS]
+            for group, _ in STRATA:
+                strata = [row["strata"][group] for row in pooled if row is not None]
+                matched = sum(v["matched"] for v in strata)
+                adv = sum(v["advantage"] for v in strata) / matched if len(strata) == len(READOUT_LAYERS) and matched else None
+                o.fact(f"{k}.grp.{group.replace('/', '_')}.mem_{mem}", adv, digits=3,
+                       source=f"analysis/prediction/{m}.json cosine C none memory {mem}: {group}, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight")
+        lead2.append(dict(title=name, sub=f"layer {LEAD_SITE} · average agreement across groups with enough stand-ins",
+                          strip=strip, groups=short_groups,
+                          series=[dict(name="Neighbour", y=[(r or {}).get("top1_neighbour") for r in agreement], color="ink"),
+                                  dict(name="Stand-in", y=[(r or {}).get("top1_control") for r in agreement], dash=True, color="mute")]))
         o.fact(f"{k}.name", name, source="site/manifest.json model_metadata")
         o.fact(f"{k}.layer", site if site is not None else "none", source=f"analysis/prediction/{m}.json: lead layer or nearest")
         for c, mk in ACCOUNTINGS:
@@ -100,6 +154,11 @@ def run(data: Path, out: Path):
         o.fact(f"{k}.eligible_count", sum(bool(r["eligible"]) for r in elig), source=f"analysis/prediction/{m}.json eligible, cosine, lead layer")
         o.fact(f"{k}.settings_count", len(elig), source=f"analysis/prediction/{m}.json settings, cosine, lead layer")
     o.chart("lead", dict(panels=lead))
+    ymax = max((v for p in lead2 for s in p["series"] for v in s["y"] if v is not None), default=0)
+    o.chart("lead2", dict(panels=lead2, categories=MEMORY_LABELS, mobile_stack=True,
+                          maxAgreement=max(.05, ceil(ymax * 20) / 20), ylabel="Top-1 agreement",
+                          segments=["Used in the result", "Stand-in found, group left out", "No stand-in found"],
+                          segcolors=["ink", "mute2", "wash"]))
     o.chart("coverage", dict(panels=cov_panels))
     o.chart("top1", dict(panels=top_panels))
     o.chart("card", dict(answer=("With no memory a token's neighbours share the model's top prediction {{fact:x.e2-concordance.m1.mean.mem_none.ratio}} times "

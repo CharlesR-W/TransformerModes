@@ -23,9 +23,11 @@ MEMORIES = ["none", "2", "8", "64", "whole"]
 MEMORY_LABELS = ["none", "2", "8", "64", "whole"]
 ORIGINS = ["other texts", "same text, far", "same text, within 64"]
 ACCOUNTINGS = [("C", "none"), ("C", "window"), ("O", "none"), ("O", "window")]
-ACC_LABEL = {("C", "none"): "corpus mean", ("C", "window"): "corpus mean + window",
-             ("O", "none"): "own-text mean", ("O", "window"): "own-text mean + window",
-             ("C", "other_texts"): "corpus mean, other texts only", ("O", "other_texts"): "own-text mean, other texts only"}
+# plain words (the site's vocabulary): C = one average (over all texts) removed, O = each text's own average removed;
+# window = same-text tokens within 64 positions may not be neighbours; other_texts = only other texts' tokens may
+ACC_LABEL = {("C", "none"): "one average removed", ("C", "window"): "one average removed, nearby barred",
+             ("O", "none"): "each text's own average removed", ("O", "window"): "own average removed, nearby barred",
+             ("C", "other_texts"): "one average removed, own text barred", ("O", "other_texts"): "own average removed, own text barred"}
 
 
 def clean(x):

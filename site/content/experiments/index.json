@@ -1,5 +1,5 @@
 [
-  {"id": "e1-neighbours", "group": "stage-a", "title": "Who are a token's nearest neighbours under memory?"},
-  {"id": "e2-concordance", "group": "stage-a", "title": "Are neighbours prediction-concordant beyond matched controls?"},
-  {"id": "e3-selection", "group": "stage-a", "title": "What does the screen select for Stage B, and why?"}
+  {"id": "e1-neighbours", "group": "stage-a", "title": "Where are a token's most similar tokens?"},
+  {"id": "e2-concordance", "group": "stage-a", "title": "Do similar tokens agree about what comes next?"},
+  {"id": "e3-selection", "group": "stage-a", "title": "What did this decide for the next stage?"}
 ]

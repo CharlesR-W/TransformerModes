@@ -201,6 +201,10 @@ def run(data: Path, out: Path):
         o.chart("pilot", dict(columns=[dict(label="Memory"), dict(label="Own-text share, corpus mean"), dict(label="Own-text mean removed"),
                                        dict(label="… and no neighbour within 64"), dict(label="Same top-1 prediction (unmatched)")], rows=prows,
                               note=f"Ranges over the three layers. Chance own-text share {min(chance):.3f}."))
+        for mem in ("none", "8", "64", "whole"):   # same-text median gap, one average removed, every token eligible, range over layers
+            gaps = [r["median_gap_same_text"] for r in pilot["rows"] if r["memory"] == mem and r["centring"] == "corpus mean" and r["rule"] == "all tokens"]
+            o.fact(f"pilot.gap.mem_{mem}", f"{min(gaps):.0f}–{max(gaps):.0f}" if gaps else "not recorded",
+                   source=f"exp1/local_pilot.json rows (corpus mean, all tokens, memory {mem}): median_gap_same_text, min–max over layers")
         o.fact("pilot.model", pilot["model"].split("/")[-1], source="exp1/local_pilot.json model")
         o.fact("pilot.tokens", pilot["T"] - 1, source="exp1/local_pilot.json T")
         o.fact("pilot.burn", pilot["burn"], source="exp1/local_pilot.json burn")

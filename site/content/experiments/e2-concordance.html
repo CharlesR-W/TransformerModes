@@ -1,113 +1,149 @@
 <section class="experiment" id="x-e2-concordance">
-<h2>Are neighbours prediction-concordant beyond matched controls?</h2>
-<p class="x-scope"><b>Tested:</b> a fixed sample of query tokens (per text, 64 in its last 512 positions and 32
-earlier), each with its 64 nearest neighbours, against controls matched on the neighbour's text, current token and
-distance band; the model's own top-20 next-token predictions; layers 4, 8, 12 and 16, both models, both readings. The
-lead figure is layer 8, cosine reading; the answer's numbers are means over the four layers, corpus mean, no mask.</p>
+<h2>Do similar tokens agree about what comes next?</h2>
+<p class="x-scope"><b>Tested:</b> 3,072 fixed query tokens (96 per text: 64 from the last 512 positions and 32 from positions {{fact:x.viewer.first_position}}–1,535), each paired with its 64 nearest neighbours from <a href="#experiments/x-e1-neighbours">E1</a>. Predictions are each model's own top-20 next-token probabilities (from its output layer), compared for the query, the neighbour, and a matched stand-in (illustrated below). Lead figure: neighbours from layer {{fact:x.e2-concordance.m1.layer}}, compared by angle (cosine), one average removed, nothing barred (every analysed token may be a neighbour; layers {{fact:x.e2-concordance.m1.readout_layers}} were all measured). Five <b>memory</b> settings vary how far back the comparison looks with fading weights (none, about 2, about 8, about 64 tokens, or the whole past equally weighted).</p>
 
-<p class="x-answer"><strong>With no memory, a token's neighbours share the model's most likely next token
-{{fact:x.e2-concordance.m1.mean.mem_none.ratio}} times as often as controls matched on text and current token
-({{fact:x.e2-concordance.m1.mean.mem_none.top1}} against {{fact:x.e2-concordance.m1.mean.mem_none.top1_control}} in
-{{fact:x.e2-concordance.m1.name}}, {{fact:x.e2-concordance.m2.mean.mem_none.ratio}} times in
-{{fact:x.e2-concordance.m2.name}}), and the advantage shrinks steadily with memory in both models, to about nothing at
-the whole prefix (concordance score {{fact:x.e2-concordance.m1.mean.mem_none.score}} with no memory,
-{{fact:x.e2-concordance.m1.mean.mem_64.score}} at memory 64, {{fact:x.e2-concordance.m1.mean.mem_whole.score}} at the
-whole prefix).</strong> Each control shares its neighbour's text, current token and, within a text, its distance band;
-nothing else is held fixed and nothing causal is claimed. Neighbours within 64 positions never found enough controls
-({{fact:x.e2-concordance.m1.near_covered}} of {{fact:x.e2-concordance.m1.near_strata}} such strata covered), so the
-score leaves them out ({{fact:x.e2-concordance.m1.mean.mem_64.near_left_out}} of all neighbour pairs at memory 64,
-{{fact:x.e2-concordance.m1.mean.mem_whole.near_left_out}} at the whole prefix), and that is why most settings are
-ineligible for ranking ({{fact:x.e2-concordance.m1.all_eligible}} of {{fact:x.e2-concordance.m1.all_settings}} are
-eligible in {{fact:x.e2-concordance.m1.name}}).</p>
+<div class="e2-example" role="figure" aria-label="Worked example of how E2 pairs a query, a neighbour, and a stand-in">
+  <div class="e2-ex-badge">Illustration</div>
 
-<figure class="live x-wide-fig" data-live="points" data-src="assets/x/e2-concordance.json#lead" data-height="240">
+  <div class="e2-ex-row">
+    <p class="e2-ex-title"><strong>A neighbour in another text</strong></p>
+    <div class="e2-ex-grid">
+      <div class="e2-ex-card">
+        <span class="e2-ex-role">Query (Q)</span>
+        <p class="e2-ex-meta">Text A · position 1,620</p>
+        <p class="e2-ex-snip">… after the court upheld <mark>its</mark></p>
+        <p class="e2-ex-pred">Model predicts next token (top 20): <em>ruling, decision, order, …</em></p>
+      </div>
+      <div class="e2-ex-card">
+        <span class="e2-ex-role">Neighbour (N)</span>
+        <p class="e2-ex-meta"><mark class="e2-fix">Text B</mark> · position 910 · token <mark class="e2-fix">"the"</mark></p>
+        <p class="e2-ex-snip">… while the panel reviewed <mark>the</mark></p>
+        <p class="e2-ex-pred">Compare Q's top-20 predictions with N's top-20 predictions.</p>
+      </div>
+      <div class="e2-ex-card">
+        <span class="e2-ex-role">Stand-in (S)</span>
+        <p class="e2-ex-meta"><mark class="e2-fix">Text B</mark> · random other <mark class="e2-fix">"the"</mark> in the analysed range (not in Q's 64 neighbours)</p>
+        <p class="e2-ex-snip">… in the second chapter of <mark>the</mark></p>
+        <p class="e2-ex-pred">Compare Q's top-20 predictions with S's top-20 predictions.</p>
+      </div>
+    </div>
+    <p class="e2-ex-fixed"><b>Held fixed between N and S:</b> the neighbour's text (Text B) and the neighbour's current token ("the").</p>
+  </div>
+
+  <p class="e2-ex-variant"><b>Same-text variant:</b> if the neighbour were in the query's own text, say 300 tokens away, the stand-in would have to be another "the" in that text that is also 65–512 tokens from the query. The distance bands are 1–8, 9–64, 65–512 and over 512 tokens.</p>
+
+  <p class="e2-ex-cap"><b>Illustration, not data.</b> A <b>stand-in</b> is matched to the <b>neighbour</b>, not to the query: same text and token as the neighbour, picked at random from tokens that are not among the query's 64 neighbours. We compare the predictions at Q and N with those at Q and S. Nothing is compared with the actual next token.</p>
+</div>
+
+<p class="x-answer"><strong>At layer {{fact:x.e2-concordance.m1.layer}} with no memory, a token's neighbours match its top next-token prediction about twice as often as stand-ins do</strong> ({{fact:x.e2-concordance.m1.c.mem_none.top1}} versus {{fact:x.e2-concordance.m1.c.mem_none.top1_control}} in {{fact:x.e2-concordance.m1.name}}; {{fact:x.e2-concordance.m2.c.mem_none.top1}} versus {{fact:x.e2-concordance.m2.c.mem_none.top1_control}} in {{fact:x.e2-concordance.m2.name}}). As memory grows, that edge fades to nearly nothing: by the whole past, neighbours and stand-ins agree almost equally ({{fact:x.e2-concordance.m1.c.mem_whole.top1}} versus {{fact:x.e2-concordance.m1.c.mem_whole.top1_control}} in {{fact:x.e2-concordance.m1.name}}; {{fact:x.e2-concordance.m2.c.mem_whole.top1}} versus {{fact:x.e2-concordance.m2.c.mem_whole.top1_control}} in {{fact:x.e2-concordance.m2.name}}). The comparison uses only pairs that found a stand-in, in groups where at least half the pairs (and at least 200) found one: {{fact:x.e2-concordance.m1.c.mem_none.used}} of all pairs in {{fact:x.e2-concordance.m1.name}} ({{fact:x.e2-concordance.m2.c.mem_none.used}} in {{fact:x.e2-concordance.m2.name}}) with no memory, falling at the whole past to {{fact:x.e2-concordance.m1.c.mem_whole.used}} in {{fact:x.e2-concordance.m1.name}} and {{fact:x.e2-concordance.m2.c.mem_whole.used}} in {{fact:x.e2-concordance.m2.name}}.</p>
+
+<figure class="live x-wide-fig" data-live="agreement" data-src="assets/x/e2-concordance.json#lead2" data-height="280">
   <div class="live-body"></div>
-  <figcaption><b>Plotted:</b> for each memory, the concordance score (how much more of the model's top-20 prediction
-  mass a neighbour shares with its query than a matched control does, averaged over the covered strata), one panel per
-  model, layer 8, cosine reading. Colour: corpus mean (green) or own-text mean (violet); circle: every token eligible,
-  diamond: the window. Whiskers: 5th to 95th percentile over 200 resamplings of the documents. Hollow: ineligible for
-  ranking under the coverage rule. A missing point: that setting was not computed.</figcaption>
+  <figcaption><b>Plotted:</b> one panel per model (layer {{fact:x.e2-concordance.m1.layer}}, compared by angle, one average removed, no tokens barred): how often a neighbour matches the query's single most likely next token (solid) versus its stand-in (dashed), averaged equally across groups that had enough stand-ins. Each model's panel has a strip beneath it on the same memory axis: share of all neighbour pairs used in the result, matched to a stand-in but in a left-out group, or left with no stand-in; under each memory, short labels name the groups used.</figcaption>
 </figure>
 
 <div class="x-numbers">
-  <div><b>{{fact:x.e2-concordance.m1.mean.mem_none.ratio}}×</b><span>as often as matched controls, a neighbour shares the token's most likely next token, no memory ({{fact:x.e2-concordance.m1.mean.mem_none.top1}} vs {{fact:x.e2-concordance.m1.mean.mem_none.top1_control}})</span><small>{{fact:x.e2-concordance.m1.name}} · mean of layers {{fact:x.e2-concordance.m1.readout_layers}} · corpus mean</small></div>
-  <div><b>{{fact:x.e2-concordance.m2.mean.mem_none.ratio}}×</b><span>the same for the second model ({{fact:x.e2-concordance.m2.mean.mem_none.top1}} vs {{fact:x.e2-concordance.m2.mean.mem_none.top1_control}})</span><small>{{fact:x.e2-concordance.m2.name}} · mean of layers {{fact:x.e2-concordance.m2.readout_layers}}</small></div>
-  <div><b>{{fact:x.e2-concordance.m1.mean.mem_none.score}} → {{fact:x.e2-concordance.m1.mean.mem_whole.score}}</b><span>concordance score, no memory → whole prefix ({{fact:x.e2-concordance.m2.mean.mem_none.score}} → {{fact:x.e2-concordance.m2.mean.mem_whole.score}} in the second model)</span><small>{{fact:x.e2-concordance.m1.name}} · mean of four layers</small></div>
-  <div><b>{{fact:x.e2-concordance.m1.mean.mem_64.near_left_out}}</b><span>of neighbour pairs at memory 64 are within 64 positions and left out of the score (no covered stratum)</span><small>{{fact:x.e2-concordance.m1.name}} · corpus mean</small></div>
-  <div><b>{{fact:x.e2-concordance.m1.all_eligible}} of {{fact:x.e2-concordance.m1.all_settings}}</b><span>settings eligible for ranking ({{fact:x.e2-concordance.m2.all_eligible}} of {{fact:x.e2-concordance.m2.all_settings}} in the second model)</span><small>every reading, accounting, memory and layer</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.c.mem_none.score}} → {{fact:x.e2-concordance.m1.c.mem_whole.score}}</b><span>prediction advantage (defined below), no memory → whole past</span><small>{{fact:x.e2-concordance.m1.name}} · layer {{fact:x.e2-concordance.m1.layer}} · one average removed</small></div>
+  <div><b>{{fact:x.e2-concordance.m2.c.mem_none.score}} → {{fact:x.e2-concordance.m2.c.mem_whole.score}}</b><span>the same decline in the second model</span><small>{{fact:x.e2-concordance.m2.name}} · layer {{fact:x.e2-concordance.m1.layer}} · one average removed</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.near_covered}} of {{fact:x.e2-concordance.m1.near_strata}}</b><span>nearby groups that had enough stand-ins to enter the score</span><small>{{fact:x.e2-concordance.m1.name}} · 2 nearby groups × 4 layers × 5 memories</small></div>
 </div>
+
+<h3>The pre-registered prediction advantage</h3>
+<p>Rather than looking only at the single top token, the measure fixed before the run (pre-registered) compares the two top-20 next-token lists, with their probabilities. For each pair, we sum the shared probability mass across tokens appearing in both top-20 lists and subtract the stand-in's shared mass. We average those differences within each group over its matched pairs, then give each group with enough stand-ins equal weight. At layer {{fact:x.e2-concordance.m1.layer}} with one average removed and no tokens barred, this <b>prediction advantage</b> falls from {{fact:x.e2-concordance.m1.c.mem_none.score}} with no memory to {{fact:x.e2-concordance.m1.c.mem_whole.score}} for the whole past in {{fact:x.e2-concordance.m1.name}}, and from {{fact:x.e2-concordance.m2.c.mem_none.score}} to {{fact:x.e2-concordance.m2.c.mem_whole.score}} in {{fact:x.e2-concordance.m2.name}}. The chart below shows this advantage across settings at layer {{fact:x.e2-concordance.m1.layer}}, with uncertainty bars from 200 resamplings of the {{fact:x.viewer.texts}} texts.</p>
+
+<figure class="live x-wide-fig" data-live="points" data-src="assets/x/e2-concordance.json#lead" data-height="240">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> prediction advantage by memory at layer {{fact:x.e2-concordance.m1.layer}} (compared by angle), one panel per model. Colour: one average removed (green) or each text's own average removed (violet). Shape: no tokens barred (circle) or nearby tokens barred (diamond). Vertical bars: 5th to 95th percentile over 200 document resamplings. Hollow: the setting fails the completeness rule <a href="#experiments/x-e3-selection">E3</a> uses (a group without enough stand-ins, or fewer than half of all pairs with one). It does not mean the value is invalid. All one-average, nothing-barred points are hollow, because their nearby and rare-token groups lack stand-ins. That is fine for this page: the completeness rule mattered only for picking an optional extra example in E3. Missing points were not computed.</figcaption>
+</figure>
+
+<h3>Is the decline just a change in which groups enter the score?</h3>
+<p><strong>No.</strong> Pairs are split into six groups by where the neighbour sits and whether its token is frequent (the neighbour's token occurs at least 20 times among the {{fact:x.viewer.pool_tokens}} analysed tokens) or rare (fewer than 20). Groups where fewer than half the pairs (or fewer than 200 pairs) find a stand-in are left out. Nearby groups never cleared that bar ({{fact:x.e2-concordance.m1.near_covered}} of {{fact:x.e2-concordance.m1.near_strata}}: two nearby groups at each of 4 layers and 5 memories), and rare-token groups often fell short too. At layer {{fact:x.e2-concordance.m1.layer}} in {{fact:x.e2-concordance.m1.name}} with no memory, {{fact:x.e2-concordance.m1.c.mem_none.dropped}} of pairs found a stand-in in a left-out group and {{fact:x.e2-concordance.m1.c.mem_none.unmatched}} found no stand-in at all. At memory 64, {{fact:x.e2-concordance.m1.c.mem_64.dropped}} found a stand-in but belonged to a group left out, and {{fact:x.e2-concordance.m1.c.mem_64.unmatched}} found no stand-in.</p>
+
+<p>Pooling layers {{fact:x.e2-concordance.m1.readout_layers}}, the advantage within each group on its own falls steadily with memory in both models, using all pairs that found a stand-in (including left-out groups). The decline persists within every group, though the pairs in a group are not the same pairs at every memory:</p>
+
+<div class="x-tablewrap">
+<table class="x-decisions x-groups">
+  <thead><tr><th>Neighbour group</th><th>{{fact:x.e2-concordance.m1.name}} (no memory → memory 64 → whole past)</th><th>{{fact:x.e2-concordance.m2.name}} (no memory → memory 64 → whole past)</th></tr></thead>
+  <tbody>
+  <tr><td>Other texts, frequent token</td><td>{{fact:x.e2-concordance.m1.grp.other_frequent.mem_none}} → {{fact:x.e2-concordance.m1.grp.other_frequent.mem_64}} → {{fact:x.e2-concordance.m1.grp.other_frequent.mem_whole}}</td><td>{{fact:x.e2-concordance.m2.grp.other_frequent.mem_none}} → {{fact:x.e2-concordance.m2.grp.other_frequent.mem_64}} → {{fact:x.e2-concordance.m2.grp.other_frequent.mem_whole}}</td></tr>
+  <tr><td>Other texts, rare token</td><td>{{fact:x.e2-concordance.m1.grp.other_rare.mem_none}} → {{fact:x.e2-concordance.m1.grp.other_rare.mem_64}} → {{fact:x.e2-concordance.m1.grp.other_rare.mem_whole}}</td><td>{{fact:x.e2-concordance.m2.grp.other_rare.mem_none}} → {{fact:x.e2-concordance.m2.grp.other_rare.mem_64}} → {{fact:x.e2-concordance.m2.grp.other_rare.mem_whole}}</td></tr>
+  <tr><td>Same text, far (&gt; 64 away), frequent token</td><td>{{fact:x.e2-concordance.m1.grp.far_frequent.mem_none}} → {{fact:x.e2-concordance.m1.grp.far_frequent.mem_64}} → {{fact:x.e2-concordance.m1.grp.far_frequent.mem_whole}}</td><td>{{fact:x.e2-concordance.m2.grp.far_frequent.mem_none}} → {{fact:x.e2-concordance.m2.grp.far_frequent.mem_64}} → {{fact:x.e2-concordance.m2.grp.far_frequent.mem_whole}}</td></tr>
+  <tr><td>Same text, far (&gt; 64 away), rare token</td><td>{{fact:x.e2-concordance.m1.grp.far_rare.mem_none}} → {{fact:x.e2-concordance.m1.grp.far_rare.mem_64}} → {{fact:x.e2-concordance.m1.grp.far_rare.mem_whole}}</td><td>{{fact:x.e2-concordance.m2.grp.far_rare.mem_none}} → {{fact:x.e2-concordance.m2.grp.far_rare.mem_64}} → {{fact:x.e2-concordance.m2.grp.far_rare.mem_whole}}</td></tr>
+  <tr><td>Same text, nearby (within 64), frequent token</td><td>{{fact:x.e2-concordance.m1.grp.near_frequent.mem_none}} → {{fact:x.e2-concordance.m1.grp.near_frequent.mem_64}} → {{fact:x.e2-concordance.m1.grp.near_frequent.mem_whole}}</td><td>{{fact:x.e2-concordance.m2.grp.near_frequent.mem_none}} → {{fact:x.e2-concordance.m2.grp.near_frequent.mem_64}} → {{fact:x.e2-concordance.m2.grp.near_frequent.mem_whole}}</td></tr>
+  <tr><td>Same text, nearby (within 64), rare token</td><td>{{fact:x.e2-concordance.m1.grp.near_rare.mem_none}} → {{fact:x.e2-concordance.m1.grp.near_rare.mem_64}} → {{fact:x.e2-concordance.m1.grp.near_rare.mem_whole}}</td><td>{{fact:x.e2-concordance.m2.grp.near_rare.mem_none}} → {{fact:x.e2-concordance.m2.grp.near_rare.mem_64}} → {{fact:x.e2-concordance.m2.grp.near_rare.mem_whole}}</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Even so, matched nearby pairs are a selected subset—tokens that repeat close by in the same text. Which groups are counted changes the exact size of the headline number, not its direction.</p>
+
+<h3>What this does not show</h3>
+<ul class="x-caveats">
+  <li><b>Nothing causal.</b> Whether the model uses these similarities was not tested.</li>
+  <li><b>What the stand-in does not control.</b> It matches text, token, and distance band only; anything else a neighbour shares with the query, such as its recent past, counts toward the advantage by design.</li>
+  <li><b>Not that long-memory neighbours are "wrong."</b> One plausible reading, not tested here: memory picks neighbours whose pasts resemble the query's (at memory 64 only {{fact:x.e1-neighbours.m1.c.mem_64.local}} of a token's 64 neighbours are the same as with no memory; <a href="#experiments/x-e1-neighbours">E1</a>, layer {{fact:x.e1-neighbours.m1.layer}}), while the next-token prediction depends mostly on the current state.</li>
+  <li><b>The no-memory headline excludes rare-token and nearby groups.</b> They did not have enough stand-ins.</li>
+</ul>
 
 <h3 id="x-e2-concordance-what">What was computed</h3>
 <div class="x-tablewrap">
 <table class="x-defs">
-  <thead><tr><th>Quantity</th><th>Definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <thead><tr><th>Quantity</th><th>Plain description and definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
   <tbody>
-  <tr><td>Prediction overlap</td><td>$o(i,j) = \sum_{v \in T_i \cap T_j} \min\big(p_i(v),\, p_j(v)\big)$</td>
-      <td>$T_i$: the model's 20 most likely next tokens after position $i$; $p_i$: their full-softmax probabilities</td>
+  <tr><td>Prediction overlap</td><td>Add up the probability mass both positions place on the same next tokens, using each position's top 20 predictions.<br>$o(i,j) = \sum_{v \in T_i \cap T_j} \min\big(p_i(v),\, p_j(v)\big)$</td>
+      <td>$T_i$: the model's 20 most likely next tokens after position $i$; $p_i(v)$: full-softmax probability of token $v$ (not renormalised over the top 20)</td>
       <td>exp1/readout.py: contributions</td></tr>
-  <tr><td>Matched control</td><td>$j' \sim$ uniform over the pool with $\text{text}(j') = \text{text}(j)$, $\text{token}(j') = \text{token}(j)$, same distance band</td>
-      <td>distance bands (only when $j$ is in $i$'s text): 1–8, 9–64, 65–512, over 512; never $i$, $j$ or another neighbour of $i$; drawn with a seed keyed on the model, setting, $i$ and $j$, so it can be replayed</td>
+  <tr><td>Stand-in</td><td>Pick another analysed position (positions {{fact:x.viewer.first_position}}–{{fact:x.viewer.text_tokens}}) at random from the neighbour's own text with the same token as the neighbour and, if in the query's text, in the same distance band.<br>$j' \sim \text{uniform}(\text{same text, same token, same band})$</td>
+      <td>$i$: query; $j$: neighbour; $j'$: stand-in; distance bands (same text only): 1–8, 9–64, 65–512, over 512 tokens; $j'$ is never $i$, $j$, or another neighbour of $i$; seed keyed on model, setting, $i$, and $j$ for exact replay</td>
       <td>exp1/readout.py: Matcher, keyed_seed</td></tr>
-  <tr><td>Pair advantage</td><td>$o(i,j) - o(i,j')$</td>
-      <td>a pair with no eligible control is unmatched, with its reason recorded</td>
+  <tr><td>Pair advantage</td><td>Subtract the stand-in's prediction overlap from the real neighbour's overlap.<br>$a(i,j) = o(i,j) - o(i,j')$</td>
+      <td>pairs with no available stand-in are unmatched, with the reason recorded (token occurs once in text, empty distance band, or every candidate is already a neighbour)</td>
       <td>exp1/readout.py: contributions</td></tr>
-  <tr><td>Concordance score</td><td>$S = \dfrac{1}{|C|}\sum_{c \in C} \dfrac{\sum_{\text{pairs in } c} \text{advantage}}{\#\text{matched in } c}$</td>
-      <td>strata: neighbour origin (3) × whether its token occurs at least 20 times in the pool (2); $C$: covered strata, at least half and at least 200 pairs matched; equal weights</td>
+  <tr><td>Prediction advantage</td><td>Split pairs into six groups by neighbour location and token frequency, average within each group over its matched pairs, then average those group means equally over groups with enough stand-ins.<br>$S = \dfrac{1}{|G|}\sum_{g \in G} \dfrac{\sum_{(i,j) \in g} a(i,j)}{n_g}$</td>
+      <td>groups: 3 locations × frequent (the neighbour's token occurs at least 20 times among the {{fact:x.viewer.pool_tokens}} analysed tokens) vs rare (fewer than 20); $G$: groups where at least half of the pairs, and at least 200 pairs, found a stand-in; $n_g$: matched pair count (tie-weighted) in group $g$</td>
       <td>exp1/readout.py: summarize</td></tr>
-  <tr><td>Eligible for ranking</td><td>every non-empty stratum covered and overall coverage $\ge 50\%$</td>
-      <td>an ineligible setting is drawn hollow and never ranked</td>
+  <tr><td>Top-1 agreement</td><td>Compute how often the query's top predicted next token matches the neighbour's (or stand-in's), averaged equally over the same groups $G$.<br>$R = \dfrac{1}{|G|}\sum_{g \in G} r_g$</td>
+      <td>$r_g$: fraction of matched pairs in group $g$ whose most likely next token matches</td>
       <td>exp1/readout.py: summarize</td></tr>
   </tbody>
 </table>
 </div>
 
-<h3 id="x-e2-concordance-figures">Supporting figures</h3>
-<div class="x-figs">
-<figure class="live x-wide-fig" data-live="heatmap" data-src="assets/x/e2-concordance.json#coverage">
-  <div class="live-body"></div>
-  <figcaption><b>Plotted:</b> for each stratum (rows: neighbour origin and how common its token is) and memory
-  (columns), the share of neighbour pairs that found a matched control; corpus mean, every token eligible, layer 8;
-  blank cells: no pairs in that stratum.</figcaption>
-</figure>
-<figure class="live" data-live="lines" data-src="assets/x/e2-concordance.json#top1" data-height="220">
-  <div class="live-body"></div>
-  <figcaption><b>Plotted:</b> for each memory, how often a neighbour's most likely next token equals the query's (solid)
-  and how often its matched control's does (dashed), mean over covered strata; corpus mean, every token eligible,
-  layer 8.</figcaption>
-</figure>
-</div>
+<details class="x-more" id="x-e2-concordance-figures">
+  <summary>Variations, four-layer means, and shares with a stand-in <span class="x-count">(3)</span></summary>
+  <ul class="x-caveats x-vars">
+    <li><b>Four-layer means (layers {{fact:x.e2-concordance.m1.readout_layers}}):</b> project summaries often quote averages over all four measured layers rather than layer {{fact:x.e2-concordance.m1.layer}} alone. In {{fact:x.e2-concordance.m1.name}} with no memory, top-1 agreement is {{fact:x.e2-concordance.m1.mean.mem_none.top1}} versus {{fact:x.e2-concordance.m1.mean.mem_none.top1_control}} ({{fact:x.e2-concordance.m1.mean.mem_none.ratio}} times as often), and prediction advantage drops from {{fact:x.e2-concordance.m1.mean.mem_none.score}} to {{fact:x.e2-concordance.m1.mean.mem_whole.score}}. In {{fact:x.e2-concordance.m2.name}}, top-1 agreement is {{fact:x.e2-concordance.m2.mean.mem_none.top1}} versus {{fact:x.e2-concordance.m2.mean.mem_none.top1_control}} ({{fact:x.e2-concordance.m2.mean.mem_none.ratio}} times), and prediction advantage drops from {{fact:x.e2-concordance.m2.mean.mem_none.score}} to {{fact:x.e2-concordance.m2.mean.mem_whole.score}}.</li>
+    <li><b>Other settings and layers:</b> subtracting each text's own average or barring nearby tokens shifts the exact advantage (shown in the points figure above), but every angle-based setting at every measured layer (layers {{fact:x.e2-concordance.m1.readout_layers}}) falls with memory; with lengths kept (the "dot" setting) a few settings tick up slightly at the whole past.</li>
+  </ul>
+  <div class="x-figs">
+  <figure class="live x-wide-fig" data-live="heatmap" data-src="assets/x/e2-concordance.json#coverage">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> for each pair group (rows: neighbour location and whether its token is frequent or rare) and memory (columns), the share of neighbour pairs that found a stand-in; layer {{fact:x.e2-concordance.m1.layer}}, compared by angle, one average removed, no tokens barred. A group enters the headline average only when at least half of its pairs, and at least 200 pairs, find a stand-in, which is why the nearby rows are left out. Blank cells had no pairs.</figcaption>
+  </figure>
+  </div>
+</details>
 
 <h3 id="x-e2-concordance-caveats">Caveats</h3>
 <ul class="x-caveats">
-  <li><span class="x-tag">audit</span><b>The first run of this readout failed the independent audit.</b> An int32 overflow
-  in exp1/readout.py (the lookup key of the prediction overlap) recorded zero overlap for every neighbour or control in
-  texts 24 to 31 and the end of text 23. It was fixed with 64-bit keys and two regression tests, the readout and selection
-  were re-run, and the audit then passed. The scores rose; top-1 rates, coverage and the choice of Stage B's construction
-  did not change. See <a href="#method/check">How to check</a>.</li>
-  <li><b>Controls are matched on text, current token and distance band only.</b> Anything else a neighbour shares with
-  its query (its own past, say) is part of the advantage by design.</li>
-  <li><b>Coverage limits the claim.</b> Frequent tokens find controls easily; rare ones often do not, so strata differ in
-  how much they say. Uncovered strata are left out of the score, not filled in.</li>
-  <li><b>Only the top 20 predictions are compared,</b> so overlap below the 20th token is invisible; the retained mass
-  is stored per stratum.</li>
-  <li><b>The score is descriptive.</b> It never chooses Stage B's construction (E3) and is not a validation of it; it can
-  add at most one extra example.</li>
+  <li><span class="x-tag">audit</span><b>The first run failed the independent check and was fixed.</b> A 32-bit integer overflow in <code>exp1/readout.py</code> zeroed out prediction overlaps for texts 24–31 and the end of text 23. After switching to 64-bit keys and re-running, the check passed ({{fact:x.method.audit.checks}} checks, {{fact:x.method.audit.failed}} failures). The fix changed only the prediction advantages, which rose. Top-1 rates, the share of pairs with a stand-in, and the <a href="#experiments/x-e3-selection">E3</a> pick did not change. See <a href="#method/check">How the numbers were checked</a>.</li>
+  <li><b>Two-thirds of the query sample sits near the end of each text.</b> Sixty-four of each text's 96 queries come from the last 512 positions, so results are not uniform across positions.</li>
+  <li><b>Only the top 20 predictions are compared.</b> Any shared probability below the 20th most likely token is invisible.</li>
+  <li><b>Document resampling does not redraw neighbours or stand-ins.</b> Uncertainty bars show variation across the {{fact:x.viewer.texts}} texts, not across a fresh set of documents.</li>
 </ul>
 
 <details class="x-more">
-  <summary>Decisions made on the owner's behalf <span class="x-count">(3)</span></summary>
+  <summary>Design choices (made by the analysis, not the owner) <span class="x-count">(3)</span></summary>
   <div class="x-tablewrap">
   <table class="x-decisions">
     <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td>Readout sample</td><td>a fixed stratified sample of 3,072 queries at four layers</td><td>every token (about 3.5 billion pairs)</td></tr>
-    <tr><td>2</td><td>Score</td><td>equal weights over covered strata</td><td>weighting by pair counts, which frequent tokens would dominate</td></tr>
-    <tr><td>3</td><td>Use</td><td>descriptive; at most one Stage B example</td><td>ranking constructions by concordance</td></tr>
+    <tr><td>1</td><td>Query sample</td><td>3,072 fixed queries across four layers</td><td>all {{fact:x.viewer.pool_tokens}} analysed tokens</td></tr>
+    <tr><td>2</td><td>Group weighting</td><td>equal weights across groups with enough stand-ins</td><td>weighting by pair count, which frequent tokens would dominate</td></tr>
+    <tr><td>3</td><td>Role</td><td>descriptive only; never used to pick the main Stage B setup</td><td>selecting Stage B by prediction agreement</td></tr>
     </tbody>
   </table>
   </div>
 </details>
 
-<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/readout.py">Code: readout.py</a> ·
-<a href="#method/census">Method: the census</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/readout.py">Code: readout.py</a> · <a href="#method/census">Method: counting and the prediction readout</a> · <a class="x-top" href="#experiments">All experiments</a></p>
 </section>

@@ -17,8 +17,9 @@ HERE = Path(__file__).resolve().parent
 XDIR = HERE / "content" / "experiments"
 ID = re.compile(r"[a-z][a-z0-9-]*")
 FACT = re.compile(r"\{\{\s*fact:([^{}]+)\}\}")
-LIVE_KINDS = ("lines", "heatmap", "bars", "dots", "hist", "stack", "points", "table")
+LIVE_KINDS = ("lines", "heatmap", "bars", "dots", "hist", "stack", "points", "table", "agreement", "paired")
 GROUPS = {"stage-a": "Stage A: the neighbour census"}
+SHOW_CARDS = False
 
 
 class BuildError(ValueError):
@@ -150,7 +151,8 @@ def ref_target(ref, xid, payload, where):
 def check_live_shape(obj, kind, where):
     required = {"lines": ("x", "series"), "heatmap": ("rows", "cols", "z"), "bars": ("categories", "series"),
                 "dots": ("rows", "series"), "hist": ("edges", "series"), "stack": ("categories", "segments"),
-                "points": ("categories", "series"), "table": ("columns", "rows")}[kind]
+                "points": ("categories", "series"), "table": ("columns", "rows"),
+                "agreement": ("categories", "series", "segments", "strip", "groups"), "paired": ("rows", "series")}[kind]
     panels = obj.get("panels", [obj])
     shared = {k: v for k, v in obj.items() if k != "panels"}
     require(isinstance(panels, list) and all(isinstance(p, dict) and all(k in p or k in shared for k in required) for p in panels),
@@ -195,8 +197,10 @@ def experiments_html(xdir, facts):
         entries.append((e, text, card))
     lede = XDIR / "_lede.html"
     parts = [fact_sub(lede.read_text(encoding="utf-8"), facts, lede) if lede.is_file() else ""]
+    # The landing (_lede.html) now carries its own three findings, each linking to its entry, so the "At a glance"
+    # cards are no longer drawn; each generator's card is still validated by read_entry. Set SHOW_CARDS to bring them back.
     cards = {g: [] for g in GROUPS}
-    for e, _, c in entries:
+    for e, _, c in (entries if SHOW_CARDS else []):
         if c is None:
             continue
         nums = "".join(f"<li>{html.escape(n)}</li>" for n in c["numbers"])

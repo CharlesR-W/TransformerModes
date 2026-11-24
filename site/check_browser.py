@@ -149,7 +149,7 @@ async page => {
         await other.click(); await viewerReady();
         await g.locator(`button[data-v="${on}"]`).click(); await viewerReady();
       }
-      for (const name of ['Accounting', 'Text']) {
+      for (const name of ['Settings', 'Text']) {
         const sel = page.getByRole('combobox', {name, exact: true});
         const old = await sel.inputValue();
         const other = await sel.evaluate(s => [...s.options].find(o => !o.disabled && o.value !== s.value)?.value ?? null);

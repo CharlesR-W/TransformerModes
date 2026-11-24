@@ -145,7 +145,7 @@ export function lineChart(container, o) {
   for (const r of [...(o.refline ? [o.refline] : []), ...(o.reflines || [])]) {
     if (!Number.isFinite(r.y) || r.y < ylo || r.y > yhi) continue;
     el("line", { x1: m.l, x2: W - m.r, y1: Y(r.y), y2: Y(r.y), class: "ref" }, svg);
-    if (r.label) el("text", { x: W - m.r - 2, y: Y(r.y) - 4, "text-anchor": "end", class: "reflab" }, svg).textContent = r.label;
+    if (r.label) el("text", { x: r.at === "left" ? m.l + 4 : W - m.r - 2, y: Y(r.y) - 4, "text-anchor": r.at === "left" ? "start" : "end", class: "reflab" }, svg).textContent = r.label;
   }
   const bandD = b => {
     let d = "";
@@ -386,12 +386,12 @@ export function histChart(container, o) {
 export function stackChart(container, o) {
   const { wrap, W, H } = frame(container, o, 200);
   const nc = o.categories.length, labels = o.short || o.categories;
-  const m = { l: 40, r: 6, t: o.notes || o.zero_near || o.reserveTop ? 26 : 10, b: o.xlabel ? 36 : 22 };
+  const m = { l: 40, r: 6, t: o.notes || o.zero_near || o.reserveTop || Number.isFinite(o.chance) ? 26 : 10, b: o.xlabel ? 36 : 22 };
   const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.title || o.ylabel || "stacked shares" }, wrap);
   const Y = scale("linear", 0, 1, H - m.b, m.t);
   yAxis(svg, m, W, H, Y, 0, 1, v => `${Math.round(v * 100)}%`, null);
   const band = (W - m.l - m.r) / nc, bw = Math.min(30, band * .62), gap = 1.5, surf = css("--surface", "#fff"), ink = INK();
-  const pf = v => `${Math.round(100 * v)}%`;
+  const pf = v => `${Math.round(100 * v)}%`, tf = v => Number.isFinite(v) ? `${(100 * v).toFixed(1)}%` : "n/a";  // tf: tooltips, one decimal
   let hatchId = null;
   if (o.zero_near) {
     hatchId = "h" + Math.random().toString(36).slice(2);
@@ -400,7 +400,8 @@ export function stackChart(container, o) {
     el("line", { x1: 0, y1: 0, x2: 0, y2: 4, stroke: o.colors[o.colors.length - 1], "stroke-width": 2 }, pat);
   }
   o.categories.forEach((c, i) => {
-    const x = m.l + i * band + (band - bw) / 2, v = o.values[i];
+    const span = o.companion ? Math.min(bw + 14, band * .76) : bw;
+    const wide = o.companion ? span * .65 : span, x = m.l + i * band + (band - span) / 2, v = o.values[i];
     const tx = m.l + i * band + band / 2;
     el("text", { x: tx, y: H - m.b + 14, "text-anchor": "middle" }, svg).textContent = labels[i];
     if (!v) {
@@ -409,16 +410,21 @@ export function stackChart(container, o) {
       return;
     }
     const g = el("g", { class: "stack" }, svg);
-    let acc = 0;
-    v.forEach((share, k) => {
-      if (!(share > 0)) return;
-      const y0 = Y(acc), y1 = Y(acc + share);
-      el("rect", { x, y: y1, width: bw, height: Math.max(.5, y0 - y1 - (acc + share < .999 ? gap : 0)), fill: o.colors[k], rx: 1.5 }, g);
-      acc += share;
-    });
+    const draw = (values, x, w, opacity) => {
+      let acc = 0;
+      values?.forEach((share, k) => {
+        if (!(share > 0)) return;
+        const y0 = Y(acc), y1 = Y(acc + share);
+        el("rect", { x, y: y1, width: w, height: Math.max(.5, y0 - y1 - (acc + share < .999 ? gap : 0)), fill: o.colors[k], rx: 1.5, opacity }, g);
+        acc += share;
+      });
+    };
+    draw(v, x, wide);
+    const companion = o.companion?.[i];
+    if (companion) draw(companion, x + wide + 2, span - wide - 2, .60);
     if (o.zero_near) el("rect", { x, y: Y(1) - 7, width: bw, height: 5, fill: `url(#${hatchId})`, stroke: o.colors[o.colors.length - 1], "stroke-width": .6, rx: 1 }, g);
     const w = o.whisker && o.whisker[i];
-    if (w && Number.isFinite(w[0])) {
+    if (!o.companion && w && Number.isFinite(w[0])) {
       const cx = x + bw / 2;
       el("line", { x1: cx, x2: cx, y1: Y(w[0]), y2: Y(w[1]), stroke: ink, "stroke-width": 1.3 }, g);
       for (const e of w) el("line", { x1: cx - 4, x2: cx + 4, y1: Y(e), y2: Y(e), stroke: ink, "stroke-width": 1.3 }, g);
@@ -427,17 +433,118 @@ export function stackChart(container, o) {
     if (note) el("text", { x: tx, y: m.t - 12, "text-anchor": "middle", class: "note" }, svg).textContent = note;
     const hit = el("rect", { x: m.l + i * band, y: m.t - 10, width: band, height: H - m.b - m.t + 10, fill: "transparent" }, svg);
     hit.addEventListener("pointermove", ev => {
-      const rows = o.segments.map((name, k) => ({ name, value: pf(v[k]) + (o.alt && o.alt[i] ? ` (${o.alt_label || "alt"}: ${pf(o.alt[i][k])})` : ""), color: o.colors[k] }));
-      if (w && Number.isFinite(w[0])) rows.push({ name: `${o.segments[0]}, 5–95% over documents`, value: `${pf(w[0])} to ${pf(w[1])}` });
+      const rows = o.segments.map((name, k) => ({ name, value: tf(v[k]) + (o.alt && o.alt[i] ? ` (${o.alt_label || "alt"}: ${tf(o.alt[i][k])})` : "") + (companion ? ` (random vectors: ${tf(companion[k])})` : ""), color: o.colors[k] }));
+      if (w && Number.isFinite(w[0])) rows.push({ name: `${o.segments[0]}, 5–95% over documents`, value: `${tf(w[0])} to ${tf(w[1])}` });
       if (note) rows.push({ name: o.note_label || "note", value: note });
       if (o.zero_near) rows.push({ name: o.segments[o.segments.length - 1], value: "zero by rule" });
       showTip(ev.clientX, ev.clientY, tipRows(`${o.xname || ""}${o.categories[i]}`, rows));
     });
     hit.addEventListener("pointerleave", hideTip);
   });
+  if (Number.isFinite(o.chance)) {
+    el("line", { x1: m.l, x2: W - m.r, y1: Y(o.chance), y2: Y(o.chance), stroke: surf, "stroke-width": 2.5, "pointer-events": "none" }, svg);
+    el("line", { x1: m.l, x2: W - m.r, y1: Y(o.chance), y2: Y(o.chance), stroke: ink, "stroke-width": 1, "stroke-dasharray": "4 3", "pointer-events": "none" }, svg);
+    el("text", { x: W - m.r, y: 15, "text-anchor": "end", class: "ttl" }, svg).textContent = `If drawn at random, grey would reach ${pf(o.chance)}`;
+  }
   if (o.notes && o.note_label) el("text", { x: m.l - 4, y: m.t - 12, "text-anchor": "end", class: "note" }, svg).textContent = o.note_label;
   if (o.xlabel) el("text", { x: (m.l + W - m.r) / 2, y: H - 3, "text-anchor": "middle", class: "ttl" }, svg).textContent = o.xlabel;
   return { svg };
+}
+
+const chartPct = v => Number.isFinite(v) ? `${Number((v * 100).toFixed(2))}%` : "n/a";
+function markTip(node, label, rows) {
+  el("title", {}, node).textContent = `${label}: ${rows.map(r => `${r.name} ${r.value}`).join("; ")}`;
+  node.addEventListener("pointermove", e => showTip(e.clientX, e.clientY, tipRows(label, rows)));
+  node.addEventListener("pointerleave", hideTip);
+}
+
+// group labels under each memory: two lines ("other texts" / "frequent") when the column is wide enough, else "other, freq."
+function groupLines(name, band) {
+  const [where, freq] = name.split(": ");
+  if (band >= 80) return [{ Other: "other texts", Far: "same text, far", Near: "same text, near" }[where] || where,
+    freq === "both" ? "rare + frequent" : freq];
+  return [`${({ Other: "other", Far: "far", Near: "near" }[where] || where)}, ${({ frequent: "freq.", rare: "rare", both: "both" }[freq] || freq)}`];
+}
+// Agreement lines and the coverage stacks share the same memory positions.
+export function agreementChart(container, o) {
+  const { wrap, W } = frame(container, {}, 145);
+  const plotH = Math.max(116, Math.min(W < 400 ? 150 : Infinity, o.height || 145));
+  const m = { l: 37, r: 5, t: 9, b: 0 }, baseline = plotH;
+  const bandW = (W - 37 - 5) / o.categories.length;
+  const nLines = Math.max(1, ...o.groups.map(gs => gs.flatMap(g => groupLines(g, bandW)).length));
+  const barTop = baseline + 34, barH = 68, H = barTop + barH + 46 + 12 * nLines;
+  const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img",
+    "aria-label": `${o.title}: top-1 agreement and weighted pair shares by memory` }, wrap);
+  const Y = scale("linear", 0, o.maxAgreement, baseline, m.t), band = (W - m.l - m.r) / o.categories.length;
+  const X = i => m.l + (i + .5) * band;
+  const surf = css("--surface", "#fff");
+  yAxis(svg, m, W, plotH, Y, 0, o.maxAgreement, chartPct, null);
+  el("text", { x: m.l, y: baseline + 21, class: "ttl" }, svg).textContent = "Share of all pairs";
+  for (const [x, label] of [[barTop + 4, "100%"], [barTop + barH, "0%"]])
+    el("text", { x: m.l - 6, y: x, "text-anchor": "end" }, svg).textContent = label;
+  for (const series of o.series) {
+    let d = "", pen = false;
+    series.y.forEach((v, i) => {
+      if (!Number.isFinite(v)) { pen = false; return; }
+      d += `${pen ? "L" : "M"}${X(i)},${Y(v)}`; pen = true;
+    });
+    el("path", { d, fill: "none", stroke: series.color, "stroke-width": 2, "stroke-dasharray": series.dash ? "5 4" : null }, svg);
+    series.y.forEach((v, i) => {
+      if (Number.isFinite(v)) el("circle", { cx: X(i), cy: Y(v), r: 3.2, fill: series.dash ? surf : series.color, stroke: series.color, "stroke-width": 1.2 }, svg);
+    });
+  }
+  o.categories.forEach((label, i) => {
+    const x = X(i), w = Math.min(40, band * .68), shares = o.strip[i];
+    let y = barTop + barH;
+    if (shares) shares.forEach((v, j) => {
+      if (!v) return;
+      y -= v * barH;
+      el("rect", { x: x - w / 2, y, width: w, height: v * barH, fill: o.colors[j] }, svg);
+    });
+    else el("text", { x, y: y - 20, "text-anchor": "middle" }, svg).textContent = "n/a";
+    const tick = barTop + barH + 16;
+    el("text", { x, y: tick, "text-anchor": "middle", class: "ttl" }, svg).textContent = label;
+    o.groups[i].flatMap(name => groupLines(name, band).map((line, k) => [line, k])).forEach(([line, k], j) => {
+      el("text", { x, y: tick + 14 + j * 12, "text-anchor": "middle", class: k ? "coverage-group sub" : "coverage-group" }, svg).textContent = line;
+    });
+    const rows = [...o.series.map(s => ({ name: s.name, value: chartPct(s.y[i]), color: s.color })),
+      ...o.segments.map((name, j) => ({ name, value: chartPct(shares?.[j]), color: o.colors[j] })),
+      { name: "Groups used", value: o.groups[i].join("; ") || "none" }];
+    markTip(el("rect", { x: x - band / 2, y: m.t, width: band, height: H - m.t - 12, fill: "transparent" }, svg), `Memory ${label}`, rows);
+  });
+  el("text", { x: m.l + (W - m.l - m.r) / 2, y: H - 3, "text-anchor": "middle", class: "ttl" }, svg).textContent = "Memory · groups used below each label";
+}
+
+// Each row connects two shares measured on the same screen sample.
+export function pairedChart(container, o) {
+  // rows with chosen: true are a different setting: drawn after a gap, under their own note (row.note)
+  const step = 28, gapH = 30, top = o.head ? 24 : 13;
+  const ys = []; let y0 = top;
+  o.rows.forEach((row, i) => { if (row.chosen && !(o.rows[i - 1] || {}).chosen) y0 += gapH; ys.push(y0 + step / 2); y0 += step; });
+  const bottom = y0;
+  const { wrap, W, H } = frame(container, {}, bottom + 25);
+  const l = 76, r = 20, X = scale("linear", 0, 1, l, W - r), surf = css("--surface", "#fff");
+  const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${o.title}: ${o.ylabel}` }, wrap);
+  const g = el("g", { class: "grid" }, svg);
+  for (const v of [0, .25, .5, .75, 1]) {
+    el("line", { x1: X(v), x2: X(v), y1: top, y2: bottom }, g);
+    el("text", { x: X(v), y: bottom + 15, "text-anchor": "middle" }, svg).textContent = chartPct(v);
+  }
+  if (o.head) el("text", { x: 0, y: top - 8, class: "ttl" }, svg).textContent = o.head;
+  o.rows.forEach((row, i) => {
+    const y = ys[i], [a, b] = row.values;
+    if (row.chosen && !(o.rows[i - 1] || {}).chosen) {
+      el("line", { x1: 0, x2: W - r, y1: y - step / 2 - gapH + 6, y2: y - step / 2 - gapH + 6, class: "row" }, svg);
+      if (row.note) el("text", { x: 0, y: y - step / 2 - 6, class: "ttl" }, svg).textContent = row.note;
+    }
+    el("text", { x: l - 9, y: y + 4, "text-anchor": "end", class: row.chosen ? "ttl" : null }, svg).textContent = row.label;
+    if (Number.isFinite(a) && Number.isFinite(b)) el("line", { x1: X(a), x2: X(b), y1: y, y2: y, stroke: MUTE(), opacity: .65 }, svg);
+    if (Number.isFinite(a)) el("circle", { cx: X(a), cy: y, r: 4.5, fill: surf, stroke: o.series[0].color, "stroke-width": 2 }, svg);
+    if (Number.isFinite(b)) el("rect", { x: X(b) - 4, y: y - 4, width: 8, height: 8, rx: 1, fill: o.series[1].color }, svg);
+    if (!Number.isFinite(a) && !Number.isFinite(b)) el("text", { x: X(.5), y: y + 4, "text-anchor": "middle" }, svg).textContent = "n/a";
+    markTip(el("rect", { x: 0, y: y - step / 2, width: W, height: step, fill: "transparent" }, svg),
+      row.chosen ? (row.note || row.label) : `${o.head ? o.head.replace(/,? by memory.*$/, "") : "Cosine"}, memory ${row.label}`, o.series.map((s, j) => ({ name: s.name, value: chartPct(row.values[j]), color: s.color })));
+  });
 }
 
 // ---------- points with whiskers over categories (vertical), several series offset within each category
