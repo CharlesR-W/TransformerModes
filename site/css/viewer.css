@@ -192,9 +192,10 @@ i.sw.near { background: var(--o-near); }
   .vw-hint { display: none; }
   .vw-card { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; max-height: 64vh; overflow: auto; border-radius: 12px 12px 0 0; border-bottom: 0;
     box-shadow: 0 -6px 24px rgba(0, 0, 0, .18); padding: 10px 14px 18px; overscroll-behavior: contain; }
-  body:has(.vw-card:not([hidden])) .vw-strip { bottom: 64vh; }
 }
 @media (max-width: 640px) {
+  .vw-bar { position: static; }
+  .tk { scroll-margin-top: calc(var(--tabs-h) + 12px); }
   .vw-page { padding: 10px 16px 16px; }
   .vw-head h1 { font-size: 20px; }
   .vw-head p { font-size: 13.5px; }

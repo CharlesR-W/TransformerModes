@@ -312,9 +312,10 @@ def inventory_files(root, exclude=()):
     """{relative POSIX path from root: SHA-256 hex} for every regular file under root/analysis and root/site,
     walked in sorted order. `exclude`: absolute paths left out (the audit's own report, if written there)."""
     import os
+    from concurrent.futures import ThreadPoolExecutor
     root = Path(root)
     skip = {str(Path(p).resolve()) for p in exclude}
-    files = {}
+    paths = []
     for tree in INVENTORY_TREES:
         base = root / tree
         if not base.is_dir():
@@ -323,10 +324,12 @@ def inventory_files(root, exclude=()):
             dirnames.sort()
             for name in sorted(filenames):
                 path = Path(dirpath) / name
-                if not path.is_file() or str(path.resolve()) in skip:
-                    continue
-                files[path.relative_to(root).as_posix()] = _sha256_file(path)
-    return dict(sorted(files.items()))
+                if path.is_file() and str(path.resolve()) not in skip:
+                    paths.append(path)
+    # Many small files on a network volume: latency-bound, so hash in a small thread pool (hashlib releases the GIL).
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        digests = list(pool.map(_sha256_file, paths))
+    return dict(sorted((p.relative_to(root).as_posix(), h) for p, h in zip(paths, digests)))
 
 
 def make_inventory(root, exclude=()):

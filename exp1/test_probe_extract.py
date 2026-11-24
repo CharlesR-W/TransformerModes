@@ -376,7 +376,7 @@ def test_coordinator_ledger_and_cap_without_rpc(tmp_path, monkeypatch):
     assert failed["status"] == "failed" and app._charge(failed) > 0
     assert app._ledger_total() > app._charge(passed) + app._charge(failed)
     with pytest.raises(RuntimeError, match="exceeds"):
-        app._require_budget(7.99, [app._reservation("next", "U1", "pythia")])
+        app._require_budget(app.STAGE_A_CAP - 0.01, [app._reservation("next", "U1", "pythia")])
     with pytest.raises(ValueError, match="no implemented worker"):
         app._stage_units("B-pilot", False)
     monkeypatch.setitem(app.STAGE_B_WORKERS, "test-stage-b", (("U1", "pythia"),))

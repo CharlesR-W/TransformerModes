@@ -118,7 +118,10 @@ def release_problems(data: Path):
     else:
         report = build_x.read_json(report_path)
         if report.get("passed") is not True or not report.get("checks"):
-            problems.append("the independent audit did not pass (audit_a/report.json)")
+            failed = sorted({c["name"] for c in report.get("checks", []) if not c.get("passed")})
+            scopes = sum(not c.get("passed") for c in report.get("checks", []))
+            problems.append("the independent audit did not pass" + (f": {', '.join(failed)} failed in {scopes} scope(s)" if failed else
+                                                                    f" ({report.get('error', 'no checks recorded')})"))
         if report.get("spec_parameters") is not True:
             problems.append("the audit was not run with the spec's parameters (spec_parameters is not true)")
         problems += inventory_problems(data, report)
@@ -137,8 +140,8 @@ def release_problems(data: Path):
 
 
 class Builder:
-    def __init__(self, data: Path, out: Path, dev: bool, allow_placeholders: bool):
-        self.data, self.dev, self.allow = data.resolve(), dev, allow_placeholders
+    def __init__(self, data: Path, out: Path, dev: bool, allow_placeholders: bool, note: str | None = None):
+        self.data, self.dev, self.allow, self.note = data.resolve(), dev, allow_placeholders, note
         requested = out.absolute()
         self.out = out.resolve()
         if (requested.is_symlink() or self.out in (ROOT, HERE) or self.out in ROOT.parents or self.out.is_file()
@@ -205,10 +208,15 @@ class Builder:
     def banner(self):
         if not self.dev:
             return ""
-        items = "".join(f"<li>{build_x.html.escape(p)}</li>" for p in self.problems)
-        return ('<div class="dev-banner" role="alert"><b>Development fixture, not results.</b> Built with --dev from '
-                f'<code>{build_x.html.escape(self.data.name)}</code>; every number on this page is a placeholder from a tiny '
-                f'test case.<details><summary>Why this is not a release build</summary><ul>{items}</ul></details></div>')
+        esc = build_x.html.escape
+        items = "".join(f"<li>{esc(p)}</li>" for p in self.problems)
+        if (self.data / "FIXTURE.json").exists():
+            lead = ('<b>Development fixture, not results.</b> Built with --dev from '
+                    f'<code>{esc(self.data.name)}</code>; every number on this page comes from a tiny test case.')
+        else:
+            lead = f'<b>Development build, not a release.</b> {esc(self.note or "This build is not fit to publish.")}'
+        return (f'<div class="dev-banner" role="alert">{lead}<details><summary>Why this is not a release build</summary>'
+                f'<ul>{items}</ul></details></div>')
 
     def assemble(self, xdir):
         facts = build_x.load_facts(xdir)
@@ -239,9 +247,10 @@ def main():
     ap.add_argument("--out", type=Path, default=ROOT / "build" / "site", help="output directory, replaced (default build/site)")
     ap.add_argument("--dev", action="store_true", help="development build: banner on every page, release checks become notes")
     ap.add_argument("--allow-placeholders", action="store_true", help="release build with answer placeholders left in")
+    ap.add_argument("--dev-note", help="with --dev on fetched data: one plain sentence for the banner saying why this is not a release")
     a = ap.parse_args()
     try:
-        Builder(a.data, a.out, a.dev, a.allow_placeholders).run()
+        Builder(a.data, a.out, a.dev, a.allow_placeholders, a.dev_note).run()
     except (BuildError, OSError, KeyError, ValueError) as e:
         ap.exit(1, f"build failed: {e}\n")
 

@@ -5,12 +5,16 @@ tokens, each compared with all the others), both models, the cosine reading, eac
 accountings, the 64 nearest neighbours of each token. The lead figure is layer 8; the other layers are in the viewer.
 Not varied: the number of neighbours, the window width, the text sample.</p>
 
-<!-- ANSWER: write when the census exists. Spec 12.3: "Under the corpus mean, memory makes [x]% of a token's neighbours
-its own text, [y]% within 64 positions; the window removes [z] of the conditional mass; text-only vectors share [w] of
-the neighbours." Facts: x.e1-neighbours.m1.c.mem_64.own / .near, m1.cw.mem_64.removed, m1.c.mem_64.adv (and m2.*). -->
-<p class="x-answer"><span class="x-placeholder">Answer pending. Two or three sentences, one in bold: how much of a token's
-neighbourhood memory moves into its own text and within 64 positions, how much walk weight the window removes, and how
-many neighbours text-only vectors share.</span></p>
+<p class="x-answer"><strong>Memory moves a token's nearest neighbours into its own text and next to it: under the
+corpus mean at layer 8 the share in its own text rises from {{fact:x.e1-neighbours.m1.c.mem_none.own}} with no memory
+to {{fact:x.e1-neighbours.m1.c.mem_64.own}} at memory 64 in {{fact:x.e1-neighbours.m1.name}}
+({{fact:x.e1-neighbours.m2.c.mem_none.own}} to {{fact:x.e1-neighbours.m2.c.mem_64.own}} in
+{{fact:x.e1-neighbours.m2.name}}), and {{fact:x.e1-neighbours.m1.c.mem_64.near}} of the 64 sit within 64 positions.</strong>
+The kernel does not do this to any input: random token vectors through the same kernel put
+{{fact:x.e1-neighbours.random.mem_64.near}} of their neighbours within 64 positions at memory 64, against
+{{fact:x.e1-neighbours.m1.layermean.mem_64.near}} averaged over {{fact:x.e1-neighbours.m1.name}}'s layers. The window
+takes away {{fact:x.e1-neighbours.m1.cw.mem_64.removed}} of a row's walk weight at memory 64, and about
+{{fact:x.e1-neighbours.m1.c.mem_64.adv}} of the neighbours are shared with the closer of the two text-only inputs.</p>
 
 <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#lead" data-height="200">
   <div class="live-body"></div>
@@ -61,18 +65,21 @@ many neighbours text-only vectors share.</span></p>
 
 <h3 id="x-e1-neighbours-figures">Supporting figures</h3>
 <div class="x-figs">
+<figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#textonly" data-height="180">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> the same shares as the lead figure, from the identical kernel run on three kinds of input
+  over the same texts: each model's hidden states (mean over its measured layers), a fixed random vector per token id,
+  and each model's embedding output; corpus mean, every token eligible, cosine reading. The kernel pairs lag with lag,
+  so neighbouring positions of one text share no vectors in the comparison; text-only inputs show what it does to text
+  alone.</figcaption>
+</figure>
 <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#screen" data-height="180">
   <div class="live-body"></div>
   <figcaption><b>Plotted:</b> the same layout as the lead figure, but each bar is the walk weight Stage B's dense row
   would put on each origin, averaged over the 2,048 sampled suffix queries, with the 16,384 suffix tokens as candidates;
   layer 8, cosine reading.</figcaption>
 </figure>
-<figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#adversary" data-height="220">
-  <div class="live-body"></div>
-  <figcaption><b>Plotted:</b> for each memory, the share of a token's 64 neighbours that also appear among the 64
-  neighbours given by random token vectors (solid), by the embedding output (dashed), and by the same model with no
-  memory (dotted); expected overlap with ties broken at random; corpus mean, every token eligible, layer 8.</figcaption>
-</figure>
+
 </div>
 
 <h3 id="x-e1-neighbours-caveats">Caveats</h3>
@@ -106,8 +113,14 @@ many neighbours text-only vectors share.</span></p>
 </details>
 
 <details class="x-more">
-  <summary>More figures <span class="x-count">(5)</span></summary>
+  <summary>More figures <span class="x-count">(6)</span></summary>
   <div class="x-figs">
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#adversary" data-height="220">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each memory, the share of a token's 64 neighbours that also appear among the 64
+  neighbours given by random token vectors (solid), by the embedding output (dashed), and by the same model with no
+  memory (dotted); expected overlap with ties broken at random; corpus mean, every token eligible, layer 8.</figcaption>
+</figure>
   <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#timescales" data-height="230">
     <div class="live-body"></div>
     <figcaption><b>Plotted:</b> reference scales beside the memory grid, per layer (log scale): how far back each layer
@@ -130,7 +143,8 @@ many neighbours text-only vectors share.</span></p>
     <div class="live-body"></div>
     <figcaption><b>Plotted:</b> the census on synthetic texts with a planted hidden regime (strong or weak), a slow
     position drift, or pure noise, so that a known structure can be compared with the models' bars; corpus mean, every
-    token eligible, the last synthetic layer, mean over seeds.</figcaption>
+    token eligible, the last synthetic layer, mean over seeds. Only the {{fact:x.e1-neighbours.synthetic.groups}}
+    settings were run on the synthetic texts ({{fact:x.e1-neighbours.synthetic.runs}} runs).</figcaption>
   </figure>
   <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#stitched" data-height="220">
     <div class="live-body"></div>

@@ -79,7 +79,7 @@ def run(data: Path, out: Path):
     o.chart("lead", dict(panels=lead))
     o.chart("coverage", dict(panels=cov_panels))
     o.chart("top1", dict(panels=top_panels))
-    o.chart("card", dict(answer="Answer pending: written when the readout numbers exist.", placeholder=True, numbers=[
+    o.chart("card", dict(answer="On hold: the independent audit failed its check of this readout; not yet verified.", placeholder=True, numbers=[
         "Score at memory none: {{fact:x.e2-concordance.m1.c.mem_none.score}} ({{fact:x.e2-concordance.m1.name}})",
         "Score at memory 64: {{fact:x.e2-concordance.m1.c.mem_64.score}}",
         "Coverage at memory 64: {{fact:x.e2-concordance.m1.c.mem_64.coverage}}"]))

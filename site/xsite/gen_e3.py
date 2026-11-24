@@ -20,7 +20,7 @@ MEM_WORD = {"none": "none", "2": "2", "8": "8", "64": "64", "whole": "whole"}
 def describe(c):
     if not c:
         return "none"
-    return f"memory {MEM_WORD[c['memory']]}, {c['reading']} reading, {ACC_LABEL[c['centring'], c['mask']]}"
+    return f"memory {MEM_WORD[c['memory']]}, {c['reading']} reading, {ACC_LABEL[c['centring'], c['mask']]}" + (", no mask" if c["mask"] == "none" else "")
 
 
 def run(data: Path, out: Path):
@@ -116,7 +116,36 @@ def run(data: Path, out: Path):
     o.chart("lead", dict(categories=[f"{r}: {describe(c)}" for r, c in picks], short=[r for r, _ in picks], xlabel="construction",
                          segments=ORIGINS, segcolors=["other", "far", "near"], ylabel="share of the walk weight (suffix sample)",
                          cols=len(models), panels=panels))
-    o.fact("recommend", "recommended" if sel["recommend_stage_b"] else "not recommended", source="analysis/stage_b_selection.json recommend_stage_b")
+    o.fact("recommend", "a construction passed" if sel["recommend_stage_b"] else "no construction passed", source="analysis/stage_b_selection.json recommend_stage_b")
+    # per-candidate facts: what each condition gave, so the answer can quote the table
+    import numpy as np
+    for i, row in enumerate(sel["table"]):
+        c = row["construction"]
+        k = f"cand.{c['reading']}_{c['centring'].lower()}_{c['memory']}_{c['mask']}"
+        src = f"analysis/stage_b_selection.json table[{i}]"
+        o.fact(f"{k}.passed", "passed" if row["passed"] else "did not pass", source=src + " passed")
+        o.fact(f"{k}.rank", row.get("primary_rank"), source=src + " primary_rank", missing="unranked")
+        o.fact(f"{k}.worst", row.get("worst_adversary_overlap"), pct=True, source=src + " worst_adversary_overlap")
+        for j, m in enumerate(models, 1):
+            mm = row["models"].get(m) or {}
+            o.fact(f"{k}.m{j}.passing", mm.get("passing"), source=src + f" models.{m}.passing")
+            for cond, _ in COND:
+                o.fact(f"{k}.m{j}.{cond}", (mm.get("condition_site_counts") or {}).get(cond), source=src + f" models.{m}.condition_site_counts.{cond}")
+    # the chosen construction in the full census and on the screen's rows, mean over the measured layers
+    M = sel.get("M")
+    for j, m in enumerate(models, 1):
+        vals = {}
+        if M:
+            rs = [d.geo_row(m, M["reading"], M["centring"], f"site{s:02d}", M["memory"], M["mask"])[0] for s in sites]
+            rs = [r for r in rs if r]
+            for field in ("origin", "screen_origin", "screen_mass"):
+                v = [r[field][0] for r in rs if r.get(field)]
+                vals[field] = float(np.mean(v)) if v else None
+        src = f"analysis/geometry/{m}/{M['reading']}_{M['centring']}.json M rows, mean over layers" if M else "no M"
+        o.fact(f"m.m{j}.census_other", vals.get("origin"), pct=True, source=src + " origin[0]")
+        o.fact(f"m.m{j}.screen_top_other", vals.get("screen_origin"), pct=True, source=src + " screen_origin[0]")
+        o.fact(f"m.m{j}.screen_mass_other", vals.get("screen_mass"), pct=True, source=src + " screen_mass[0]")
+        o.fact(f"m{j}.name", d.model_name(m), source="site/manifest.json model_metadata")
     o.fact("m", describe(sel.get("M")), source="analysis/stage_b_selection.json M")
     o.fact("l", describe(sel.get("L")), source="analysis/stage_b_selection.json L")
     o.fact("r", describe(sel.get("R")), source="analysis/stage_b_selection.json R")
@@ -127,8 +156,8 @@ def run(data: Path, out: Path):
     o.fact("required", sel["required_sites"], source="analysis/stage_b_selection.json required_sites")
     o.fact("sites", len(sites), source="analysis/stage_b_selection.json sites")
     o.fact("dropped", len(dropped), source="site/manifest.json dropped_groups")
-    o.chart("card", dict(answer="Answer pending: written when the screen has run.", placeholder=True, numbers=[
-        "Stage B: {{fact:x.e3-selection.recommend}}", "Candidates passing: {{fact:x.e3-selection.passing}} of {{fact:x.e3-selection.candidates}}",
+    o.chart("card", dict(answer="The fixed rule picked {{fact:x.e3-selection.m}}, the first passing candidate in its order.", numbers=[
+        "Screen: {{fact:x.e3-selection.recommend}}", "Candidates passing: {{fact:x.e3-selection.passing}} of {{fact:x.e3-selection.candidates}}",
         "Chosen: {{fact:x.e3-selection.m}}"]))
     o.write()
 

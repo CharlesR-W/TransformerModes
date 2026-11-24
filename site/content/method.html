@@ -59,7 +59,8 @@ and position. Positions 1 to {{fact:x.viewer.burn_in}} are burn-in: part of ever
   <tr><td>audit queries</td><td>one of each text's suffix queries, drawn with another seed</td><td>the independent audit</td></tr>
   </tbody>
 </table></div>
-<p>Documents examined before the sample filled: {{fact:x.method.probe.examined}}. The probe file's SHA-256 begins
+<p>Of {{fact:x.method.probe.documents}} documents in the test file, {{fact:x.method.probe.eligible}} passed the
+filters, and {{fact:x.method.probe.walked}} were walked in the shuffled order before the sample filled. The probe file's SHA-256 begins
 <code>{{fact:x.method.probe.sha}}</code>; the census groups and the viewer export record the same hash.</p>
 <details class="m-more">
   <summary>Why documents were rejected, by subset</summary>
@@ -70,7 +71,7 @@ and position. Positions 1 to {{fact:x.viewer.burn_in}} are burn-in: part of ever
 </details>
 <details class="m-more">
   <summary>The {{fact:x.method.probe.texts}} texts and the stitched controls</summary>
-  <figure class="live" data-live="table" data-src="assets/x/method.json#documents">
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#documents">
     <div class="live-body"></div>
     <figcaption><b>Plotted:</b> one row per text: its Pile subset, its line in the test file, the start of its
     SHA-256, and how it begins; stitched texts list their segments.</figcaption>
@@ -144,7 +145,8 @@ bootstrap and the stitched baseline against hand values.</p>
 alternating segments of 384 to 640 tokens or 48 to 80 tokens. A token's neighbours should come from its own source more
 often than position alone explains, at little or no memory; at memory 64 less so for the short segments.</p>
 <p><b>Synthetic texts</b> with a planted hidden regime, a position drift or pure noise, run through the same census, so
-a known structure can be seen as neighbours.</p>
+a known structure can be seen as neighbours. Only the {{fact:x.e1-neighbours.synthetic.groups}} settings were run on
+them ({{fact:x.e1-neighbours.synthetic.runs}} runs), not all four reading and centring groups.</p>
 
 <h2 id="timescales">Reference timescales</h2>
 <p>Beside the memory grid, two descriptive scales per layer: how far back each attention head looks directly (the
@@ -214,10 +216,15 @@ all-texts graph choice, and entries E4 (do the models share through-depth struct
 and E5 (does a text's picture change with its company?). None of it exists yet.</p>
 
 <h2 id="spending">Spending</h2>
-<p class="m-note">Stage A charged <b>${{fact:x.method.ledger.spent}}</b> of its ${{fact:x.method.ledger.cap}} hard cap
-over {{fact:x.method.ledger.attempts}} attempts ({{fact:x.method.ledger.failed}} not finished), from the ledger on the
-Modal volume.</p>
+<p class="m-note">Stage A charged about <b>${{fact:x.method.ledger.spent}}</b> by the ledger, against a cap of
+${{fact:x.method.ledger.cap_initial}} at approval that the owner raised to ${{fact:x.method.ledger.cap}} after the timing
+pilot measured {{fact:x.method.run.pass_seconds}} s per census pass, more than planned. The census was
+stopped once by the Modal workspace's spend limit and resumed from the settings groups already saved
+({{fact:x.method.ledger.census.attempts}} census attempts); the readout took {{fact:x.method.ledger.readout.attempts}}
+attempts and the audit {{fact:x.method.ledger.audit.attempts}}, the earlier ones stopped by time limits set too short
+(README run log). The ledger's figures are estimates from runtimes and published rates, not Modal's bill. The viewer's
+data come to {{fact:x.method.viewer.mb}} MB in {{fact:x.method.viewer.files}} files.</p>
 <details class="m-more">
   <summary>By unit</summary>
-  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#ledger"><div class="live-body"></div><figcaption>Source: ledger/attempts.</figcaption></figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#ledger"><div class="live-body"></div><figcaption>Source: ledger/attempts. "Not finished" counts attempts that stopped or reported failure; the last audit attempt reports failure because one of its checks failed.</figcaption></figure>
 </details>

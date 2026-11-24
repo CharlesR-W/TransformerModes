@@ -5,12 +5,12 @@ earlier), each with its 64 nearest neighbours, against controls matched on the n
 distance band; the model's own top-20 next-token predictions; layers 4, 8, 12 and 16, both models, both readings. The
 lead figure is layer 8, cosine reading.</p>
 
-<!-- ANSWER: write when the readout exists. Spec 12.3: "On the fixed query sample, neighbours share [more / less] of the
-model's predictions than matched controls as memory grows; coverage is [c]." Facts: x.e2-concordance.m1.c.mem_<m>.score,
-.p5, .p95, .coverage, .eligible (and m2.*, accountings c, cw, o, ow). -->
-<p class="x-answer"><span class="x-placeholder">Answer pending. Two or three sentences, one in bold: whether neighbours
-share more or less of the model's predictions than their matched controls, how that changes with memory, and the
-coverage behind the score.</span></p>
+<!-- ANSWER: on hold until the audit's readout check is resolved. Spec 12.3: "On the fixed query sample, neighbours
+share [more / less] of the model's predictions than matched controls as memory grows; coverage is [c]." Facts:
+x.e2-concordance.m1.c.mem_<m>.score, .p5, .p95, .coverage, .eligible (and m2.*, accountings c, cw, o, ow). -->
+<p class="x-answer"><span class="x-placeholder">On hold: audit. The independent audit failed its check of this readout's
+stored per-document sums; the answer will be written once that is resolved. The figures below show the readout as
+computed, not verified.</span></p>
 
 <figure class="live x-wide-fig" data-live="points" data-src="assets/x/e2-concordance.json#lead" data-height="240">
   <div class="live-body"></div>

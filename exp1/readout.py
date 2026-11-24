@@ -142,7 +142,9 @@ class Predictions:
         self.sorted_prob = np.take_along_axis(self.prob, order, axis=1).reshape(-1)
 
     def overlap(self, q, j):
-        key = j[:, None] * self.stride + self.ids[q]
+        # int64: pool indices arrive as int32 and j * stride overflows it past index 42,713 at full size, which
+        # made the lookup miss and the overlap 0 for the last quarter of the pool (found by the audit, 2026-11-23).
+        key = np.asarray(j, dtype=np.int64)[:, None] * self.stride + self.ids[q]
         at = np.minimum(np.searchsorted(self.keys, key), len(self.keys) - 1)
         return (np.minimum(self.prob[q], self.sorted_prob[at]) * (self.keys[at] == key)).sum(1)
 

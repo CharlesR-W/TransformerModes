@@ -154,6 +154,60 @@ def test_inventory_fails_audit_when_a_read_file_changes_during_the_run(case, tmp
         root / "analysis" / "stage_b_selection.json")
 
 
+# Regression: before 2026-11-23 readout.Predictions.overlap formed int32 keys j * stride that overflowed once a
+# neighbour or control index exceeded (2**31 - 1) // stride (42,713 for Pythia's 50,277 ids).
+def test_readout_documents_agree_on_a_pool_beyond_int32_keys(tmp_path):
+    """The small Pythia-70m case has 1,040 pool tokens; the full census has 57,344. Here 25 texts x 1,792 tokens
+    (44,800) and a top-20 vocabulary reaching id 50,276 put neighbour and control indices past the point where
+    index * vocabulary size leaves int32, as in the full-size run, with frequent tokens in every text."""
+    import census
+    import readout as r
+    rng = np.random.default_rng(11)
+    texts, length, start, suffix = 25, 2047, 256, 1536
+    contexts = [dict(id=c, kind="pool", token_ids=rng.integers(2, 60, size=length).tolist()) for c in range(texts)]
+    query, audit = [], []
+    for c in range(texts):
+        late = rng.choice(np.arange(suffix, length + 1), 3, replace=False)
+        early = rng.choice(np.arange(start, suffix), 2, replace=False)
+        query += [[c, int(p)] for p in (*late, *early)]
+        audit.append([c, int(late[0])])
+    probe = dict(contexts=contexts, node_sets=dict(census_pool=[[c, start, length + 1] for c in range(texts)],
+                                                   suffix=[[c, suffix, length + 1] for c in range(texts)],
+                                                   query_sample=query, audit_queries=audit))
+    census.write_json(tmp_path / "probe" / "probe.json", probe)
+    pool = census.pool_from_probe(probe)
+    for c in range(texts):
+        ids = np.stack([rng.choice(40, 20, replace=False) for _ in range(length + 1)]).astype(np.int32)
+        ids[::97, 19] = 50_276                       # the vocabulary size sets the pipeline's key stride
+        probs = np.sort(rng.dirichlet(np.ones(25), size=length + 1)[:, :20], axis=1)[:, ::-1].astype(np.float32)
+        census.atomic(tmp_path / "pred" / "m" / f"c{c:02d}.npz", np.savez, top20_ids=ids, top20_probs=probs,
+                      top1_id=ids[:, 0], top20_mass=probs.sum(1))
+    n, k = pool.n, 64
+    offsets = (rng.integers(0, n - 1, size=n)[:, None] + np.arange(k) * 691) % (n - 1) + 1   # distinct, never 0
+    indices = ((np.arange(n)[:, None] + offsets) % n).astype(np.int32)
+    t_in = np.ones(n, dtype=np.int32)
+    t_all = np.ones(n, dtype=np.int32)
+    is_q = np.isin(np.arange(n), pool.query)
+    ptr = np.r_[0, np.cumsum(is_q)]
+    ties = indices[is_q, -1]
+    path = tmp_path / "list.npz"
+    np.savez(path, indices=indices, t_in=t_in, t_all=t_all, tie_indptr=ptr, tie_indices=ties)
+    setting = (4, "cosine", "C", "none", "none")
+    matcher = r.Matcher(pool.text, pool.position, pool.ids)
+    sums, raw, _ = r.contributions(pool.query, pool.audit, indices, ptr, ties, t_in, t_all, matcher,
+                                   r.load_predictions(tmp_path, "m", pool), "m", setting)
+    assert indices.max() > (2 ** 31 - 1) // 50_277 and raw[..., 0].sum() > 0
+    a = audit_a.Audit(tmp_path, spec_parameters=False)
+    data = dict(by_document=sums, raw_counts=raw, documents=matcher.docs, fields=np.asarray(r.FIELDS),
+                reasons=np.asarray(r.REASONS), strata=np.asarray(r.STRATA))
+    controls, preds = audit_a.Controls(a.pool), a.load_predictions("m")
+    for doc in (0, 24):
+        a.document_check("m", dict(document=doc), data, audit_a.Npz(path), controls, 64, preds,
+                         audit_a.setting_key("m", setting), doc)
+    failed = [c for c in a.rep.result() if not c["passed"]]
+    assert not failed, failed
+
+
 def test_time_one_row(case):
     assert audit_a.time_one_row(case, "pythia") > 0
 

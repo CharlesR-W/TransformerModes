@@ -533,3 +533,12 @@ def test_optional_tiny_real_pythia(tmp_path, device):
     c.run_group(tmp_path, "pythia", pool, inputs, "cosine", "C", k=4, target=4, row_block=16, device=device)
     assert len(r.run_readout(tmp_path, "pythia", sites=(4,), min_matched=1)) == 15
     assert len(s.select(tmp_path, models=("pythia",), sites=(4,), readout_sites=(4,), required_sites=1)["table"]) == 32
+
+
+def test_prediction_overlap_with_int32_indices_past_key_overflow():
+    # Pool indices are stored as int32; at full size index * stride exceeds int32 for the last quarter of the pool.
+    ids = np.tile(np.arange(20), (45_000, 1))
+    ids[0, 19] = 50_276  # stride 50,277, as with the real vocabulary
+    probs = np.full(ids.shape, .01)
+    pred = r.Predictions(ids, probs, ids[:, 0], probs.sum(1))
+    assert pred.overlap(np.array([1]), np.array([44_000], dtype=np.int32))[0] == pytest.approx(.2)

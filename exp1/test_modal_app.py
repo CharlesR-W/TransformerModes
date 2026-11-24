@@ -76,7 +76,7 @@ def _complete_census_setup(env):
 
 
 def _readout_outputs(plan):
-    _marker("readout", approved_groups=plan["approved_groups"])
+    _marker("readout", approved_groups=plan["approved_groups"], readout_version=a.READOUT_VERSION)
     for path in ("analysis/stage_b_selection.json", "site/manifest.json",
                  *(f"analysis/prediction/{m}.json" for m in a.MODELS),
                  *(f"analysis/{m}_timescales.json" for m in a.MODELS)):
@@ -287,6 +287,7 @@ def test_readout_worker_routes_groups_sites_and_stitch_readings(env, monkeypatch
     def select(root):
         assert root == env.root
         seen.append("select")
+        a.write_json_atomic(root / "analysis" / "stage_b_selection.json", {"M": None})
 
     def pack(root):
         assert root == env.root

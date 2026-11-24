@@ -416,17 +416,23 @@ def a_readout(plan: dict):
 
     readings = tuple(r for r, c in groups if c == "C")
     expected = len(groups) * len(READOUT_SITES) * len(MEMORIES) * len(MASKS)
+    recomputed = False
     for model in MODELS:
         # Resume: the first attempt (run 20261123-231754) finished predictions and timescales for both models and
         # timed out later. A step is reused only if its summary exists and every per-setting file is present.
         have = sum(1 for _ in (ROOT / "readout" / model).rglob("*.npz")) if (ROOT / "readout" / model).is_dir() else 0
-        if (ROOT / "analysis" / "prediction" / f"{model}.json").is_file() and have == expected:
+        version = _json_if_exists(ROOT / "readout" / model / "_version.json") or {}
+        if ((ROOT / "analysis" / "prediction" / f"{model}.json").is_file() and have == expected
+                and version.get("readout_version") == READOUT_VERSION):
             timings[f"{model}_predictions"] = 0.0
             print(f"[readout] {model}_predictions: reused {have} files", flush=True)
         else:
             paths = timed(f"{model}_predictions", readout.run_readout, ROOT, model, groups=groups)
             if len(paths) != expected:
                 raise RuntimeError(f"incomplete prediction readout for {model}")
+            write_json_atomic(ROOT / "readout" / model / "_version.json", dict(readout_version=READOUT_VERSION))
+            volume.commit()
+            recomputed = True
         if (ROOT / "analysis" / f"{model}_timescales.json").is_file():
             timings[f"{model}_timescales"] = 0.0
             print(f"[readout] {model}_timescales: reused", flush=True)
@@ -434,11 +440,16 @@ def a_readout(plan: dict):
             timed(f"{model}_timescales", readout.run_timescales, ROOT, model)
         timed(f"{model}_stitches", census.run_stitches, ROOT, model, device="cpu", readings=readings)
     selection = ROOT / "analysis" / "stage_b_selection.json"
-    if selection.is_file():
+    if (selection.is_file() and not recomputed
+            and (_json_if_exists(selection) or {}).get("readout_version") == READOUT_VERSION):
         timings["selection"] = 0.0
         print("[readout] selection: reused", flush=True)
     else:
         timed("selection", select_b.select, ROOT)
+        # Stamp the selection with the readout version it was computed from (X depends on the concordance scores).
+        write_json_atomic(selection, dict(json.loads(selection.read_text(encoding="utf-8")),
+                                          readout_version=READOUT_VERSION))
+        volume.commit()
     # The synthetic census is a reported control, not a gate. All approved groups would be 100 runs of about 20 s;
     # it is run for the first group only (cosine reading, corpus mean: 25 runs), and the page says so.
     synthetic_done = ROOT / "analysis" / "synthetic" / "_done.json"
@@ -453,7 +464,8 @@ def a_readout(plan: dict):
         volume.commit()
     timed("pack_site", pack_site.run, ROOT)
     _write_probe_summary()
-    return _finish("readout", plan["probe_sha256"], started, stage_seconds=timings, approved_groups=plan["approved_groups"])
+    return _finish("readout", plan["probe_sha256"], started, stage_seconds=timings,
+                   approved_groups=plan["approved_groups"], readout_version=READOUT_VERSION)
 
 
 def _write_probe_summary():
@@ -480,6 +492,7 @@ def _readout_complete(plan):
     sha = plan["probe_sha256"]
     done = _a_complete("readout", sha)
     return bool(done and done.get("approved_groups") == plan["approved_groups"]
+                and done.get("readout_version") == READOUT_VERSION
                 and (ROOT / "analysis" / "stage_b_selection.json").is_file()
                 and (ROOT / "site" / "manifest.json").is_file()
                 and all((ROOT / "analysis" / "prediction" / f"{model}.json").is_file()
@@ -565,6 +578,9 @@ def _plan_path():
 # limits that were set too short (a 40-minute unit limit, then the coordinator's 65-minute limit after a worker
 # restart), not on its results; the third still fits under the owner's cap with the audit's two attempts held.
 MAX_ATTEMPTS = {"readout": 3, "audit-a": 2}
+# Bumped when the prediction readout's numbers change, so stored predictions, the selection that reads them and the
+# stage marker are recomputed. 2: int64 keys in readout.Predictions.overlap (the audit's finding of 2026-11-23).
+READOUT_VERSION = 2
 
 
 def _held_verification(rows, plan):

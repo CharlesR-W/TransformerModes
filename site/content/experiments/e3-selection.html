@@ -5,12 +5,21 @@ whole × cosine or dot reading × corpus or own-text mean × no mask or the wind
 {{fact:x.e3-selection.sites}} measured layers, on the rows Stage B would solve: the sampled suffix queries against
 every token in the last 512 positions of every text. The rules were fixed before any number existed.</p>
 
-<!-- ANSWER: write when the screen has run. Spec 12.3: "The screen chose [M] because [...]" or "No memory construction
-passed: [condition] failed for [...]; Stage B is not recommended." Facts: x.e3-selection.m, .l, .x, .x_reason,
-.passing, .candidates, .recommend, .required, .sites. -->
-<p class="x-answer"><span class="x-placeholder">Answer pending. Two or three sentences, one in bold: which construction the
-screen chose and the rule that put it first, or which condition failed for every candidate, and so whether Stage B is
-recommended.</span></p>
+<p class="x-answer"><strong>The fixed rule picked {{fact:x.e3-selection.m}} as Stage B's memory construction, with
+{{fact:x.e3-selection.l}} as its local counterpart; {{fact:x.e3-selection.passing}} of the
+{{fact:x.e3-selection.candidates}} candidates passed in both models.</strong> The rule looks first at candidates that
+subtract the corpus mean and forbid nothing; no cosine candidate passes there (memory 2 stays too close to no memory,
+memory 8 meets all four conditions together at only {{fact:x.e3-selection.cand.cosine_c_8_none.m1.passing}} of
+{{fact:x.e3-selection.m1.name}}'s {{fact:x.e3-selection.sites}} layers where {{fact:x.e3-selection.required}} are
+needed, and at the longer memories more than a quarter of the walk weight sits within 64 positions at most of those
+layers), and of the two dot
+candidates that do, memory 64 has the smaller overlap with the text-only inputs
+({{fact:x.e3-selection.cand.dot_c_64_none.worst}} against {{fact:x.e3-selection.cand.dot_c_8_none.worst}} at worst).
+The screen weighs each row by walk weight over the last 512 tokens of every text, which spreads well beyond the 64
+nearest: for the chosen construction {{fact:x.e3-selection.m.m1.screen_mass_other}} of that weight lies in other texts
+in {{fact:x.e3-selection.m1.name}} ({{fact:x.e3-selection.m.m2.screen_mass_other}} in {{fact:x.e3-selection.m2.name}}),
+against {{fact:x.e3-selection.m.m1.screen_top_other}} of the 64 nearest on the same rows and
+{{fact:x.e3-selection.m.m1.census_other}} in the full census.</p>
 
 <figure class="live" data-live="stack" data-src="assets/x/e3-selection.json#lead" data-height="210">
   <div class="live-body"></div>
@@ -21,7 +30,7 @@ recommended.</span></p>
 </figure>
 
 <div class="x-numbers">
-  <div><b>{{fact:x.e3-selection.recommend}}</b><span>Stage B, by the prespecified screen</span><small>analysis/stage_b_selection.json</small></div>
+  <div><b>{{fact:x.e3-selection.recommend}}</b><span>the prespecified screen's result</span><small>analysis/stage_b_selection.json</small></div>
   <div><b>{{fact:x.e3-selection.passing}} of {{fact:x.e3-selection.candidates}}</b><span>candidates passed in both models</span><small>at least {{fact:x.e3-selection.required}} of {{fact:x.e3-selection.sites}} layers each</small></div>
   <div class="x-num-text"><b>{{fact:x.e3-selection.m}}</b><span>the chosen construction M</span><small>least intervention first, then cosine, then text-only overlap, then shorter memory</small></div>
   <div class="x-num-text"><b>{{fact:x.e3-selection.x}}</b><span>the one extra example X, screened for prediction concordance</span><small>{{fact:x.e3-selection.x_reason}}</small></div>
@@ -70,8 +79,8 @@ recommended.</span></p>
   alone; it says nothing yet about through-depth modes.</li>
   <li><b>Failing says only that</b> no candidate met the prespecified screen; the census above is then the result.</li>
   <li><b>Thresholds were fixed in advance</b> (0.25 and 0.5); a candidate close to a threshold is not singled out.</li>
-  <li><b>Groups dropped by the $8 cap</b> were never computed, so their candidates cannot pass; they are listed so the
-  table is complete.</li>
+  <li><b>Groups dropped by the spending cap</b> ({{fact:x.e3-selection.dropped}} here) would be greyed in the table and
+  could not pass.</li>
 </ul>
 
 <p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/select_b.py">Code: select_b.py</a> ·

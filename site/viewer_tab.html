@@ -29,7 +29,10 @@
             each one before, and so on (not by averaging each past). Earlier pairs weigh less, by a factor $a$ per step:
             $K_a(t,t') = \sum_{s\ge 0} a^s \langle y_{t-s}, y_{t'-s}\rangle$ with $a = 1 - 1/m$ for memory $m$
             (none: $a = 0$; whole: $a = 1$, every earlier pair counts equally). Each token's state is centred and scaled to
-            unit length first, and similarity is then the cosine of the two weighted pasts. Two consequences to keep in mind: a chance match between two pasts carries over to the next
+            unit length first, and similarity is then the cosine of the two weighted pasts. <b>Lag is paired with lag</b>, so two neighbouring positions of one text share no
+            vectors in the comparison (each token meets the one beside it, never itself); an average-then-dot kernel, the dot
+            product of two running averages, would share 63 of 64 vectors at memory 64 and is not what is computed. Two
+            consequences to keep in mind: a chance match between two pasts carries over to the next
             pair of tokens, so neighbours come in runs along the diagonal; and with the whole prefix, pasts of different
             lengths are compared over the shorter one, so position matters even for structureless text.</p>
           </section>

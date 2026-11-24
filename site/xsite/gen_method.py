@@ -114,7 +114,20 @@ def run(data: Path, out: Path):
     o.fact("ledger.spent", sum(u["usd"] for u in by_unit.values()), digits=2, source="ledger/attempts/*/*.json, sum of charges")
     o.fact("ledger.attempts", len(rows), source="ledger/attempts/*/*.json")
     o.fact("ledger.failed", sum(u["failed"] for u in by_unit.values()), source="ledger/attempts/*/*.json status")
-    o.fact("ledger.cap", 8, source="SPEC.md section 11 (the Stage A hard cap)")
+    o.fact("ledger.cap_initial", 8, source="SPEC.md section 11 (the Stage A hard cap at approval)", tier="S")
+    o.fact("ledger.cap", 11, source="README.md Stage A run log: raised by the owner after the timing pilot", tier="S")
+    def attempts(prefix):
+        rs = [r for r in rows if str(r.get("unit", "")).startswith(prefix)]
+        return len(rs), sum(r.get("status") not in ("finished", "succeeded", "completed", "ok", "done") for r in rs)
+    for key, prefix in (("census", "census-"), ("readout", "readout"), ("audit", "audit-a"), ("extract", "U1-")):
+        n, bad = attempts(prefix)
+        o.fact(f"ledger.{key}.attempts", n, source=f"ledger/attempts/*/{prefix}*.json")
+        o.fact(f"ledger.{key}.unfinished", bad, source=f"ledger/attempts/*/{prefix}*.json status")
+    plan = d.plan or {}
+    gps = plan.get("gpu_seconds_per_group")
+    o.fact("run.pass_seconds", gps / 10 if gps else None, digits=0, source="analysis/stage_a_plan.json gpu_seconds_per_group / 10 inputs per group (8 layers, 2 text-only inputs)", missing="not recorded")
+    o.fact("viewer.mb", d.manifest.get("asset_bytes", 0) / 1e6, digits=0, source="site/manifest.json asset_bytes")
+    o.fact("viewer.files", len(d.manifest.get("files", {})), source="site/manifest.json files")
     # ---------------------------------------------------------- probe documents (analysis/probe_summary.json, with
     # how each text begins from the packed texts) and the rejection counts
     probe = d.probe or {}
@@ -144,19 +157,27 @@ def run(data: Path, out: Path):
                                        dict(label="SHA-256 (start) / segments"), dict(label="Begins")], rows=docs,
                               note="Shuffle rank: the document's place in the seeded shuffle of eligible documents; accepted texts are the first that pass every rule."))
     counts = probe.get("counts") or {}
-    reasons = [("forbidden_text", "special tokens"), ("ascii", "under 95% ASCII"), ("too_short", "under 2,048 tokens"), ("whitespace", "mostly whitespace"),
-               ("internal_32gram", "repeats itself"), ("shared_32gram", "shares a passage"), ("subset_cap", "subset full"), ("stitch_same_subset", "stitch pair same subset")]
+    filters = [("forbidden_text", "special tokens"), ("ascii", "under 95% ASCII"), ("too_short", "under 2,048 tokens")]
+    walk = [("whitespace", "mostly whitespace"), ("internal_32gram", "repeats itself"), ("shared_32gram", "shares a passage"),
+            ("subset_cap", "subset full"), ("stitch_same_subset", "stitch pair, same subset")]
+    n = lambda c, k: f"{c.get(k, 0):,}"
     def crow(name, c, strong=False):
-        return dict(cells=[dict(text=name, strong=strong), dict(text=f"{c.get('walked', 0):,}"), dict(text=f"{c.get('accepted_pool', 0):,}"),
-                           dict(text=f"{c.get('accepted_stitch_source', 0):,}")] + [dict(text=f"{c.get(k, 0):,}") for k, _ in reasons])
+        return dict(cells=[dict(text=name, strong=strong), dict(text=n(c, "documents"))] + [dict(text=n(c, k)) for k, _ in filters]
+                    + [dict(text=n(c, "eligible")), dict(text=n(c, "walked"))] + [dict(text=n(c, k)) for k, _ in walk]
+                    + [dict(text=n(c, "accepted_pool"), strong=True), dict(text=n(c, "accepted_stitch_source"))])
     crows = [crow("all subsets", counts["total"], True)] if counts.get("total") else []
-    crows += [crow(sub, c) for sub, c in (counts.get("by_subset") or {}).items() if c.get("walked") or c.get("accepted_pool") or c.get("accepted_stitch_source")]
-    o.chart("rejections", dict(columns=[dict(label="Subset"), dict(label="Examined"), dict(label="Accepted"), dict(label="Stitch sources")]
-                               + [dict(label=label) for _, label in reasons], rows=crows,
-                               note="Documents examined in shuffled order until 32 texts and 4 stitch sources were accepted; each rejection is counted under its first failed rule."
+    crows += [crow(sub, c) for sub, c in (counts.get("by_subset") or {}).items()]
+    o.chart("rejections", dict(columns=[dict(label="Subset"), dict(label="In the file")]
+                               + [dict(label=label, sub="filtered out") for _, label in filters]
+                               + [dict(label="Eligible"), dict(label="Walked", sub="in shuffled order")]
+                               + [dict(label=label, sub="rejected on the walk") for _, label in walk]
+                               + [dict(label="Accepted texts"), dict(label="Stitch sources")], rows=crows,
+                               note=("Every document in the test file was filtered; eligible ones were then walked in a seeded shuffle until 32 texts "
+                                     "and 4 stitch sources were accepted. Each rejection is counted under its first failed rule.")
                                if crows else "Rejection counts are not available in this build."))
     total = counts.get("total") or {}
-    o.fact("probe.examined", total.get("walked"), source=psrc + " counts.total.walked", missing="not recorded")
+    o.fact("probe.documents", total.get("documents"), source=psrc + " counts.total.documents", missing="not recorded")
+    o.fact("probe.walked", total.get("walked"), source=psrc + " counts.total.walked", missing="not recorded")
     o.fact("probe.eligible", total.get("eligible"), source=psrc + " counts.total.eligible", missing="not recorded")
     o.fact("probe.texts", sum(t["kind"] != "stitched" for t in d.manifest["texts"]), source="site/manifest.json texts")
     o.fact("probe.subsets", len(subsets), source=psrc + " contexts[].subset")
