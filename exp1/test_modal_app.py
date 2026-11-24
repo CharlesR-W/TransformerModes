@@ -29,6 +29,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setitem(a.HW, "census", ("A100-80GB", 8, 64, 40 * 60, 25 * 60))
     monkeypatch.setitem(a.HW, "readout", (None, 16, 64, 40 * 60, 40 * 60))
     monkeypatch.setitem(a.MAX_ATTEMPTS, "readout", 2)
+    monkeypatch.setitem(a.MAX_ATTEMPTS, "audit-a", 2)
     monkeypatch.setitem(a.HW, "audit-a", (None, 16, 64, 30 * 60, 30 * 60))
     monkeypatch.setattr(a, "AUDIT_FIXED_SECONDS", 12 * 60)
     monkeypatch.setattr(a, "volume", vol)

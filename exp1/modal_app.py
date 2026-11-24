@@ -37,7 +37,9 @@ GPU_RATES = {"L4": 0.000164, "A100-80GB": 0.000694}
 STARTUP_SECONDS = 120
 # $8 at first approval; raised to $11 by the owner on 2026-11-23 after the pilot measured 63 s per census pass,
 # so that the dot reading is not dropped (expected total about $7.30; the rest is retry holds and margin).
-STAGE_A_CAP = 11.0
+# Raised again to $13 by the owner on 2026-11-23 to re-run the readout and the audit after the audit found an int32
+# overflow in the prediction readout (expected total about $10.80).
+STAGE_A_CAP = 13.0
 EXTRACTION_VERSION = 2  # Bump when the U1 data or diagnostics change.
 # (GPU, reserved cores, GiB, timeout seconds, expected work seconds before startup)
 HW = {"U0": (None, 2, 8, 40 * 60, 20 * 60),
@@ -577,7 +579,7 @@ def _plan_path():
 # Attempts allowed per verification unit. The readout gets a third: its first two attempts (2026-11-23) failed on
 # limits that were set too short (a 40-minute unit limit, then the coordinator's 65-minute limit after a worker
 # restart), not on its results; the third still fits under the owner's cap with the audit's two attempts held.
-MAX_ATTEMPTS = {"readout": 3, "audit-a": 2}
+MAX_ATTEMPTS = {"readout": 4, "audit-a": 3}  # one more each for the re-run after the readout fix (owner-approved)
 # Bumped when the prediction readout's numbers change, so stored predictions, the selection that reads them and the
 # stage marker are recomputed. 2: int64 keys in readout.Predictions.overlap (the audit's finding of 2026-11-23).
 READOUT_VERSION = 2
@@ -589,8 +591,10 @@ def _held_verification(rows, plan):
     held = {}
     for kind in VERIFICATION:
         attempts = [r for r in rows if r["kind"] == kind]
-        slots = (0 if any(r["status"] in ("done", "cached") for r in attempts)
-                 else max(0, MAX_ATTEMPTS[kind] - len(attempts)))
+        # A unit is settled only if its outputs are complete under the current versions: an earlier "done" attempt
+        # of a readout whose numbers were later corrected does not count.
+        settled = _readout_complete(plan) if kind == "readout" else _audit_complete(plan)
+        slots = 0 if settled else max(0, MAX_ATTEMPTS[kind] - len(attempts))
         if slots:
             held[kind] = slots * _charge(_reservation("hold", kind))
     return held
