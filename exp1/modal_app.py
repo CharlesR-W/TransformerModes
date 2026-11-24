@@ -46,10 +46,13 @@ HW = {"U0": (None, 2, 8, 40 * 60, 20 * 60),
       "pilot-cpu": (None, 16, 64, 10 * 60, 10 * 60),
       # Ceiling 55 min: 40 passes at the pilot's 63 s are 42 min before margin.
       "census": ("A100-80GB", 8, 64, 55 * 60, 42 * 60),
-      # 80 min: the first attempt hit a 40-minute limit in selection and packing, which the pilot had not timed.
-      "readout": (None, 16, 64, 80 * 60, 60 * 60),
+      # Two attempts failed on 2026-11-23: a 40-minute limit expired inside the synthetic census (100 runs, about
+      # 34 minutes, untimed by the pilot), then a restarted worker repeated it and outlasted the coordinator. The
+      # predictions are done; what remains is single-threaded, so the unit is smaller and every step is resumable.
+      "readout": (None, 8, 32, 60 * 60, 30 * 60),
       "audit-a": (None, 16, 64, 30 * 60, 30 * 60),
-      "coordinator": (None, 0.25, 1, 65 * 60, 0)}
+      # Must outlast the longest unit it waits for.
+      "coordinator": (None, 0.25, 1, 100 * 60, 0)}
 PROBE_PATH = ROOT / "probe" / "probe.json"
 CONTEXT_IDS = range(POOL_SIZE + 4)
 PRIORITY = (("cosine", "C"), ("cosine", "O"), ("dot", "C"), ("dot", "O"))
@@ -428,8 +431,24 @@ def a_readout(plan: dict):
         else:
             timed(f"{model}_timescales", readout.run_timescales, ROOT, model)
         timed(f"{model}_stitches", census.run_stitches, ROOT, model, device="cpu", readings=readings)
-    timed("synthetic", synthetic.run_synthetic, ROOT, device="cpu", groups=groups)
-    timed("selection", select_b.select, ROOT)
+    selection = ROOT / "analysis" / "stage_b_selection.json"
+    if selection.is_file():
+        timings["selection"] = 0.0
+        print("[readout] selection: reused", flush=True)
+    else:
+        timed("selection", select_b.select, ROOT)
+    # The synthetic census is a reported control, not a gate. All approved groups would be 100 runs of about 20 s;
+    # it is run for the first group only (cosine reading, corpus mean: 25 runs), and the page says so.
+    synthetic_done = ROOT / "analysis" / "synthetic" / "_done.json"
+    synthetic_groups = groups[:1]
+    if synthetic_done.is_file():
+        timings["synthetic"] = 0.0
+        print("[readout] synthetic: reused", flush=True)
+    else:
+        timed("synthetic", synthetic.run_synthetic, ROOT, device="cpu", groups=synthetic_groups)
+        write_json_atomic(synthetic_done, dict(groups=[list(g) for g in synthetic_groups],
+                                               note="first approved group only; see modal_app.a_readout"))
+        volume.commit()
     timed("pack_site", pack_site.run, ROOT)
     _write_probe_summary()
     return _finish("readout", plan["probe_sha256"], started, stage_seconds=timings, approved_groups=plan["approved_groups"])

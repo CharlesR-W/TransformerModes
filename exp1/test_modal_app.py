@@ -278,7 +278,7 @@ def test_readout_worker_routes_groups_sites_and_stitch_readings(env, monkeypatch
         seen.append((model, "stitches"))
 
     def synthetic(root, *, device, groups):
-        assert root == env.root and device == "cpu" and groups == a._approved_groups(plan)
+        assert root == env.root and device == "cpu" and groups == a._approved_groups(plan)[:1]
         seen.append("synthetic")
 
     def select(root):
@@ -298,7 +298,7 @@ def test_readout_worker_routes_groups_sites_and_stitch_readings(env, monkeypatch
     with pytest.warns(UserWarning, match="executing locally"):
         result = a.a_readout.local(plan)
     assert result["approved_groups"] == plan["approved_groups"]
-    assert seen == [(m, part) for m in a.MODELS for part in ("prediction", "timescales", "stitches")] + ["synthetic", "select", "pack_site", "probe_summary"]
+    assert seen == [(m, part) for m in a.MODELS for part in ("prediction", "timescales", "stitches")] + ["select", "synthetic", "pack_site", "probe_summary"]
 
 
 def test_cpu_audit_uses_only_explicit_independent_report(env, monkeypatch):
