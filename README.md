@@ -14,7 +14,9 @@ independent audit's report passes and its file inventory matches the data.
 - **Experiment 1, Stage A** (`SPEC.md` v3.2, code in `exp1/`, site in `site/`): the neighbour census on Pythia-1b and
   OLMo-1B over the same 32 Pile texts is complete and passed its independent audit (1,242 checks, 32 full rows
   recomputed from raw activations). The spec went through four rounds of independent review (`reviews/`).
-- **Stage B** (through-depth modes) is provisional and has not been approved or run.
+- **Stage B** (independent chunks through depth, with the model's next-token prediction as a second view) is
+  designed and reviewed (`SPEC_B.md` v3.3) and its gate code is written and tested, but nothing has been run or
+  spent. Work paused here for the owner's review: see `HANDOFF.md`.
 - `deprecated/`: the earlier Pythia-160m, Mamba and DINO studies, copied from CoherentModes for reference. Not
   maintained; see `deprecated/README.md`.
 

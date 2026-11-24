@@ -326,8 +326,9 @@ confirmatory run, from K0's quantities alone:
    file are committed before seeds 70-72 run. The confirmatory runner reads that committed file, verifies its
    SHA-256 and refuses to run on a mismatch. Those seeds are then run once, and K0 is applied to them unchanged.
 
-This front-loads onto free development seeds the redesign that a K0 failure would force anyway. Calibration cannot
-make K1-K5 easier: it never sees them, it moves only toward a weaker belief, and the confirmatory seeds stay unseen.
+This front-loads onto free development seeds the redesign that a K0 failure would force anyway. Calibration never
+sees K1-K5 and the confirmatory seeds stay unseen; as said above, that is the safeguard, not a proof that a larger
+distractor is the harder direction for every condition.
 About 5 minutes per seed per grid point on one core (9 graphs at N = 1,024; the prediction graph once per seed), at
 most 100 core-minutes, under 1 GB.
 
