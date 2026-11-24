@@ -146,6 +146,27 @@ def run(data: Path, out: Path):
         o.fact(f"m.m{j}.screen_top_other", vals.get("screen_origin"), pct=True, source=src + " screen_origin[0]")
         o.fact(f"m.m{j}.screen_mass_other", vals.get("screen_mass"), pct=True, source=src + " screen_mass[0]")
         o.fact(f"m{j}.name", d.model_name(m), source="site/manifest.json model_metadata")
+        # the prediction advantage of the picked construction and of its local counterpart (mean over readout layers)
+        ppath = d.root / "analysis" / "prediction" / f"{m}.json"
+        prows = read_json(ppath)["settings"] if ppath.is_file() else []
+        for role in ("M", "L"):
+            c = sel.get(role)
+            rs = [r for r in prows if c and all(r[k] == c[k] for k in ("reading", "centring", "memory", "mask")) and r.get("score") is not None]
+            o.fact(f"{role.lower()}.m{j}.score", sum(r["score"] for r in rs) / len(rs) if rs else None, digits=3,
+                   source=f"analysis/prediction/{m}.json score for {role}, mean over layers {sorted(r['site'] for r in rs)}")
+            o.fact(f"{role.lower()}.m{j}.eligible", sum(bool(r["eligible"]) for r in rs), source=f"analysis/prediction/{m}.json eligible for {role}")
+            o.fact(f"{role.lower()}.m{j}.layers", len(rs), source=f"analysis/prediction/{m}.json rows for {role}")
+        # how flat the walk weight is: cosine, corpus mean, no mask, whole prefix, mean over the measured layers
+        rs = [d.geo_row(m, "cosine", "C", f"site{s:02d}", "whole", "none")[0] for s in sites]
+        rs = [r for r in rs if r and r.get("screen_mass") and r.get("origin")]
+        o.fact(f"flat.m{j}.walk_other", float(np.mean([r["screen_mass"][0] for r in rs])) if rs else None, pct=True,
+               source=f"analysis/geometry/{m}/cosine_C.json whole, none: screen_mass[0], mean over layers")
+        o.fact(f"flat.m{j}.top_other", float(np.mean([r["screen_origin"][0] for r in rs])) if rs else None, pct=True, digits=1,
+               source=f"analysis/geometry/{m}/cosine_C.json whole, none: screen_origin[0], mean over layers")
+    cos_c = [r for r in sel["table"] if r["construction"]["reading"] == "cosine" and r["construction"]["centring"] == "C" and r["construction"]["mask"] == "none"]
+    full = sum(all((r["models"].get(m) or {}).get("condition_site_counts", {}).get("other_mass") == len(sites) for m in models) for r in cos_c)
+    o.fact("cond1.cosine_c_none_full", full, source="analysis/stage_b_selection.json: cosine corpus-mean no-mask candidates with condition 1 at every layer in every model")
+    o.fact("cond1.cosine_c_none", len(cos_c), source="analysis/stage_b_selection.json: cosine corpus-mean no-mask candidates")
     o.fact("m", describe(sel.get("M")), source="analysis/stage_b_selection.json M")
     o.fact("l", describe(sel.get("L")), source="analysis/stage_b_selection.json L")
     o.fact("r", describe(sel.get("R")), source="analysis/stage_b_selection.json R")

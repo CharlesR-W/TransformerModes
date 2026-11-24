@@ -5,6 +5,10 @@ recent pasts makes a graph at every layer, and one operator ties the layers toge
 [CoherentModes](https://github.com/CharlesR-W/CoherentModes) on 2026-11-23; it reuses the through-depth operator of
 [DepthEmbedding](https://github.com/CharlesR-W/DepthEmbedding).
 
+**Site:** <https://charlesr-w.github.io/TransformerModes/> (viewer, experiments and method for Stage A). Build it
+with `uv run --with numpy python site/build_site.py <fetched data dir>`; a release build refuses unless the
+independent audit's report passes and its file inventory matches the data.
+
 ## Status
 
 - **Experiment 1, Stage A** (`SPEC.md` v3.2, code in `exp1/`, site in `site/`): the neighbour census on Pythia-1b and

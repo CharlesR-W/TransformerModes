@@ -161,6 +161,14 @@ matched controls from their seeds; recomputes census statistics from the stored 
 readout from its stored contributions and the Stage B selection; and compares 1,000 random pairs per pass with values
 the census saved before it discarded its distance blocks. The site does not build as a release unless this report is
 present and passing.</p>
+<p><b>The audit has failed once, for a real reason.</b> Its first full run on these data failed one check,
+<code>readout.document_contributions</code>, in every model and settings group: the prediction readout's stored
+per-document sums did not match the audit's own recomputation. The cause was an int32 overflow in the pipeline
+(exp1/readout.py, the lookup key of the prediction overlap), which recorded zero overlap for any neighbour or control in
+texts 24 to 31 and the end of text 23; the small test case could not reach those indices. The fix uses 64-bit keys and
+adds two regression tests; the readout, selection and viewer export were re-run, and the audit then passed. Concordance
+scores rose; top-1 match rates, coverage and the choice of Stage B's construction did not change. Everything on this
+site comes from the re-run (<a href="#experiments/x-e2-concordance">E2</a>).</p>
 <p class="m-callout">Audit result: <b>{{fact:x.method.audit.passed}}</b>. {{fact:x.method.audit.checks}} checks over
 {{fact:x.method.audit.compared}} compared values, {{fact:x.method.audit.failed}} failed; models
 {{fact:x.method.audit.models}}; run with {{fact:x.method.audit.spec_parameters}}.<br>
@@ -216,13 +224,15 @@ all-texts graph choice, and entries E4 (do the models share through-depth struct
 and E5 (does a text's picture change with its company?). None of it exists yet.</p>
 
 <h2 id="spending">Spending</h2>
-<p class="m-note">Stage A charged about <b>${{fact:x.method.ledger.spent}}</b> by the ledger, against a cap of
-${{fact:x.method.ledger.cap_initial}} at approval that the owner raised to ${{fact:x.method.ledger.cap}} after the timing
-pilot measured {{fact:x.method.run.pass_seconds}} s per census pass, more than planned. The census was
-stopped once by the Modal workspace's spend limit and resumed from the settings groups already saved
-({{fact:x.method.ledger.census.attempts}} census attempts); the readout took {{fact:x.method.ledger.readout.attempts}}
-attempts and the audit {{fact:x.method.ledger.audit.attempts}}, the earlier ones stopped by time limits set too short
-(README run log). The ledger's figures are estimates from runtimes and published rates, not Modal's bill. The viewer's
+<p class="m-note">Stage A charged about <b>${{fact:x.method.ledger.spent}}</b> by the ledger. The cap was
+${{fact:x.method.ledger.cap_initial}} at approval; the owner raised it to ${{fact:x.method.ledger.cap_pilot}} after the
+timing pilot measured {{fact:x.method.run.pass_seconds}} s per census pass, more than planned, and to
+${{fact:x.method.ledger.cap}} for the readout re-run after the fix described above. The census was stopped once by the
+Modal workspace's spend limit and resumed from the settings groups already saved
+({{fact:x.method.ledger.census.attempts}} census attempts). The readout took {{fact:x.method.ledger.readout.attempts}}
+attempts (twice a time limit set too short, once a coordinator limit, then the re-run after the fix) and the audit
+{{fact:x.method.ledger.audit.attempts}} (a 30-minute limit reached during its inventory step, then the genuine failure,
+then the pass); README run log. The ledger's figures are estimates from runtimes and published rates, not Modal's bill. The viewer's
 data come to {{fact:x.method.viewer.mb}} MB in {{fact:x.method.viewer.files}} files.</p>
 <details class="m-more">
   <summary>By unit</summary>

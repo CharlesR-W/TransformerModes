@@ -115,7 +115,8 @@ def run(data: Path, out: Path):
     o.fact("ledger.attempts", len(rows), source="ledger/attempts/*/*.json")
     o.fact("ledger.failed", sum(u["failed"] for u in by_unit.values()), source="ledger/attempts/*/*.json status")
     o.fact("ledger.cap_initial", 8, source="SPEC.md section 11 (the Stage A hard cap at approval)", tier="S")
-    o.fact("ledger.cap", 11, source="README.md Stage A run log: raised by the owner after the timing pilot", tier="S")
+    o.fact("ledger.cap_pilot", 11, source="README.md Stage A run log: raised by the owner after the timing pilot", tier="S")
+    o.fact("ledger.cap", 13, source="README.md Stage A run log: raised by the owner for the readout re-run after the fix", tier="S")
     def attempts(prefix):
         rs = [r for r in rows if str(r.get("unit", "")).startswith(prefix)]
         return len(rs), sum(r.get("status") not in ("finished", "succeeded", "completed", "ok", "done") for r in rs)

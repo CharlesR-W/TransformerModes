@@ -73,16 +73,40 @@ def run(data: Path, out: Path):
                 if (c, mk) == ("C", "none"):
                     o.fact(f"{base}.top1", (r or {}).get("top1_neighbour"), pct=True, source=src + " top1_neighbour")
                     o.fact(f"{base}.top1_control", (r or {}).get("top1_control"), pct=True, source=src + " top1_control")
+        # means over all readout layers (cosine, corpus mean, no mask), and how often the within-64 strata were covered
+        cn = [r for r in rows if r["reading"] == "cosine" and r["centring"] == "C" and r["mask"] == "none"]
+        lsites = sorted({r["site"] for r in cn})
+        o.fact(f"{k}.readout_layers", ", ".join(map(str, lsites)) if lsites else "none", source=f"analysis/prediction/{m}.json sites")
+        for mem in MEMORIES:
+            rs = [r for r in cn if r["memory"] == mem]
+            src = f"analysis/prediction/{m}.json cosine C none memory {mem}, mean over layers {lsites}"
+            mean = lambda key: (sum(r[key] for r in rs if r.get(key) is not None) / len([r for r in rs if r.get(key) is not None])) if any(r.get(key) is not None for r in rs) else None
+            sc, t1, t0 = mean("score"), mean("top1_neighbour"), mean("top1_control")
+            o.fact(f"{k}.mean.mem_{mem}.score", sc, digits=3, source=src + " score")
+            o.fact(f"{k}.mean.mem_{mem}.top1", t1, pct=True, source=src + " top1_neighbour")
+            o.fact(f"{k}.mean.mem_{mem}.top1_control", t0, pct=True, source=src + " top1_control")
+            o.fact(f"{k}.mean.mem_{mem}.ratio", (t1 / t0) if t1 is not None and t0 else None, digits=1, source=src + " top1_neighbour / top1_control")
+            o.fact(f"{k}.mean.mem_{mem}.coverage", mean("coverage"), pct=True, source=src + " coverage")
+            pairs = sum(v["pairs"] for r in rs for v in r["strata"].values())
+            near = sum(v["pairs"] for r in rs for key, v in r["strata"].items() if key.startswith("near/") and v["status"] != "covered")
+            o.fact(f"{k}.mean.mem_{mem}.near_left_out", near / pairs if pairs else None, pct=True,
+                   source=src + " strata near/*: pairs in uncovered strata over all pairs")
+        near_cov = sum(r["strata"][s]["status"] == "covered" for r in cn for s in ("near/rare", "near/frequent"))
+        o.fact(f"{k}.near_covered", near_cov, source=f"analysis/prediction/{m}.json cosine C none: covered near strata")
+        o.fact(f"{k}.near_strata", 2 * len(cn), source=f"analysis/prediction/{m}.json cosine C none: near strata")
+        o.fact(f"{k}.all_eligible", sum(bool(r["eligible"]) for r in rows), source=f"analysis/prediction/{m}.json eligible, every setting")
+        o.fact(f"{k}.all_settings", len(rows), source=f"analysis/prediction/{m}.json settings")
         elig = [r for r in rows if r["reading"] == "cosine" and r["site"] == site]
         o.fact(f"{k}.eligible_count", sum(bool(r["eligible"]) for r in elig), source=f"analysis/prediction/{m}.json eligible, cosine, lead layer")
         o.fact(f"{k}.settings_count", len(elig), source=f"analysis/prediction/{m}.json settings, cosine, lead layer")
     o.chart("lead", dict(panels=lead))
     o.chart("coverage", dict(panels=cov_panels))
     o.chart("top1", dict(panels=top_panels))
-    o.chart("card", dict(answer="On hold: the independent audit failed its check of this readout; not yet verified.", placeholder=True, numbers=[
-        "Score at memory none: {{fact:x.e2-concordance.m1.c.mem_none.score}} ({{fact:x.e2-concordance.m1.name}})",
-        "Score at memory 64: {{fact:x.e2-concordance.m1.c.mem_64.score}}",
-        "Coverage at memory 64: {{fact:x.e2-concordance.m1.c.mem_64.coverage}}"]))
+    o.chart("card", dict(answer=("With no memory a token's neighbours share the model's top prediction {{fact:x.e2-concordance.m1.mean.mem_none.ratio}} times "
+                                 "as often as matched controls; the advantage shrinks with memory to about nothing at the whole prefix."), numbers=[
+        "Same top prediction, no memory: {{fact:x.e2-concordance.m1.mean.mem_none.top1}} vs {{fact:x.e2-concordance.m1.mean.mem_none.top1_control}} for controls ({{fact:x.e2-concordance.m1.name}})",
+        "Score, no memory → whole prefix: {{fact:x.e2-concordance.m1.mean.mem_none.score}} → {{fact:x.e2-concordance.m1.mean.mem_whole.score}}",
+        "Pairs within 64 positions left out (no covered control) at memory 64: {{fact:x.e2-concordance.m1.mean.mem_64.near_left_out}}"]))
     o.write()
 
 

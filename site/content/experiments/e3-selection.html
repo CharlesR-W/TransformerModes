@@ -77,7 +77,16 @@ against {{fact:x.e3-selection.m.m1.screen_top_other}} of the 64 nearest on the s
 <ul class="x-caveats">
   <li><b>The screen is geometric.</b> Passing says the neighbourhood is not mostly nearby, not memoryless and not text
   alone; it says nothing yet about through-depth modes.</li>
-  <li><b>Failing says only that</b> no candidate met the prespecified screen; the census above is then the result.</li>
+  <li><b>Condition 1 hardly selects.</b> It held at every layer in both models for
+  {{fact:x.e3-selection.cond1.cosine_c_none_full}} of the {{fact:x.e3-selection.cond1.cosine_c_none}} cosine corpus-mean
+  candidates without a mask, because the walk weight is very flat: at the whole prefix
+  {{fact:x.e3-selection.flat.m1.walk_other}} of it lies in other texts in {{fact:x.e3-selection.m1.name}} while
+  {{fact:x.e3-selection.flat.m1.top_other}} of the 64 nearest on the same rows do.</li>
+  <li><b>What the pick does not show:</b> its neighbours share the model's predictions with matched controls less than its
+  no-memory counterpart's do (concordance score {{fact:x.e3-selection.m.m1.score}} against
+  {{fact:x.e3-selection.l.m1.score}} in {{fact:x.e3-selection.m1.name}}, {{fact:x.e3-selection.m.m2.score}} against
+  {{fact:x.e3-selection.l.m2.score}} in {{fact:x.e3-selection.m2.name}}, means over the readout layers; <a
+  href="#experiments/x-e2-concordance">E2</a>). The screen is geometric and does not use this.</li>
   <li><b>Thresholds were fixed in advance</b> (0.25 and 0.5); a candidate close to a threshold is not singled out.</li>
   <li><b>Groups dropped by the spending cap</b> ({{fact:x.e3-selection.dropped}} here) would be greyed in the table and
   could not pass.</li>

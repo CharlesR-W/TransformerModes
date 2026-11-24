@@ -3,14 +3,22 @@
 <p class="x-scope"><b>Tested:</b> a fixed sample of query tokens (per text, 64 in its last 512 positions and 32
 earlier), each with its 64 nearest neighbours, against controls matched on the neighbour's text, current token and
 distance band; the model's own top-20 next-token predictions; layers 4, 8, 12 and 16, both models, both readings. The
-lead figure is layer 8, cosine reading.</p>
+lead figure is layer 8, cosine reading; the answer's numbers are means over the four layers, corpus mean, no mask.</p>
 
-<!-- ANSWER: on hold until the audit's readout check is resolved. Spec 12.3: "On the fixed query sample, neighbours
-share [more / less] of the model's predictions than matched controls as memory grows; coverage is [c]." Facts:
-x.e2-concordance.m1.c.mem_<m>.score, .p5, .p95, .coverage, .eligible (and m2.*, accountings c, cw, o, ow). -->
-<p class="x-answer"><span class="x-placeholder">On hold: audit. The independent audit failed its check of this readout's
-stored per-document sums; the answer will be written once that is resolved. The figures below show the readout as
-computed, not verified.</span></p>
+<p class="x-answer"><strong>With no memory, a token's neighbours share the model's most likely next token
+{{fact:x.e2-concordance.m1.mean.mem_none.ratio}} times as often as controls matched on text and current token
+({{fact:x.e2-concordance.m1.mean.mem_none.top1}} against {{fact:x.e2-concordance.m1.mean.mem_none.top1_control}} in
+{{fact:x.e2-concordance.m1.name}}, {{fact:x.e2-concordance.m2.mean.mem_none.ratio}} times in
+{{fact:x.e2-concordance.m2.name}}), and the advantage shrinks steadily with memory in both models, to about nothing at
+the whole prefix (concordance score {{fact:x.e2-concordance.m1.mean.mem_none.score}} with no memory,
+{{fact:x.e2-concordance.m1.mean.mem_64.score}} at memory 64, {{fact:x.e2-concordance.m1.mean.mem_whole.score}} at the
+whole prefix).</strong> Each control shares its neighbour's text, current token and, within a text, its distance band;
+nothing else is held fixed and nothing causal is claimed. Neighbours within 64 positions never found enough controls
+({{fact:x.e2-concordance.m1.near_covered}} of {{fact:x.e2-concordance.m1.near_strata}} such strata covered), so the
+score leaves them out ({{fact:x.e2-concordance.m1.mean.mem_64.near_left_out}} of all neighbour pairs at memory 64,
+{{fact:x.e2-concordance.m1.mean.mem_whole.near_left_out}} at the whole prefix), and that is why most settings are
+ineligible for ranking ({{fact:x.e2-concordance.m1.all_eligible}} of {{fact:x.e2-concordance.m1.all_settings}} are
+eligible in {{fact:x.e2-concordance.m1.name}}).</p>
 
 <figure class="live x-wide-fig" data-live="points" data-src="assets/x/e2-concordance.json#lead" data-height="240">
   <div class="live-body"></div>
@@ -22,11 +30,11 @@ computed, not verified.</span></p>
 </figure>
 
 <div class="x-numbers">
-  <div><b>{{fact:x.e2-concordance.m1.c.mem_none.score}}</b><span>concordance score with no memory (5–95%: {{fact:x.e2-concordance.m1.c.mem_none.p5}} to {{fact:x.e2-concordance.m1.c.mem_none.p95}})</span><small>{{fact:x.e2-concordance.m1.name}} · layer {{fact:x.e2-concordance.m1.layer}} · corpus mean</small></div>
-  <div><b>{{fact:x.e2-concordance.m1.c.mem_64.score}}</b><span>the same at memory 64 (5–95%: {{fact:x.e2-concordance.m1.c.mem_64.p5}} to {{fact:x.e2-concordance.m1.c.mem_64.p95}})</span><small>{{fact:x.e2-concordance.m1.name}} · {{fact:x.e2-concordance.m1.c.mem_64.eligible}}</small></div>
-  <div><b>{{fact:x.e2-concordance.m2.c.mem_64.score}}</b><span>the second model at memory 64 (5–95%: {{fact:x.e2-concordance.m2.c.mem_64.p5}} to {{fact:x.e2-concordance.m2.c.mem_64.p95}})</span><small>{{fact:x.e2-concordance.m2.name}} · layer {{fact:x.e2-concordance.m2.layer}} · corpus mean</small></div>
-  <div><b>{{fact:x.e2-concordance.m1.c.mem_64.coverage}}</b><span>of neighbour pairs found a matched control at memory 64</span><small>{{fact:x.e2-concordance.m1.name}} · corpus mean</small></div>
-  <div><b>{{fact:x.e2-concordance.m1.c.mem_none.top1}} vs {{fact:x.e2-concordance.m1.c.mem_none.top1_control}}</b><span>same top-1 prediction: neighbour vs its matched control, no memory</span><small>{{fact:x.e2-concordance.m1.name}} · covered strata</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.mean.mem_none.ratio}}×</b><span>as often as matched controls, a neighbour shares the token's most likely next token, no memory ({{fact:x.e2-concordance.m1.mean.mem_none.top1}} vs {{fact:x.e2-concordance.m1.mean.mem_none.top1_control}})</span><small>{{fact:x.e2-concordance.m1.name}} · mean of layers {{fact:x.e2-concordance.m1.readout_layers}} · corpus mean</small></div>
+  <div><b>{{fact:x.e2-concordance.m2.mean.mem_none.ratio}}×</b><span>the same for the second model ({{fact:x.e2-concordance.m2.mean.mem_none.top1}} vs {{fact:x.e2-concordance.m2.mean.mem_none.top1_control}})</span><small>{{fact:x.e2-concordance.m2.name}} · mean of layers {{fact:x.e2-concordance.m2.readout_layers}}</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.mean.mem_none.score}} → {{fact:x.e2-concordance.m1.mean.mem_whole.score}}</b><span>concordance score, no memory → whole prefix ({{fact:x.e2-concordance.m2.mean.mem_none.score}} → {{fact:x.e2-concordance.m2.mean.mem_whole.score}} in the second model)</span><small>{{fact:x.e2-concordance.m1.name}} · mean of four layers</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.mean.mem_64.near_left_out}}</b><span>of neighbour pairs at memory 64 are within 64 positions and left out of the score (no covered stratum)</span><small>{{fact:x.e2-concordance.m1.name}} · corpus mean</small></div>
+  <div><b>{{fact:x.e2-concordance.m1.all_eligible}} of {{fact:x.e2-concordance.m1.all_settings}}</b><span>settings eligible for ranking ({{fact:x.e2-concordance.m2.all_eligible}} of {{fact:x.e2-concordance.m2.all_settings}} in the second model)</span><small>every reading, accounting, memory and layer</small></div>
 </div>
 
 <h3 id="x-e2-concordance-what">What was computed</h3>
@@ -71,6 +79,11 @@ computed, not verified.</span></p>
 
 <h3 id="x-e2-concordance-caveats">Caveats</h3>
 <ul class="x-caveats">
+  <li><span class="x-tag">audit</span><b>The first run of this readout failed the independent audit.</b> An int32 overflow
+  in exp1/readout.py (the lookup key of the prediction overlap) recorded zero overlap for every neighbour or control in
+  texts 24 to 31 and the end of text 23. It was fixed with 64-bit keys and two regression tests, the readout and selection
+  were re-run, and the audit then passed. The scores rose; top-1 rates, coverage and the choice of Stage B's construction
+  did not change. See <a href="#method/check">How to check</a>.</li>
   <li><b>Controls are matched on text, current token and distance band only.</b> Anything else a neighbour shares with
   its query (its own past, say) is part of the advantage by design.</li>
   <li><b>Coverage limits the claim.</b> Frequent tokens find controls easily; rare ones often do not, so strata differ in
