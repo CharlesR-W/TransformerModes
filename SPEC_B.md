@@ -1,479 +1,466 @@
-# TransformerModes, experiment 1, Stage B: independent chunks, through depth, and the prediction
+# TransformerModes, experiment 1, Stage B: independent chunks, through depth, and the next-token prediction
 
-Spec B v1, 2026-11-24. Replaces the provisional Stage B of `SPEC.md` (sections 6-8 and 16). Inherits unchanged from
-`SPEC.md`: models, revisions, tokenizers, separators and the forward-pass rules (section 2), the corpus file (section
-3), the site machinery (section 12) and the ledger and reservation mechanism (section 11). Exploratory. Sources: the
-owner's direction (orchestrator's brief, 2026-11-24), Stage A's published results, `exp1/spacetime.py` and
-`exp1/kernels.py` (DepthEmbedding's dense operator and graph rules, used unchanged as the oracle).
+Spec B v2, 2026-11-24. History: v1 (design); v2 (review 1, `reviews/spec-b-v1-astra.md`, 11 findings; responses in
+section 18). Replaces the provisional Stage B of `SPEC.md` (sections 6-8, 16). Inherits unchanged from `SPEC.md`:
+models, revisions, tokenizers, separators and forward-pass settings (section 2), the corpus file (section 3) and the
+site machinery (section 12). Exploratory. Sources: the owner's direction (2026-11-24), Stage A's results,
+`exp1/spacetime.py` and `exp1/kernels.py` (DepthEmbedding's dense operator and graph rule, the oracle, unchanged).
 
-**In one paragraph.** We cut each of 4,096 Pile test documents once at a random position between tokens 256 and
-1,023, let Pythia-1b and OLMo-1B read the real document up to the cut, and keep the last 64 tokens' hidden states at 8
-layers (the **chunk**) and the model's full next-token distribution at the cut. No two chunks share a document, so
-Stage A's chains along a text and its document blobs cannot occur, with no window and no mean removal. Two chunks are
-compared in three ways (the state at the cut; the recent past, lag by lag with memory 8; the average over the whole
-chunk) and, separately, by how alike the model's predictions after them are. Each comparison gives a graph and a walk
-at every layer; the **product walk** (a step in the layer's geometry, a step in the prediction geometry, a step back)
-keeps only patterns that are smooth in both. We ask, per layer, how many directions the layer shares with the
-prediction beyond chance, and we run DepthEmbedding's through-depth operator with and without the prediction step.
-A planted hidden-Markov source with a known belief state is the gate before spend. Projected about $8.75, proposed cap
-$12; about seven hours of wall-clock.
+**The question.** Does matching each chunk to its own next-token prediction change the through-depth picture more
+than attaching the same prediction geometry to the wrong chunks, and how much of the result is already visible from
+the cut token or from the prediction alone?
 
-## 0. What Stage A taught, and what changes
+**What it does not claim.** That anything found is a minimal predictive state or a Hankel rank; where in the model a
+prediction is computed; that the structure is used by the model (no outcome is held out for that).
 
-Stage A (`SPEC.md` v3.2, site E1-E3) listed each token's 64 nearest tokens in 32 long texts. With memory, neighbours
-move into the token's own text and next to it (Pythia, layer 8, corpus mean: own-text share 59% with no memory, 98% at
-memory 64, 51% within 64 positions). This is the residual stream, not the kernel: random token vectors through the same
-kernel put 9% of their neighbours within 64 positions at memory 64. Prediction concordance against matched controls
-falls with memory (Pythia, mean of four layers: 0.133, 0.063, 0.017, 0.004 for memory none, 8, 64, whole prefix).
-Participation-ratio rows were very flat: at the whole prefix half of a row's walk weight lay in other texts while 0.6%
-of its 64 nearest did. The owner judged the window and mean removal to be fixes for a problem of the sampling, and
-asked for independent chunks and for a construction using the model's predictive state.
+**In one paragraph.** We cut each of 2,048 Pile test documents once at a random position between tokens 256 and 1,023,
+let Pythia-1b and OLMo-1B read the real document up to the cut, and keep the last 64 tokens' hidden states at 8 layers
+(the **chunk**) and the model's next-token distribution at the cut. No two chunks share a document, so Stage A's chains
+along a text cannot occur. Chunks are compared by three summaries of their states (the state at the cut, the primary
+one; the recent past; the chunk average) and by how alike their next-token distributions are. The **product walk**
+(a step in the layer's geometry, a step in the prediction geometry, a step back) charges a pattern for prediction
+roughness after layer smoothing. Its appearance alone is never evidence: with a layer that prefers no pair of chunks
+the product reproduces the prediction's own patterns exactly (P10). Evidence comes only from quantities that depend on
+the correct pairing, compared with the same prediction geometry attached to wrong chunks (random relabellings, and
+relabellings that keep the cut token). A planted hidden-Markov source is the gate before spend. Projected about $5.60,
+proposed Stage B cap $8, about four hours.
 
-| Stage A problem | Stage B answer |
-|---|---|
-| Neighbours are neighbouring positions of one text | one chunk per document; no two nodes share a text |
-| Window and own-text mean are rules that impose results | not used; nothing is masked |
-| Whole-prefix similarity depends on prefix length | every chunk has 64 tokens; the dot reading's dependence on position is reported (section 7) |
-| Flat participation-ratio rows | flatness measured on chunks in the pilot; a prestated switch to DepthEmbedding's kNN rule (section 4) |
-| Concordance was a readout beside the geometry | the prediction enters the operator itself, with an exact past-only partner and a relabelled-prediction null |
+## 0. What Stage A taught
 
-**The single-long-text half of the owner's request** is served by Stage A's token viewer, and Stage B adds only a link
-to it. Running the product construction on the tokens of one text would bring back what Stage B removes: neighbouring
-positions share both their pasts and their predictions, so the chain along the text would dominate both views. A
-one-text version is deferred (section 15).
+Stage A (site E1-E3) listed each token's 64 nearest tokens in 32 long texts. With memory, neighbours move into the
+token's own text and next to it (Pythia, layer 8: own-text share 59% with no memory, 98% at memory 64), a property of
+the residual stream rather than the kernel (random token vectors: 9% within 64 positions at memory 64, against 51%).
+Prediction concordance with matched controls falls with memory (0.133, 0.063, 0.017, 0.004 for none, 8, 64, whole
+prefix). Participation-ratio rows were flat (whole prefix: half a row's walk weight in other texts, 0.6% of its 64
+nearest). The owner judged the window and the own-text mean to be fixes for the sampling and asked for independent
+chunks and for a construction using the model's prediction. Stage B therefore uses one chunk per document, nothing
+masked, no per-document or position-based correction, fixed-length chunks, and the prediction inside the operator
+with exact controls. **Single long texts** stay with Stage A's token viewer (Stage B links to it): on one text,
+neighbouring positions share both pasts and predictions, which would bring the chain back into both views.
 
-## 1. Questions
+## 1. Questions and prespecified tests
 
-| # | Question | Measured | Could come out |
+| # | Question | Statistic and reference | Status |
 |---|---|---|---|
-| Q1 | At which layers does a chunk's geometry share directions with the model's prediction geometry beyond chance, and does it depend on how chunks are compared? | the count n_l of section 7, per layer, comparison and model, against 20 relabellings of the prediction | rising with depth, flat, or peaked; memory raising or lowering it at early layers |
-| Q2 | When the through-depth operator must also agree with the prediction, where in depth does its low space live, what is it about, and do the two models agree on it more than on the past-only low space? | occupancy by layer; captured shares of five chunk attributes; cross-model alignment, each against its null | moves toward late layers or not; about the next token, the subset or position; models agree more, less or the same |
-| Q3 | Does the construction find a planted belief state where it is present and report nothing where it is absent or scrambled, when the past-only walk does not? | section 8, prestated pass conditions | pass or fail; a failure stops the stage before the main spend |
+| Q1 | At each layer, does pairing chunks with their own predictions keep more smoothness than wrong pairings? | n_l: eigenvalues of the product walk exceeding the largest leading eigenvalue among 200 wrong pairings (section 8.1), random and cut-token-preserving | per cell calibrated (1 in 201 under the null); depth shape and comparison differences exploratory |
+| Q2a | Through depth, is agreeing with the prediction cheaper under the correct pairing? | energy cost E (section 8.2) against 50 random and 50 cut-token-preserving wrong pairings, state at the cut, each model | prespecified: 4 tests |
+| Q2b | Does correct pairing raise the two models' agreement more than the same wrong pairing applied to both? | increment Δ (section 8.3) against the same 50 + 50 wrong pairings; prediction-only agreement beside it | prespecified: 2 tests |
+| Q3 | Does the construction recover a planted belief where it is present, within the current symbol, and nothing where it is absent, symbol-only or scrambled? | section 9, frozen conditions | gate before the main spend |
 
-The claims are descriptive geometry of two models on one probe. Nothing causal is claimed.
+Everything else (where in depth the count peaks, whether the recent past or average changes it, what modes look like,
+attribute shares) is **exploratory**, shown with two half-sample curves for the primary comparison, and called
+**indeterminate** when the halves disagree in sign or a count is censored at 64.
 
 ## 2. Probe and extraction
 
-**Corpus.** As Stage A: `monology/pile-uncopyrighted` at revision `3be90335…`, `test.jsonl.zst`; `meta.pile_set_name`
-is the **subset**. The 36 Stage A documents are excluded by SHA-256 of their text.
+**Corpus.** As Stage A (`monology/pile-uncopyrighted`, revision `3be90335…`, `test.jsonl.zst`; subset =
+`meta.pile_set_name`). Stage A's 36 documents are excluded by SHA-256 of the text.
 
-**Eligibility** (each failure counted by reason): no forbidden string (`SPEC.md` section 2); at least 95% ASCII
-characters; at least 1,024 Pythia tokens; the token assertion of `SPEC.md` section 2 on the full text (identical ids in
-both tokenizers, no id in {0, 1, 50277, 50278, 50279}, identical token strings), reusing `probe.assert_token_identity`.
+**Eligibility** (failures counted by reason): no forbidden string; at least 95% ASCII; at least 1,024 Pythia tokens;
+the token assertion of `SPEC.md` section 2 on the full text (`probe.assert_token_identity`); full-text SHA-256 not
+already accepted.
 
-**Cut and chunk.** Positions count the model's separator as 0, so document token k sits at position k. Eligible
-documents are shuffled with `default_rng(1)`; for each in turn a cut u is drawn uniformly from {256, ..., 1,023} with
-`default_rng(2)` (one draw per document examined, accepted or not). The **chunk** is positions u-63 to u. A document is
-rejected if more than half of its chunk's tokens are whitespace-only, or if its chunk shares any 32-token id sequence
-with an accepted chunk. The first **4,096** accepted documents are the probe, in their accepted order, indexed
-i = 0..4,095. **Halves:** even and odd i, 2,048 each, the two replicates. The cut range does not depend on document
-length, so cut position is independent of length and subset by construction. Subsets are not capped: the sample is
-"chunks from random places in the first 1,024 tokens of mostly ASCII Pile test documents of at least 1,024 tokens",
-and the page says so with the subset table.
+**Cut and chunk.** Positions count the separator as 0. Eligible documents are shuffled with `default_rng(1)`; each in
+turn gets a cut u uniform on {256, ..., 1,023} from `default_rng(2)` (one draw per document examined). The chunk is
+positions u-63 to u. Reject if more than half of the chunk's tokens are whitespace-only, or if the chunk shares a
+32-token id sequence with an accepted chunk. The first **2,048** accepted are the probe, i = 0..2,047 in accepted
+order; **halves** are even and odd i. The cut range does not depend on length or subset before rejection; the
+rejections depend on the cut, so the accepted cut distribution is reported by subset and by length decile. Saved per
+chunk: source line index, text hash, length, subset, u, token ids of positions u-95..u+1.
 
-**Forward pass.** Each model reads `[its separator] + document tokens 1..u` (u + 1 tokens, 257 to 1,024), one
-document per batch, with `SPEC.md` section 2's settings (float32, eval, eager attention, TF32 off, pinned versions),
-reusing `extract.forward`. The hook-equality check runs on the first document; Stage A's causal check is not repeated
-(each context is read once, whole).
+**Extraction (a narrow new mode; `extract.py`'s paths return all positions or no probabilities).** Each model reads
+`[its separator] + tokens 1..u` in one forward pass of the full causal model, one document per batch, `SPEC.md` section
+2 settings (float32, eval, eager attention, TF32 off, pinned versions). Hooks keep only block outputs at sites
+{2, 4, ..., 16} for positions u-63..u, sliced on the device. The **native** logits at the last position are read from
+the model's own output and converted to a full softmax in float64. Hook equality with `output_hidden_states` is checked
+on the first document. **Check (fails closed, every chunk):** the exported final norm and head (numpy, float64)
+applied to the stored pre-norm layer-16 cut state reproduce the native softmax to 1e-6 absolute.
 
-**Stored per model** (`/chunks/` on Volume `tm-exp1`), only what the kernels and the audit need:
+| Stored per model | Shape, type | Size |
+|---|---|---|
+| chunk states | (2,048, 8, 64, 2,048) float32; lag 0 = the cut | 8.6 GB |
+| next-token distribution at the cut | (2,048, 50,304) float64 | 0.82 GB |
+| final norm parameters, output head, input embedding | numpy | 0.82 GB |
+| per chunk: top-20 ids and probabilities, entropy; provenance | small | |
 
-| Item | Shape and type | Size | Used by |
-|---|---|---|---|
-| chunk states at sites l in {2, 4, ..., 16} | (4,096, 8, 64, 2,048) float32, lag 0 = the cut | 17.2 GB | all comparisons |
-| next-token distribution at the cut | (4,096, 50,304) float32, full softmax | 0.82 GB | prediction geometry |
-| final norm parameters and output head | numpy arrays | 0.41 GB | audit (recomputes the distribution) |
-| input embedding matrix | numpy array | 0.41 GB | layer 0 (recomputed from token ids) |
-| per chunk: cut u, subset, token ids of positions u-95..u+1, top-20 ids and probabilities, entropy | small | 6 MB | viewer, attributes |
-| provenance | JSON | | as Stage A |
+## 3. Three summaries and the prediction geometry
 
-**Assertion (fails closed, every chunk):** the distribution recomputed from the stored layer-16 cut state through the
-pinned final norm and head equals the model's own softmax to 1e-5 absolute.
+x_{i,l}(s) is chunk i's state at site l and lag s (s = 0 at the cut, 63 at the chunk's start); layer 0 is the input
+embedding, recomputed from token ids. **Centring:** one global mean μ_l per model and site, over every chunk and lag
+of the sample analysed, as in Stage A's cosine construction. The owner's objection was to per-document and
+position-based fixes; none is used. Each token vector is then scaled to unit length: y = (x - μ)/||x - μ|| (the cosine
+reading; the dot reading is deferred). Every summary is a weighted Gram matrix over lags:
 
-## 3. Comparing two chunks
+K_W(i, j) = Σ_{s, s'} W_{ss'} ⟨y_i(s), y_j(s')⟩,  distance d = 1 - K_W(i, j)/sqrt(K_W(i, i) K_W(j, j))
 
-Notation: x_{i,l}(s) in R^2048 is chunk i's hidden state at site l and lag s (s = 0 at the cut, s = 63 at the chunk's
-start); layer 0 is the embedding output, recomputed from token ids. μ_l is the mean of x_{i,l}(s) over every chunk and
-lag of the sample being analysed (the full sample or one half). **Readings** as in Stage A: **cosine** uses
-y = (x - μ)/||x - μ||, so each token counts equally; **dot** uses y = x - μ, so loud tokens count more.
+| Summary | W | In words |
+|---|---|---|
+| **state at the cut** (primary) | W_00 = 1 | the contextualised state where the model predicts |
+| recent past, memory 8 | W_ss = a^s, a = 7/8 | the owner's end-aligned kernel K_a over the last tokens, lag by lag; truncation at 64 lags drops a^64 = 1.9 × 10^-4 of the weight |
+| chunk average | W_ss' = 1/64² | the mean of the 64 contextualised states |
 
-The three **comparisons** are one formula with three lag-weight matrices W (64 × 64):
+These are three summaries of states that each already depend on the whole prefix. They are not an ablation of order or
+a test of extra memory: the average pools contextualised states, it does not shuffle tokens and rerun the model.
+Checks (fail closed): no ||x - μ|| below 1e-6 × median; the chunk average's pooled norm sqrt(K_W(i, i)) not below
+1e-3 × its median; no off-diagonal distance below 1e-9 except in the layer-0 state at the cut, where chunks with the
+same cut token are identical by construction and handled by the tie rule (section 4).
 
-K_W(i, j) = Σ_{s, s'} W_{s s'} ⟨y_i(s), y_j(s')⟩
+**The prediction geometry.** p_i is the model's next-token distribution at chunk i's cut: a **one-step predictive
+distribution**, the empty-continuation block of a row of Golowich, Liu and Shetty's extended logit matrix. Since
+sqrt(p_i) has unit length, ⟨sqrt(p_i), sqrt(p_j)⟩ = Σ_v sqrt(p_i(v) p_j(v)) is the Bhattacharyya coefficient and d_F =
+1 - BC = Σ_v (sqrt(p_i(v)) - sqrt(p_j(v)))²/2 is the squared Hellinger distance, computed from the squared differences
+(no cancellation). Square roots rather than logits: the distance is fixed by the distribution, bounded, and weighted
+toward probable tokens. Not centred. Near-identical predictions are legitimate and handled by the tie rule.
 
-| Comparison | W | In words | The owner's original item |
-|---|---|---|---|
-| state at the cut | W_00 = 1, else 0 | the hidden state where the model predicts | "just the local residual vector" |
-| recent past, memory 8 | W_ss = a^s, a = 7/8, else 0 | the last few tokens, compared lag by lag with fading weight | the end-aligned kernel K_a, "smart EMA" |
-| chunk average | W_ss' = 1/64² | the mean state over the 64 tokens; order ignored | "a simple running mean"; "big aggregated blocks" |
+## 4. Graph rule (one, fixed)
 
-The recent past is the owner's K_a(t, t') = Σ_s a^s ⟨y_{t-s}, y_{t'-s}⟩ truncated at 64 lags, which drops a^64 =
-1.9 × 10^-4 of its weight. Distances: cosine d = 1 - K_ij/sqrt(K_ii K_jj); dot d = [(K_ii + K_jj)/2 - K_ij]/k̄, k̄ the
-mean of K_ii. Gram matrices are computed in float64 from the float32 states. Fail closed if any ||x - μ|| is below
-1e-6 times the median, or any off-diagonal distance is below 1e-9 (exact duplicates). The state at the cut at layer 0
-is the current token's embedding, so hundreds of chunks tie exactly; that one view is not built (section 7 says what
-replaces it).
+**Participation ratio 64**, dense, from `kernels.py`: q(j|i) ∝ exp(-β_i (d_ij - min_j d_ij)) with 1/Σ_j q(j|i)² = 64;
+W = (q + q^T)/2; symmetric Sinkhorn to 1e-11; S = the resulting symmetric doubly stochastic walk (zero diagonal);
+A = (I + S)/2. Dense and floor-free: every pair has positive weight, so there are no floor-defined components.
 
-**The prediction geometry.** With p_i the model's next-token distribution at chunk i's cut, the vector sqrt(p_i) has
-unit length, and ⟨sqrt(p_i), sqrt(p_j)⟩ = Σ_v sqrt(p_i(v) p_j(v)) is the Bhattacharyya coefficient BC. The distance
-d_F = 1 - BC is the squared Hellinger distance: the cosine reading applied to square-root probabilities, so the only
-geometric assumption is again a dot product. It is a row of the Golowich-Liu-Shetty extended logit matrix (histories
-against continuations) restricted to the empty continuation, in square-root coordinates. Square roots rather than
-logits: Hellinger distance is fixed by the distribution, bounded, and weighted toward probable tokens, whereas centred
-logit vectors are dominated by the 50,000 improbable tokens. No centring.
+**Tie rule (permutation-equivariant).** Equal distances get equal weight because q depends only on distance. The tied
+minimum set of row i is T_i = {j : d_ij - min_j d_ij ≤ 1e-12}. If |T_i| ≥ 64 the target is unattainable and the row is
+the β → ∞ limit, uniform on T_i; such rows are counted and reported, never treated as failures. Identical predictions
+for every chunk therefore give the complete graph, the case of P5.
 
-## 4. Graph rule
-
-Unchanged from `kernels.py`. **Participation ratio** (PR64): q(j|i) ∝ exp(-β_i (d_ij - min_j d_ij)) with β_i set so
-that 1/Σ_j q(j|i)² = 64; W = (q + q^T)/2; symmetric Sinkhorn to tolerance 1e-11; `ea_kernel(C = 1 - d, 64, renyi=2)`.
-**kNN15:** union 15 nearest neighbours, weight 1, floor 1e-6, Sinkhorn (`knn_kernel`, DepthEmbedding's shipped rule).
-Either gives a symmetric doubly stochastic walk S with zero diagonal. The lazy walk is A = (I + S)/2.
-
-**Flatness, decided in the pilot and fixed before the main run.** τ = the mean over rows of the conditional mass
-outside each row's 64 largest q(j|i). On Pythia at site 8 (full sample, cosine) for the four views (three comparisons
-and the prediction): if τ > 0.5 for two or more of them, **every** view in Stage B uses kNN15; otherwise PR64. τ is
-reported for every view of the main run either way. The known-answer check (section 8) must pass under both rules, so
-the switch cannot be chosen to pass it.
+**Reported for every walk:** conditional tail τ_q (mean mass outside each row's 64 largest q), final-walk tail τ_S
+(the same for rows of S), achieved participation ratios, Sinkhorn error, the first 12 nontrivial eigenvalues and the
+gap after the 16th. A first nontrivial gap below 1e-3 is flagged as a near-disconnection, with the sizes and subsets
+of the two sides of its sign split. kNN is not run (section 16).
 
 ## 5. The product walk
 
-For each layer l and comparison, S_l is the layer's walk and A_l = (I + S_l)/2. S_F is the prediction geometry's walk
-(non-lazy). Two site walks enter the through-depth operator, one per run:
+S_l is layer l's walk for the summary in use, A_l = (I + S_l)/2, S_F the prediction walk (not lazy). Per layer:
 
-- **past only:** M_l = A_l A_l (the paired partner; same eigenvectors as DepthEmbedding's walk A_l, squared eigenvalues);
-- **with the prediction:** M_l = A_l S_F A_l (a step in the layer's geometry, a step in the prediction geometry, a step
-  back).
+- **past only** (the paired partner): M_l = A_l²;
+- **with the prediction:** M_l = A_l S_F A_l;
+- **wrong pairing** Π (a relabelling of chunks): M_l^Π = A_l Π S_F Π^T A_l, the same prediction geometry on the wrong
+  chunks; one Π is applied at every site, in every summary and in both models (common relabellings).
 
-The two differ only in the middle factor, so any difference between their pictures is the prediction's doing. A null
-partner replaces S_F by Π S_F Π^T, Π a random relabelling of the chunks (`default_rng(51)` onward): the same prediction
-geometry attached to the wrong chunks.
-
-**What is proved, what holds under conditions, what is a hypothesis.** P1-P6 were checked numerically by the designer on random
-Sinkhorn walks at N = 60 (a scratch script, not kept; every check held to 1e-15) and are tested again in section 9.
+By P2 the product charges a function for its roughness on the layer (two lazy steps) plus the prediction graph's
+roughness of the layer-smoothed function: **prediction roughness after layer smoothing**. It is not an intersection
+projector, and its modes are not "what the layer knows about the future".
 
 | # | Statement | Status |
 |---|---|---|
-| P1 | M = A S_F A is symmetric, entrywise nonnegative and doubly stochastic, with -I ≤ M ≤ I. So I - M is positive semidefinite and (I - M)/c_l is a valid site energy for `spacetime.py`, which needs M ≤ I, not M ≥ 0 | theorem (S_F symmetric doubly stochastic; A lazy) |
-| P2 | f^T (I - M) f = f^T (I - A²) f + (A f)^T (I - S_F)(A f): the layer's two-step roughness of f plus the prediction graph's roughness of the layer-smoothed function. A function is cheap only if it is smooth in both | theorem (identity) |
-| P3 | λ_k(M) ≤ λ_k(A²) for every k; λ_k(M) ≤ λ_k(S_F) wherever λ_k(S_F) ≥ 0 (Ostrowski's congruence theorem). The prediction step can only remove smoothness | theorem |
-| P4 | M has eigenvalue 1 on mean-zero functions only if the two graphs share a disconnection (a nonconstant function constant on the components of both). If either graph is connected, so is the product, as `balance_direct` requires | theorem |
-| P5 | Limits. S_F = I gives the past-only walk. S_F = the complete graph gives M = -A²/(N - 1) on mean-zero functions: nothing survives. If S_F commutes with A (for example S_F = S_l), M has their eigenvectors with eigenvalues ((1 + μ)/2)² ν: the product only reweights | theorem |
-| P6 | Linear limit. If A and S_F are replaced by orthogonal projections onto centred feature spans (plus the constant), the nontrivial eigenvalues of M are the squared sample canonical correlations of the two feature sets. With past and future features this is canonical-correlation analysis of past against future. Its number of nonzero correlations is the rank of the past-future cross-covariance, which for a linear Gaussian process is the dimension of the minimal state (Akaike 1975; the Hankel singular values) | theorem |
-| P7 | The output is a function of the prefix, so the predictive state is the same object at every layer. A layer's n_l says where it is laid out in that layer's geometry at this graph resolution, not where it is computed | theorem (first clause); reading (second) |
-| P8 | Eigenvectors of M_l above the relabelled-prediction null are smooth functions of a variable common to the layer's geometry and the prediction geometry, and n_l counts resolvable shared directions, which grows with that variable's dimension and with the graph's resolution (a two-dimensional variable has many harmonics). It is a count, not a dimension | hypothesis. Alternating-diffusion theory (Lederman and Talmon 2018; Talmon and Wu 2019) proves the analogue for manifold-valued common variables when the two views are conditionally independent given it; whether that holds here is unknown. Tested on a known answer (section 8) |
+| P1 | M = A S_F A is symmetric, entrywise nonnegative, doubly stochastic, -I ≤ M ≤ I; I - M is positive semidefinite, which is all `spacetime.py` needs | theorem |
+| P2 | f^T (I - M) f = f^T (I - A²) f + (Af)^T (I - S_F)(Af); hence M ≤ A² | theorem |
+| P3 | λ_k(M) ≤ λ_k(A²) for all k; λ_k(M) ≤ λ_k(S_F) where λ_k(S_F) ≥ 0 (Ostrowski) | theorem |
+| P4 | M has eigenvalue 1 on mean-zero functions only if both graphs share a disconnection | theorem |
+| P5 | S_F = I gives A². S_F the complete graph gives M = -A²/(N - 1) on mean-zero functions. If S_F commutes with A, M has their eigenvectors with eigenvalues ((1 + μ)/2)² ν | theorem |
+| P6 | With A and S_F replaced by orthogonal projections onto centred feature spans (plus the constant), the nontrivial eigenvalues of M are the squared sample canonical correlations of the two feature sets | theorem |
+| P7 | The output is a function of the prefix, so the one-step prediction is the same at every layer; n_l describes the layer's geometry at this graph resolution, not where the prediction is computed. Layer 16 is an endpoint reference, not a ceiling: the norm-head-softmax map need not preserve neighbourhoods | theorem (first clause); reading |
+| P8 | Eigenvectors of M_l whose eigenvalues exceed the wrong-pairing null are smooth functions of a variable common to both views; n_l counts resolvable shared directions (harmonics included), not a dimension | hypothesis (alternating diffusion: Lederman and Talmon 2018; Talmon and Wu 2019, under conditional independence of the views given the common variable, unverified here); tested on the known answer |
+| P9 | At equal site units c_l and coupling t, L_with - L_past = blockdiag(A_l (I - S_F) A_l / c_l) ⪰ 0, so every through-depth eigenvalue rises (Weyl), and the energy cost E ≥ 0 | theorem |
+| P10 | If every A_l commutes with Π (a layer that prefers no pair of chunks, A_l = αI + βJ; or a layer that is a function of the cut token, with Π keeping the cut token), the wrong-pairing product has exactly the site spectra, through-depth spectrum and (relabelled) modes of the correct one: n_l = 0 and E, Δ show no effect. With a flat layer the product's modes are the prediction walk's eigenvectors whatever the layer represents | theorem |
 
-**At the last layer.** For the state at the cut, layer 16 and the prediction are tied by a fixed map (final norm, head,
-softmax), so their graphs are close but not equal; where they coincide, P5 says the product adds nothing beyond
-reweighting. n_16 for that comparison is a ceiling check, not a finding.
+P1-P6 were checked numerically on random walks at N = 60 (scratch, to 1e-15); all ten are tested in section 10.
 
-**Degenerate cases and how they show.** (i) Prediction rows nearly flat or the prediction uninformative: M ≈ 0 on
-mean-zero functions, n_l = 0, and the through-depth low space has no preferred layer; the top 16 eigenvalues of S_F
-are printed beside every result. (ii) Prediction geometry carved up by frequent next tokens (chunks predicting ",",
-"\n", " the"): S_F is nearly block-structured by top-1 prediction and the shared directions say mainly "which next
-token"; this is real predictive structure, and its size is reported as the predicted-token share (section 7).
-(iii) A layer's rows flat: the same at that layer. (iv) Exact ties: excluded by the duplicate check.
+**Motivation, conditional.** For a stationary process, canonical correlations between long enough past and future
+windows give, under minimality and full-rank conditions on the population past-future Hankel operator, the state of a
+minimal linear realisation (Akaike 1975); Golowich, Liu and Shetty find extended logit matrices of language models
+approximately low rank. That is why a past-against-future comparison is natural. Our view is one-step, sampled and
+nonlinear, so no state or rank claim is made.
 
-**Not taken.** A lazy prediction walk (I + S_F)/2: an unrelated prediction then leaves A²/2, the past picture at half
-strength, which relative site units restore (at N = 60: top nontrivial eigenvalue 0.404 against A²/2's 0.411), so it
-would not report nothing. S_F² (positive semidefinite, and exactly the Gram matrix of Lederman and Talmon's alternating
-diffusion S_F A): Sinkhorn walks with zero diagonal have large negative eigenvalues (down to -0.58 at N = 60), which
-squaring turns into false smoothness. The prediction as a ninth site at the end of the depth chain: it charges
-disagreement with the prediction at one end only, gives no per-layer statement, and nearly duplicates layer 16 there.
+**Degenerate cases.** Prediction walk nearly uninformative: M ≈ 0 on mean-zero functions, n_l = 0. Prediction
+geometry dominated by frequent next tokens: shown by the Hellinger token decomposition (section 8.4). Layer flat: P10.
 
-**The multi-step version is deferred.** The proper predictive-state row is the extended logit matrix: the next-token
-distributions after the history followed by each of a fixed set of J probe continuations, concatenated in square-root
-coordinates (J + 1 blocks, each weighted 1/(J + 1)). It needs J extra short forward passes per chunk and a choice of
-continuation set (for example the J most frequent tokens of the probe). One step already separates histories over
-50,304 outcomes; the known-answer check includes a source built so that one step misses part of the belief state
-(section 8), which measures what is lost before anyone pays for more. Projected later cost with J = 16: about $0.60.
+**Not taken.** A lazy prediction walk: it adds an explicit A²/2 past-only term to M. The prediction walk squared:
+Sinkhorn walks with zero diagonal have large negative eigenvalues (-0.58 at N = 60), which squaring makes look smooth.
+The prediction as a ninth site at the end of the chain: no per-layer statement. **Multi-step prediction rows** (the
+next-token distributions after a fixed set of probe continuations) and the four-state source that would have
+illustrated them: deferred together (section 16).
 
-## 6. Through-depth operator
+## 6. References beside every result
 
-Exactly `spacetime.py`, unchanged: sites l in {2, 4, ..., 16} (L = 8); L_t = blockdiag((I - M_l)/c_l) + t (D_path ⊗ I)
-on functions whose slices have mean zero; c_l = the mean of site l's first 8 nontrivial 1 - λ_k(M_l) (relative site
-units); t = t* from `balance_direct`, where the first eigenvalue on mean-zero slices equals the first temporal
-eigenvalue t·4 sin²(π/(2L)); 24 modes computed, 20 checked, 16 read. Layer 0 is not a site (it enters only section
-7's per-layer count, as a text-only reference).
-
-**Solves, per model.** Cosine reading only: 3 comparisons × {past only, with the prediction} on the full sample (6),
-the same on each half (12, at one eighth of the cost each), and one null solve (state at the cut, with the relabelled
-prediction). The dot reading is not solved through depth (section 14). **Size:** at N = 4,096 in float64 one matrix
-is 134 MB; the 8 walks, 8 inverses and the doubled eigenvector stack of `site_eigs` come to about 4.3 GB, well inside
-a 64 GiB unit. The same dense solver has run at N = 8,000 × 12 sites in DepthEmbedding; the size was chosen so that it
-runs unchanged on CPU, with each half (2,048) about DepthEmbedding's probe size.
-
-**Acceptance per solve (fails closed):** residuals ||L f - λ f|| of the first 20 modes below 1e-8; |λ_1/(t*·4
-sin²(π/16)) - 1| < 1e-6; occupancy sums to 16; slices mean zero and modes orthonormal to 1e-9; finite outputs; Sinkhorn
-row error below 1e-10 for every S; for PR64 the achieved participation ratio of every row within 1e-6 of 64 (a target
-made unattainable by tied minima fails the run). Stored and shown: the first 12 site gaps 1 - λ_k(M_l) per site and
-the gaps after modes 12, 16 and 20.
-
-## 7. Measured quantities
-
-**Per-layer count n_l (Q1).** For each model, comparison, reading and layer (0, 2, ..., 16; site 0 only for the
-recent past and the chunk average), the top 64 eigenvalues λ_1 ≥ ... ≥ λ_64 of M_l = A_l S_F A_l on mean-zero
-functions, and the largest eigenvalue of each of 20 null products A_l Π S_F Π^T A_l. **n_l = the number of λ_k above
-the largest of the 20 null values**, censored at 64. When nothing is shared the true pairing is just one more
-relabelling, so its first eigenvalue beats all 20 with probability 1/21: n_l ≥ 1 by chance about once in 21. This is parallel analysis (Horn 1965) with the prediction relabelled
-instead of the data, and by P6 its linear analogue counts canonical correlations of past and future above noise. Also
-stored: the 64 eigenvalues, the 20 null maxima, and the same eigenvalues of A_l² and S_F for scale. **Replicates:** the
-two halves, each computed alone (n_l depends on N, so halves sit lower; the shape across depth is what replicates).
-
-**The low space (Q2).** G_l (N × 16) holds the first 16 modes' slices at site l, X = [G_2 ... G_16] (N × 128).
-**Occupancy** o_l = ||G_l||_F²/16, the share of the low space at layer l (sums to 1). **Alignment** of two low spaces,
-A(X, X') = ||X^T X'||_F²/(||X^T X||_F ||X'^T X'||_F) in [0, 1], unchanged by any rotation of modes; for two models on
-the same chunks (cross-model), and for past only against with the prediction (same model). **Null:** 200 relabellings
-of the chunks in one of the two, 99th percentile. With independent chunks there is no text or position structure that
-a relabelling breaks unfairly, so this is the right null for "do the two pictures order the same chunks alike".
-
-**Attributes, for description only, never in a kernel.** Each is a centred matrix Z with orthonormal basis Q_Z; the
-**captured share** of a low space is ||Q_Z^T X||_F²/||X||_F², printed with its chance level rank(Z)/(N - 1).
-
-| Attribute | Columns |
-|---|---|
-| subset | indicators of subsets with at least 20 chunks, the rest pooled |
-| cut position | cos(π j (u - 256 + 1/2)/768), j = 1..4 |
-| current token (at the cut) | indicators of ids with at least 20 chunks |
-| predicted next token | indicators of the model's top-1 ids with at least 20 chunks |
-| prediction entropy | Legendre polynomials of degree 1-4 of the entropy's rank, scaled to [-1, 1] |
-
-These replace Stage A's shares by position, document and token. They are applied to the through-depth low spaces, to
-each layer's shared directions (the top n_l eigenvectors of M_l) and to the prediction walk's top 16 eigenvectors. The
-current-token share of the prediction walk stands in for the missing layer-0 state at the cut: it says how much of the
-prediction geometry the current token alone lays out.
-
-**Dot-reading check.** The Spearman correlation between each chunk's self-similarity K_ii (dot reading) and its cut
-position, per comparison and layer. Stage A's length artefact cannot arise from the kernel here, since every chunk has
-64 tokens; whatever correlation remains comes from the hidden states and is reported.
-
-## 8. Known answer before spend (gate)
-
-**Sources.** (a) **Mess3** (Marzen and Crutchfield 2017): hidden states {0, 1, 2}; from state i move to j with
-probability 1 - 2x if j = i, else x; on arrival in j emit symbol j with probability α, each other symbol (1 - α)/2;
-x = 0.05, α = 0.85. The belief b (posterior over the hidden state) is computed exactly by filtering from the uniform
-start, and the next-symbol distribution is an invertible affine function of b. (b) **Four-state cycle**: states
-A, B, C, D; advance to the next state with probability 0.9, else stay; on arrival A and C emit 0 or 1 with equal
-probability, B emits 0 with probability 0.95, D emits 1 with probability 0.95. The next-symbol distribution sees b_A
-and b_C only through their sum; the next two symbols separate them.
-
-**Samples and synthetic layers.** N = 1,024 independent sequences of 192 symbols per seed, cut at the last symbol, chunk
-= the last 64 positions; three seeds (`default_rng(60 + seed)`). Eight synthetic sites of width 64: at site l, sample
-i and lag s,
-
-x_l(i, s) = β_l R_l c(i, s) + Q_l g_i + η_l E_l e(i, s) + 0.22 ε,
-
-with c the belief minus its mean, scaled to total variance 1; g_i a per-sequence distractor in R^4, standard normal,
-scaled to total variance 6 (a "topic" that is constant along the chunk, like Stage A's documents); e the one-hot
-current symbol, total variance 1 where present; ε standard normal noise; R_l, Q_l, E_l fixed random matrices with
-orthonormal columns, different at each site (`default_rng(31)`). Schedule: sites 0-1 **absent** (β = η = 0); sites
-2-5 and 7 **present** (β = η = 1); site 6 **scrambled** (belief and symbol of sample π(i), π a fixed relabelling).
-The belief is about 9% of each present site's variance. The current symbol is kept out of absent sites so that
-"absent" means absent: a layer holding only the current token would legitimately share part of the prediction.
-
-**Run.** The production code paths of sections 3-7 (state at the cut for the gate; the other comparisons reported),
-under both PR64 and kNN15. Futures: the true next-symbol distribution; a **negative control** in which each sample's
-future comes from an unrelated Mess3 sequence; for the cycle source, one-step and two-step futures.
-
-**Pass conditions (frozen; every seed and both rules; a failure stops the stage and is reported with its numbers,
-and no parameter is tuned to pass).** "Captured" means the share of the belief's centred coordinates inside the column
-span of the 16-mode slice G_l (or of the top 16 eigenvectors of a walk).
-
-| # | Condition |
-|---|---|
-| K1 | Mess3, true future: n_l ≥ 2 at every present site; the sum of n_l over the three absent and scrambled sites ≤ 1 |
-| K2 | the past-only walk's top 16 eigenvectors capture ≤ 0.5 of the belief at every present site (the belief is minor), while the product walk's capture ≥ 0.8 |
-| K3 | through depth: with the prediction, the slices capture ≥ 0.8 of the belief at every present site and at least 0.3 more than past only; at the scrambled site they capture ≤ 0.2 of the scrambled belief c∘π |
-| K4 | occupancy with the prediction: each absent and scrambled site holds less of the low space than every present site |
-| K5 | negative control: n_l ≤ 1 summed over all sites; capture of the belief ≤ 0.2 at every site |
-| — | cycle source (reported, not gated): capture of the part of b_A - b_C not explained by the one-step-visible coordinates, with one-step against two-step futures. Expected well under 0.2 with one step and above 0.6 with two |
-
-Cost: about 30 minutes on 8 cores; on the VPS when it has capacity (free), otherwise the first Modal unit ($0.32), ahead
-of every other unit.
-
-## 9. Other checks before spend (VPS, no Modal)
-
-- **Comparisons:** the three kernels against explicit vectorised feature maps, both readings (1e-12); the layer-0
-  recomputation from ids against an embedding lookup; the duplicate check catching a planted duplicate.
-- **Product walk:** P1-P6 on random Sinkhorn walks; shared-cut and commuting cases by construction; an analytic case
-  in which a group indicator is an eigenvector of A (eigenvalue α) and of S_F (eigenvalue φ), giving eigenvalue α²φ
-  in M; Stage A's pre-B operator fixtures (`SPEC.md` section 9.1: the two-group analytic fixture with constant depth
-  envelope, near-cut fixtures with two and nine groups, equivariance under relabelling) run through the product with
-  S_F = I and with an S_F sharing the split.
-- **Count:** a constructed pair of walks sharing exactly three smooth directions gives n = 3; a pair sharing none
-  gives n ≤ 1 in at least 19 of 20 seeds.
-- **Torch port** of `_cond_rows`, `sinkhorn_sym`, `knn_kernel` and the eigensolves for the GPU unit: equal to the numpy
-  oracle on CPU in float64 (q, W, S to 1e-12; eigenvalues to 1e-10) at N = 300, masked and unmasked; repeated on CUDA
-  at full size in the pilot (1e-10).
-- **Readouts:** captured shares, alignment and its null on hand cases; probe rules (eligibility, cut draw, de-duplication,
-  halves) on toy documents; `test_spacetime.py` unchanged.
-
-## 10. The site
-
-Added to the existing site (`SPEC.md` section 12 conventions: facts tokens, no hand-typed numbers, live charts,
-`check_browser.py`, closed `<details>` for extra views). One new tab, **Through depth**, beside Viewer (Stage A's tokens),
-Experiments and Method; Stage A's Viewer gains one link to it and it links back for single long texts.
-
-### 10.1 The chunk viewer
-
-Modelled on DepthEmbedding's embedding tab: each dot is a chunk, placed by its coordinates in the 16-mode low space at
-the current depth (axes: the first two principal components of the low space pooled over sites, a fit, named on the
-page); a depth slider with Play and occupancy bars above it; interpolated frames between sites for the eye only.
-
-| Control | Values | Why it is there |
+| Reference | Built as | Answers |
 |---|---|---|
-| Model | Pythia / OLMo | two models on the same chunks; a chunk keeps its place in the list across models |
-| Compare chunks by | state at the cut / recent past / chunk average | the three comparisons are the owner's three kernels |
-| Agree with the prediction | off (past only) / on | the product construction; off is its exact partner |
-| Colour | mode 1-16; subset; cut position; predicted next token (8 most common, rest grey); prediction entropy | modes, and the attributes that describe them |
+| random wrong pairing | Π uniform; 200 for counts, 50 for through-depth; common across sites, summaries, models | is the correct pairing special at all? |
+| cut-token-preserving wrong pairing | Π uniform within groups of chunks sharing the exact cut token id; chunks with a unique cut token stay fixed (keep their own prediction, so this reference is conservative). **Movable coverage** (share of chunks in groups of 2 or more) and the share of moved chunks whose partner shares the subset are printed | is it more than the cut token? |
+| prediction only | the prediction walk's top 16 eigenvectors V_F (the flat-layer limit, P10) | how much of a picture is the prediction's own shape |
+| past only | A_l², the paired partner | what the layer shows without the prediction |
 
-Depth is the slider in the plot, not a bar control: four bar controls in all. Cosine reading only; dot-reading
-results are in Experiments. Switching a control shows "mode numbers and signs are local to one picture" and the
-alignment A between the two pictures. **Chunk card (click):** the 64 tokens with the cut token marked and 32 earlier
-tokens greyed for context, subset, cut position, the actual next token, the model's top 5 predictions with
-probabilities; its 8 nearest chunks under the current comparison at the current layer and its 8 nearest in the
-prediction geometry, each as a one-line snippet with its distance, so a reader can check by reading whether "near"
-means alike. **Mode card:** depth weights, the five captured shares with chance ticks. **Data** (lazy, per model and
-setting): low-space slices int8, 8 sites × 4,096 × 16 × 12 settings = 6.3 MB; texts 1.6 MB; neighbour lists
-2 models × 25 views (3 comparisons × 8 sites, and the prediction) × 4,096 × 8 × 4 bytes = 6.6 MB.
+## 7. Through-depth operator
 
-**Primer additions** (top of the tab, collapsible, one screen): chunk and cut; the three comparisons; the prediction
-geometry (how alike two chunks' next-token distributions are); the product walk in one sentence; past only as its
-partner; relabelling as the null; shared directions; modes, depth and occupancy as in DepthEmbedding.
+`spacetime.py` unchanged: sites l in {2, 4, ..., 16}, L = 8; L = blockdiag((I - M_l)/c_l) + t (D_path ⊗ I) on functions
+with mean-zero slices; 24 modes computed with `modes(ms, c, t)`, 20 checked, 16 read.
 
-### 10.2 Experiments entries
+**Units and coupling are those of the past-only partner**, for the past-only run, the correct product and every wrong
+pairing: c_l = mean of the first 8 nontrivial 1 - λ_k(A_l²), t = t* from `balance_direct` on the A_l². The paired
+difference is then at fixed units and coupling, and P9 applies. The product's own fitted c_l and t* are computed and
+reported, not used. **c_l wrapper** (`solve_b.site_scales_mz`; `spacetime.site_spectrum` subtracts the constant
+projector, leaving a zero that can be chosen over genuine negative eigenvalues): full `eigh` of M_l, remove the one
+eigenvector with |⟨v, 1/sqrt(N)⟩| > 1 - 1e-10 (asserting eigenvalue 1 to 1e-10), take the 8 largest of the rest. The
+resulting c and the stored decomposition are passed to `modes` and `balance_direct`; `spacetime.py` is not edited.
 
-| Entry | Lead figure: x · y · facets · uncertainty | The sentence a reader should be able to say |
+**Runs per model.** Full sample (2,048): for each summary, past only and with the prediction; for the state at the cut,
+50 random and 50 cut-token-preserving wrong pairings (eigenvalues and modes); for the other two, 20 random wrong
+pairings (exploratory). Halves (1,024): past only and with the prediction, state at the cut.
+
+**Acceptance (fails closed):** residuals of the first 20 modes below 1e-8; for past-only runs |λ_1/(t*·4 sin²(π/16)) -
+1| < 1e-6; occupancy sums to 16; slices mean zero, modes orthonormal to 1e-9; finite outputs; Sinkhorn error below
+1e-10. **Cutoff rule:** with g_K = (λ_{K+1} - λ_K)/λ_K, read K = 16 if g_16 ≥ 0.01, else the largest K in 8..15 with
+g_K ≥ 0.01, else the low space is **unresolved**: spectra are shown, modes are not.
+
+## 8. Measured quantities
+
+**8.1 Per-layer count.** For each model, summary and layer (0, 2, ..., 16): the top 64 eigenvalues of M_l on mean-zero
+functions (full `eigh`), and for each of 200 common wrong pairings the leading eigenvalue of M_l^Π, matrix-free
+(Lanczos on x ↦ A_l Π S_F Π^T A_l x with mean-zero projection, tolerance 1e-10, convergence asserted). **n_l = the
+number of eigenvalues of the product exceeding (1 + 1e-9) × the largest of the 200 null leading eigenvalues**, censored
+at 64: "eigenvalues exceeding the largest of 200 wrong-pairing maxima, at this graph resolution". Under exchangeable
+pairing the true leading eigenvalue beats all 200 with probability 1/201, so a cell shows n_l ≥ 1 by chance at most
+that often; over the 54 cells (2 models × 3 summaries × 9 layers) about 0.27 such cells are expected under a complete
+null. A cell's count does not identify each counted direction as a separate effect. The same with cut-token-preserving
+relabellings for the state at the cut (n_l^tok); at layer 0 the state at the cut is a function of the cut token, so
+n_0^tok = 0 exactly (P10), a built-in check. Halves: state at the cut, both references.
+
+**8.2 Energy cost (prespecified).** State at the cut, each model: E = Σ_{k≤16} λ_k(L_with) - Σ_{k≤16} λ_k(L_past),
+units and coupling of the past-only run; E_Π the same for each wrong pairing. p = (1 + #{E_Π ≤ E})/51, one-sided
+(smallest attainable 0.02), separately for random and cut-token-preserving relabellings: four tests. Summed eigenvalues
+are used, so a near-tie inside the 16 does not matter.
+
+**8.3 Cross-model increment (prespecified).** X = [G_2 ... G_16] (N × 128), G_l the 16-mode slices at site l.
+Alignment A(X, X') = ||X^T X'||_F²/(||X^T X||_F ||X'^T X'||_F). Δ = A(X^Pythia_with, X^OLMo_with) - A(X^Pythia_past,
+X^OLMo_past); Δ_Π the same with Π applied to **both** models' prediction walks, which keeps prediction-prediction
+agreement and breaks only layer-prediction pairing. p = (1 + #{Δ_Π ≥ Δ})/51 for each reference: two tests. Shown
+beside it: prediction-only agreement A(V_F^Pythia, V_F^OLMo); total agreement A(X^Pythia_with, X^OLMo_with) against 200
+free chunk relabellings; how prediction-shaped each picture is, A(X_with, V_F) against the wrong-pairing values
+A(X_with^Π, Π V_F).
+
+**8.4 Descriptive.** **Occupancy** o_l = ||G_l||_F²/K by layer. **Hellinger token decomposition:** h(v) =
+Σ_{ij} S_F,ij (sqrt(p_i(v)) - sqrt(p_j(v)))²/2 divided by Σ_{ij} S_F,ij d_F(i, j), the share of the prediction walk's
+distance carried by token v (computed as p(v)·1 - sqrt(p(v))^T S_F sqrt(p(v)) per token); the top 20 tokens and the
+share carried by tokens that are some chunk's top-1. **Attribute shares** of a space X: ||Q_Z^T X||_F²/||X||_F² with
+chance rank(Z)/(N - 1), for cut token (ids with 20 or more chunks; coverage printed), subset, cut position (4 cosine
+harmonics), predicted top-1 token, prediction entropy (Legendre 1-4 of its rank). They overlap and omit rare tokens;
+they describe, they do not validate. Describing a prediction-built basis by predicted token is not evidence of
+predictive function.
+
+## 9. Known answer before spend (gate)
+
+**Source.** Mess3 (Marzen and Crutchfield 2017): hidden states {0, 1, 2}; move from i to j with probability 1 - 2x if
+j = i, else x; on arrival in j emit j with probability α, each other symbol (1 - α)/2; x = 0.05, α = 0.85. The belief b
+is computed exactly by forward filtering from the uniform start; the next-symbol distribution is (b^T T) E, with T the
+3 × 3 transition matrix and E the 3 × 3 emission matrix above (both are fixtures in `test_b.py`). N = 1,024
+independent sequences of 192 symbols, cut at the last; chunk = the last 64 positions. **Seeds 70, 71, 72** (not the
+reviewer's 60-62). The current symbol explains about 80% of belief variance, so recovery is scored on the
+**within-symbol belief** c_w: the belief minus its mean within the current-symbol class (2 dimensions).
+
+**Synthetic layers** (width 64, 8 sites): x_l(i, s) = β_l R_l c(i, s) + Q_l g_i + η_l E_l e(i, s) + 0.07 ε, with c the
+centred belief scaled to total variance 2, g_i a per-sequence distractor in R^4 (constant along the chunk) with total
+variance 6, e the one-hot current symbol scaled to total variance 1, ε standard normal, R_l, Q_l, E_l fixed random
+orthonormal columns per site (`default_rng(31)`). Schedule: sites 0-1 **absent** (β = η = 0); site 2 and 7
+**symbol-only** (β = 0, η = 1); sites 3-5 **present** (β = η = 1); site 6 **scrambled** (belief and symbol of donor
+π(i)). Futures: the true one; an **unrelated** one (each sample's future from an independent sequence, its donor).
+
+**Run:** the production path of sections 3-8, state at the cut, PR64 with the tie rule (predictions tie often here:
+long common suffixes give near-identical posteriors), 200 random and 200 **symbol-preserving** wrong pairings (the
+analogue of cut-token-preserving). **Capture** of c_w by a site walk = ||U^T Q||_F²/2, U the walk's top 16 nontrivial
+eigenvectors (orthonormal, full rank), Q an orthonormal basis of c_w; chance 16/1,023 ≈ 0.016.
+
+**Pass conditions (frozen before any run; every seed; a failure stops the stage and is reported, nothing is tuned):**
+
+| # | Where | Condition |
 |---|---|---|
-| E4 Where in depth does a chunk's geometry agree with the model's prediction? | x = layer (0 = embedding output, 2-16) · y = directions shared with the prediction beyond chance (n_l, 0-64) · colour = comparison · panels = model · thin lines: each half alone; dotted line at 1: what chance gives about once in 21. Supporting: the 64 eigenvalues beside the null maxima at layers 4, 8, 12, 16; the dot reading; captured shares of the shared directions; the self-similarity check | "At layer [l] the state at the cut shares [n] directions with the prediction geometry ([m] at layer 2); the recent past [raises / lowers / leaves] this at early layers; the two models agree in shape." |
-| E5 What does the through-depth picture look like when it must agree with the prediction? | x = layer (2-16) · y = share of the 16-mode low space (occupancy) · solid: with the prediction, dashed: past only · columns = comparison, rows = model · thin lines: halves. Number tiles: cross-model alignment with and without (with the null), alignment of the two pictures within a model, the largest captured share. Supporting: captured shares by attribute; per-layer cross-model alignment; the null solve | "With the prediction the low space sits [mostly at layers x-y] instead of [z]; Pythia and OLMo agree [a] with it against [b] without (chance [c]); it is mostly about [attribute]." |
-| E6 Does the construction find a planted predictive state, and only where it is? | x = synthetic layer (0-7), shaded absent / present / scrambled · y = share of the planted belief captured by the low space at that layer · solid: with the prediction, dashed: past only · panels: true future, unrelated future · thin lines: seeds, both graph rules. Tiles: n_l per site. Supporting: the cycle source, one step against two | "Where the belief is planted the construction captures [x] of it against [y] for the past-only walk; where it is absent or scrambled, and with an unrelated future, it reports [nothing / n]." |
+| K0 | present sites | fixture informative: past-only capture ≤ 0.3 and prediction-only capture ≥ 0.5. If K0 fails the fixture is redesigned with the owner; it is not a result about the method |
+| K1 | present sites | product capture ≥ 0.5; n_l ≥ 2 against random and ≥ 1 against symbol-preserving relabelling |
+| K2 | symbol-only sites | product capture ≤ 0.15; n_l against symbol-preserving relabelling summed over both sites ≤ 1 (against random, reported: legitimately positive) |
+| K3 | absent and scrambled sites | n_l against random summed over the three sites ≤ 1; at the scrambled site, capture of recipient and donor c_w ≤ 0.15 |
+| K4 | present sites, one random and one symbol-preserving wrong pairing | product capture of recipient and of donor c_w ≤ 0.15 |
+| K5 | unrelated future, every site | n_l against random summed over 8 sites ≤ 1; capture of recipient and of future-donor c_w ≤ 0.15 |
+| K6 | flat-layer fixture (separate, exact) | S_l = the complete graph at every site: the product's top 16 eigenvectors span V_F (largest principal-angle sine < 1e-8 when V_F's 16/17 gap exceeds 1e-6); n_l = 0; E and Δ identical to every wrong pairing |
 
-Each entry follows the site's template (question, two or three sentence answer with one bold sentence, lead figure,
-3-5 number tiles, a "what was computed" table, at most six caveats, decisions in a closed `<details>`). The Method
-tab gains a Stage B section carrying sections 2-8 of this spec, the subset table and the decisions.
+**Reported, not gated:** through-depth energy cost with its p; occupancy by site; belief energy ||Q^T G_l||_F² at
+non-present sites (depth leakage through the coupling); past-unit and own c_l, t*.
 
-## 11. Verification
+Cost: about 30 minutes on 8 cores; on the VPS if it has capacity, else the first Modal unit ($0.32).
 
-**Independent audit (U5)**, numpy and the standard library only, importing nothing from this repository, written by a
-different agent from the pipeline's. For both models:
+## 10. Other checks before spend (VPS)
 
-1. **Predictions:** for 64 chunks (`default_rng(41)`), the next-token distribution recomputed from the stored layer-16
-   cut state through the exported final norm and head, against the stored distribution (1e-5 absolute).
-2. **Comparisons:** for 16 audit chunks (`default_rng(42)`), complete distance rows of all three comparisons, both
-   readings, at sites 4 and 12 and layer 0, by the explicit lag sum from the stored states (and from ids and the
-   embedding at layer 0), against rows the pipeline saved before discarding (1e-9); 1,000 random pairs per view.
-3. **One full rebuild:** state at the cut, cosine, all 8 sites and the prediction walk at full N: distances, the
-   graph rule by its own bisection (or its own kNN), its own Sinkhorn; every walk entry against the published walk
-   (1e-9). Then its own 8 products A_l S_F A_l (1e-9), its own c_l (1e-9), and the **eigen-equation**: the published 20
-   modes satisfy ||L f - λ f|| ≤ 1e-7 under its own operator at the published t*, with mean-zero slices,
-   orthonormality (1e-9) and λ_1 = t*·4 sin²(π/16) (1e-6).
-4. **Count:** n_l at sites 4 and 12 for that comparison, from its own eigenvalues and the 20 nulls replayed from their
-   stored seeds; equal.
-5. **Readouts:** occupancy, alignments, captured shares and the facts behind every E4-E6 headline recomputed from the
-   published slices and attributes (1e-9).
-6. **Inventory:** SHA-256 of every published file and a digest of the map, as `audit_a.py`. The site build refuses
-   unless the report passes and the inventory matches the data. The report states what it does not reproduce
-   (extraction itself, the dot reading's walks, the other comparisons' through-depth solves).
+- **Summaries:** the three kernels against explicit feature maps (1e-12); a **reversal fixture** (a chunk of
+  orthogonal states and its reverse: equal averages, aligned similarity zero); pooled-norm check; layer-0 recomputation.
+- **Product and references:** P1-P6 and P9-P10 on random walks; shared-cut, commuting, complete-graph and flat-layer
+  cases; a token-function layer under token-preserving Π (identical spectra); the `site_scales_mz` wrapper on an
+  all-negative mean-zero spectrum (M = -A²/(N - 1)), where `site_spectrum` would wrongly pick 0; Stage A's pre-B
+  operator fixtures (`SPEC.md` 9.1) through the product with S_F = I.
+- **Tie rule:** rows with 63, 64 and 100 tied minima; equivariance under relabelling with ties.
+- **Count and tests:** walks sharing exactly three smooth directions give n = 3; independent walks give n ≥ 1 in about
+  1 of 201 seeds (checked on 400 seeds); the matrix-free leading eigenvalue equals dense `eigh` (1e-10).
+- **Readouts:** alignment, attribute shares and the Hellinger decomposition on hand cases; probe rules on toy
+  documents (full-text de-duplication, cut draw, halves); `test_spacetime.py` unchanged.
 
-**What a reader can click:** any chunk, to read its text, its predictions and its nearest chunks in both geometries;
-E6, the planted check with its frozen conditions; the audit report from the Method tab. `check_browser.py` drives every
-control, a chunk click, Play and both viewports, failing on console errors or external requests; screenshots are
-inspected before deploying.
+## 11. The site
 
-## 12. Compute plan
+Added to the existing site (`SPEC.md` 12: facts tokens, no hand-typed numbers, live charts, `check_browser.py`).
+**Presentation rule:** a product picture is never shown as "what the layer knows about the future"; wherever it appears
+its wrong-pairing and prediction-only references are beside it.
 
-Modal app and Volume `tm-exp1`, prefix `/chunks/`; Stage B workers behind the existing `--approve-stage-b` flag. Rates
-as `SPEC.md` section 11: A100-80GB + 8 cores + 64 GiB $3.39/h; L4 + 4 cores + 32 GiB $1.04/h; 16 cores + 64 GiB
-$1.27/h; 8 cores + 32 GiB $0.63/h; 2 cores + 8 GiB $0.16/h; about 2 minutes of start-up per attempt.
+### 11.1 The chunk viewer (new tab **Through depth**)
 
-| Unit | Count | Hardware | Work | Expected | Limit | Spend |
-|---|---|---|---|---|---|---|
-| U-HMM | 1 | 8 cores | section 8 (skipped if run on the VPS) | 30 min | 50 min | $0.32 |
-| U0 probe | 1 | 2 cores | stream, filter, tokenise both ways, cut, de-duplicate | 30 min | 50 min | $0.08 |
-| U1 extract | 2 | L4 | 4,096 forward passes, chunk states, distributions, assertion | 25 min | from pilot | $0.87 |
-| P2 pilot | 1 + 1 | A100; 16 cores | CUDA repeat of the port tests; site 8, four views at full N: flatness τ and per-view time; one full solve; the audit's one-walk rebuild timed | 15; 25 min | 30; 40 min | $1.38 |
-| U2 views | 2 | A100 | every view: Gram, graph, Sinkhorn, eigensolve, products, 20 nulls, nearest-8 lists, audit rows; halves; dot reading last | 20 min | from pilot | $2.26 |
-| U3 solves | 2 | 16 cores | 6 + 12 half + 1 null solves with `spacetime.py` | 45 min | from pilot | $1.91 |
-| U4 readout | 1 | 16 cores | counts, alignments and nulls, captured shares, facts, viewer data | 25 min | 45 min | $0.53 |
-| U5 audit | 1 | 16 cores | section 11 | 45 min | 75 min | $0.95 |
-| coordinators, start-ups | | | | | | $0.45 |
+It leads with one chunk, not a cloud.
 
-**Projected about $8.75; proposed cap $12**, which leaves room for one failed attempt of any one unit. Wall-clock about
-seven hours. **Largest uncertainty:** U3, the dense CPU solves at N = 4,096 (8.5 full-solve equivalents per model,
-dominated by eight dense eigensolves of each product), then U1's extraction rate, which is 36 times Stage A's tokens.
-Stage A's measured anchors: extraction of 36 contexts of 2,048 tokens took 1-5 minutes per model on an L4; dense
-linear algebra at N = 1,792 × 8 sites took about 25 s on one CPU thread, plus 90 s to build a graph on one thread.
+| Control | Values | Why |
+|---|---|---|
+| Chunk | random, or by index | the object of study |
+| Model | Pythia / OLMo | same chunks, two models |
+| Compare chunks by | state at the cut / recent past / chunk average | the three summaries |
+| Layer | 0, 2, ..., 16 | depth |
 
-**Pilot and stop rule.** U1's first attempt extracts the first 64 documents under a 20-minute limit and records seconds
-per document; U1 resumes from there with limit = 1.5 × measured rate × remaining + 10 minutes. After P2: projected
-total = spent + 1.2 × (measured per-view time × view count + measured solve time × solve count) + U4 and U5 holds. If
-above $12: drop the dot reading (about $0.50), then the half-sample solves (about $0.40), then run the through-depth
-solves on the even half only (N = 2,048); if still above, stop and report the pilot's numbers. The flatness rule of
-section 4 is applied from P2's τ and recorded before U2 starts.
+Panels: (1) the chunk: 64 tokens, cut token marked, 32 earlier tokens greyed, subset, cut position, the actual next
+token, the model's top 5 predictions; (2) side by side, its 8 nearest chunks in the layer's geometry and its 8 nearest
+in the prediction geometry, each a one-line snippet with its distance, so a reader can judge "near" by reading; (3) the
+layer's spectrum: the product's top 64 eigenvalues against the largest of the 200 wrong-pairing values (random and
+cut-token-preserving), with n_l. A closed **Modes** section (past only / with the prediction; colour by attribute; depth
+slider) shows a scatter on joint modes 1 and 2 only when both are separated from their neighbours by g ≥ 0.01, local
+to the setting and labelled so; otherwise it says "modes 1-2 not resolved" and shows none. Data: about 8 MB.
 
-**Stage A's lessons, absorbed.**
+**Primer additions:** chunk and cut; the three summaries; the prediction geometry; the product as prediction roughness
+after layer smoothing, and why its pictures need the references; wrong pairings; the count.
 
-| Lesson (README run log) | Rule here |
-|---|---|
-| Untimed work expired a limit (synthetic census) | every unit's limit comes from a measured pilot with margin, or is the table's limit for small fixed work |
-| Coordinator outlived by a restarted worker | each stage has its own coordinator, limit = longest unit's limit + 30 minutes |
-| Restart repeated finished work | every long unit commits per step (per view in U2, per solve in U3, per document batch in U1) with timing in the ledger, and resumes |
-| Audit finished, then timed out hashing | the inventory is hashed in parallel and timed in P2; nothing optional runs before a critical output (order: cosine full, halves, dot; facts before viewer data before supporting figures) |
-| int32 overflow in a lookup key | every index and key is int64; token ids are cast before any arithmetic |
-| Workspace billing limit terminated all containers | before launch the owner confirms the workspace's remaining limit exceeds the cap; the coordinator records any termination as a failed, charged attempt |
-| App fetch took 25 minutes | fetch with `modal volume get tm-exp1 /chunks/<dir>`; only `analysis`, `audit`, `site` and the ledger |
-| Attempts per unit | at most two attempts per unit, never automatic; reservations as Stage A |
+### 11.2 Experiments entries
 
-While this spec was written the VPS root disk fell to 80 MB free (2.8 GB an hour later) and swap was full; check
-both before fetching (about 40 MB of site data) and building.
+| Entry | Lead figure: x · y · facets · uncertainty | Sentence a reader should be able to say |
+|---|---|---|
+| E4 Does a layer's geometry pair with the model's prediction beyond chance? | x = layer · y = n_l · colour = summary; filled marker where n_l^tok ≥ 1 as well (state at the cut) · panels = model · thin lines: halves (state at the cut). Supporting: spectra against null maxima at layers 0, 8, 16; Hellinger token shares; attribute shares of the counted directions | "At layer [l], [n] eigenvalues exceed every wrong pairing ([m] beyond the cut token); [the halves agree / indeterminate]; at layer 0 the cut token alone gives [k]." |
+| E5 Through depth, does the correct pairing matter? | x = summary · y = energy cost E · dot: correct pairing; strips: 50 random and 50 cut-token-preserving wrong pairings (20 random for the exploratory summaries) · panels = model. Tiles: the six prespecified p-values; Δ against Δ_Π; prediction-only agreement; prediction-shapedness against wrong pairings. Supporting: occupancy, past only against with | "Agreeing with its own prediction costs less than [x of 50] wrong pairings ([y of 50] that keep the cut token); the models' agreement rises by [Δ] against [Δ_Π]; prediction alone agrees [a]." |
+| E6 Does the construction find a planted belief, and only where it is? | x = synthetic site, shaded by role · y = capture of the within-symbol belief · lines: product, past only, prediction only, wrong pairing · seeds thin. Tiles: K0-K6 pass or fail | "Where the belief is planted the product captures [x] of its within-symbol part (past only [y], wrong pairing [z]); at symbol-only, absent and scrambled sites it captures [w]." |
 
-## 13. Code
+Each entry follows the template (question, short answer with one bold sentence, lead figure, 3-5 tiles, "what was
+computed", at most six caveats, decisions in a closed `<details>`). Method gains a Stage B section with a worked
+six-chunk example of A, S_F, M and a wrong pairing that a reader can recompute by hand.
 
-New in `exp1/`: `probe_b.py`, `extract_b.py` (wraps `extract.forward`), `views_b.py` (comparisons, prediction
-geometry, graph rules via the torch port), `torch_kernels.py` (the port; `kernels.py` stays the oracle), `product_b.py`
-(products, counts, nulls), `solve_b.py` (runs `spacetime.py` unchanged), `readout_b.py`, `hmm_check.py`, `audit_b.py`
-(independent), `test_b.py` (section 9). `modal_app.py` gains `STAGE_B_WORKERS`. Site: `xsite/gen_e4.py`, `gen_e5.py`,
-`gen_e6.py`, `gen_depth.py` and the Through depth tab.
+## 12. Verification
 
-## 14. Decisions made on the owner's behalf
+**Three inventories.** (1) **Inputs** on the Volume: chunk states, distributions, exported weights, the probe file
+(ordered hashes, cuts, source indices), seeds and the SHA-256 of every relabelling, conventions. (2) **Full-precision
+evidence** on the Volume: float64 walks for the audited cells, all eigenvalues and null maxima, float64 modes, saved
+distance rows, the gate's synthetic truth (beliefs, scramble, donors). (3) **Public release**: int8 slices, facts,
+spectra, viewer data, audit report. The audit checks (1) → (2) at full precision and (2) → (3) for every headline fact
+and one packed viewer card; a hash fixes the evidence, it does not show the statistic was right.
+
+**Independent audit (U5):** numpy and the standard library, importing nothing from the repository, written by a
+different agent. Both models:
+
+1. **Prediction:** 64 chunks (`default_rng(41)`): softmax from the stored layer-16 cut state through the exported norm
+   and head, against the stored native distribution (1e-6).
+2. **Summaries:** 16 chunks (`default_rng(42)`): complete distance rows at sites 4 and 12 and layer 0, by explicit lag
+   sums, for the state at the cut and one case each of the recent-past and average paths (1e-9).
+3. **Rebuild:** state at the cut, all 8 sites and the prediction walk at full N with its own bisection, tie rule and
+   Sinkhorn (walk entries 1e-9); its own products, c_l (with the constant removed) and t*; the published 20 modes
+   satisfy the eigen-equation (residual ≤ 1e-7), mean-zero, orthonormal.
+4. **Low-end ordering (independent):** the full dense operator (16,384 × 16,384) of the primary product and its partner,
+   all eigenvalues by `eigvalsh`; remove one copy of each known slice-constant eigenvalue t·4 sin²(jπ/16), j = 0..7;
+   the lowest 20 remaining equal the published ones (1e-8), so no lower mode was skipped. A small complete-spectrum
+   fixture (N = 50, L = 3) checks this procedure first.
+5. **Counts and tests:** n_l at sites 4 and 12 from its own eigenvalues and replayed relabellings; E and Δ for 5 of the
+   wrong pairings; p-values from the stored values.
+6. **Gate:** an independent forward filter from section 9's matrices for seed 70, against the stored beliefs (1e-12),
+   and K1-K5 recomputed from the stored eigenvectors.
+7. **Inventory** of the release by SHA-256, as `audit_a.py`; the site build refuses unless the report passes. The
+   report lists what it does not reproduce (extraction, the exploratory summaries' through-depth runs).
+
+## 13. Compute plan
+
+**Separate Stage B ledger and cap** (`/ledger/stage_b/`, its own `STAGE_B_CAP`; the Stage A ledger is untouched).
+Before dispatch each unit reserves (its limit + 3 minutes of start-up) × rate, written durably to the Volume. The
+completion audit (U4, U5 and one retry of U5) is reserved before any exploratory work. After an external termination,
+`modal_app.py reconcile-b`, run from the VPS, charges every reservation without a completion record at its full amount
+unless Modal's usage shows less. At most two attempts per unit, never automatic. Each stage has its own coordinator,
+limit = longest unit limit + 30 minutes. Rates as `SPEC.md` 11: L4 + 4 cores + 32 GiB $1.04/h; 16 cores + 64 GiB
+$1.27/h; 8 cores + 32 GiB $0.63/h; 2 cores + 8 GiB $0.16/h. All work after extraction is CPU with numpy.
+
+| Unit | Hardware | Work | Expected | Limit | Spend |
+|---|---|---|---|---|---|
+| U-HMM | 8 cores | section 9 (unless run on the VPS) | 30 min | 50 min | $0.32 |
+| U0 probe | 2 cores | stream, filter, tokenise, cut, de-duplicate | 30 min | 50 min | $0.08 |
+| U1 extract ×2 | L4 | 2,048 forward passes; first 64 documents timed, then re-admitted | 15 min | 20 min, then from rate | $0.62 |
+| P pilot | 16 cores | Pythia, state at the cut: 9 walks, 200 nulls at one site, one paired solve, 5 wrong-pairing solves, one recent-past audit row, hashing 100 files, peak memory; outputs reused | 20 min | 35 min | $0.47 |
+| U2 walks and counts ×2 | 16 cores | 27 walks, 54 counts with nulls, halves, Hellinger decomposition, neighbour lists | 25 min | from pilot | $1.06 |
+| U3 solves ×2 | 16 cores | 6 paired, 100 + 40 wrong-pairing, 4 half solves | 30 min | from pilot | $1.27 |
+| U4 readout | 16 cores | tests, alignments, attributes, facts, viewer data | 20 min | 40 min | $0.42 |
+| U5 audit | 16 cores | section 12 | 45 min | 75 min | $0.95 |
+| coordinators, start-ups | | | | | $0.40 |
+
+**Projected about $5.60; proposed cap $8.** Wall-clock about four hours. Not a verified total: the largest uncertainty
+is U3 (about 150 solves per model at N = 2,048; each wrong pairing needs products, eight inversions and a Lanczos
+solve, about 10 s by arithmetic, unmeasured), then U1's extraction rate (2,048 passes of 257-1,024 tokens). Anchors:
+Stage A's extraction of 36 × 2,048 tokens took 1-5 minutes per model on an L4; a dense 1,792-node graph took 90 s on
+one thread.
+
+**Tiers, defined before launch** (each complete, audited and labelled on the page; the stop rule after the pilot picks
+the first that fits under the cap with the audit holds):
+
+| Tier | Content | Page label |
+|---|---|---|
+| 1 | everything above | none |
+| 2 | exploratory summaries keep their counts and paired runs but lose their 20 wrong pairings; half solves dropped (half counts kept) | "wrong-pairing runs only for the state at the cut" |
+| 3 | state at the cut only: counts, paired runs, 50 + 50 wrong pairings, both models, audit | "the recent past and chunk average were not run" |
+
+If tier 3 does not fit, stop and report the pilot's numbers.
+
+**Stage A's lessons.** Limits come from a measured pilot with margin, or are the table's for small fixed work. Every
+long unit commits per step (per walk, per solve, per document batch) with timing in the ledger, and resumes. Nothing
+optional runs before critical outputs (primary before exploratory; facts before viewer data). Every index and key is
+int64. Before launch the owner confirms the workspace's remaining billing limit exceeds the cap. Fetch with
+`modal volume get tm-exp1 /chunks/<dir>` (release and audit only, about 15 MB). The VPS was overloaded while this was
+written (swap full, root disk down to 80 MB free): check before fetching and building.
+
+## 14. Code
+
+New in `exp1/`: `probe_b.py`, `extract_b.py` (narrow mode), `views_b.py` (summaries, prediction geometry, tie rule;
+calls `kernels.py`), `product_b.py` (products, matrix-free nulls, counts), `solve_b.py` (`site_scales_mz`, runs
+`spacetime.py` unchanged), `readout_b.py`, `hmm_check.py`, `audit_b.py` (independent), `test_b.py` (section 10).
+`modal_app.py` gains the Stage B ledger, `STAGE_B_WORKERS` and `reconcile-b`. Site: `xsite/gen_e4.py`, `gen_e5.py`,
+`gen_e6.py`, `gen_depth.py`.
+
+## 15. Decisions made on the owner's behalf
 
 | # | Decision | Chosen | Alternative not taken |
 |---|---|---|---|
-| 1 | Nodes | one chunk per document, 4,096 documents | several chunks per document; 2,048 documents (about $5, open question 1) |
-| 2 | Cut | uniform on positions 256-1,023, documents of at least 1,024 tokens | cut anywhere in a document of any length (position then tied to length and subset) |
-| 3 | Subsets | natural mix, uncapped, reported | a per-subset cap (Stage A's 4 of 32) |
-| 4 | Chunk length | 64 tokens (the owner's example) | two lengths |
-| 5 | Recent past | memory 8 inside the chunk, lag by lag | memory 64 truncated at 64 lags (weights 1 to 0.37), nearly the chunk average |
-| 6 | Order contrast | the three comparisons as a ladder (cut only, recent past, whole chunk) | the same weights aligned against averaged, which isolates order alone (deferred) |
-| 7 | Prediction geometry | Hellinger distance between next-token distributions | dot product of centred logits; top-k overlap |
-| 8 | Product | A_l S_F A_l with lazy layer walk, non-lazy prediction walk | lazy prediction walk; S_F²; the prediction as an end site (section 5) |
-| 9 | Partner and null | past only A_l²; prediction relabelled | DepthEmbedding's A_l as the partner |
-| 10 | Per-layer number | count above the relabelled null (parallel analysis) | the sum of top eigenvalues; subspace angles between the two walks' top 16 (blind where the shared structure is minor in the layer) |
-| 11 | Graph rule | PR64, switched once to kNN15 by the prestated flatness rule | Shannon perplexity (the owner's suggestion; produced two-item modes in DepthEmbedding) |
-| 12 | Readings | cosine throughout; dot for the per-layer count only | dot through depth as well |
-| 13 | Sites | layers 2, 4, ..., 16; layer 0 as text-only reference in the count | all 16 layers |
-| 14 | Compute | graphs on one GPU (torch port tested against the oracle); solves on CPU with `spacetime.py` unchanged | all on CPU (about $2 more); a GPU port of the solver |
-| 15 | Uncertainty | two disjoint halves as replicates | bootstrap (resampling duplicates chunks, which breaks the graph rule) |
-| 16 | Multi-step prediction | deferred; its loss measured on the cycle source | a small version now |
+| 1 | Size | 2,048 chunks, one per document | 4,096 (about $9) |
+| 2 | Cut | positions 256-1,023 of documents of at least 1,024 tokens | anywhere in any document (position tied to length) |
+| 3 | Subsets | natural mix, reported | a per-subset cap |
+| 4 | Summaries | state at the cut (primary), recent past at memory 8, chunk average | memory 64 inside the chunk (nearly the average at 64 lags) |
+| 5 | Centring | one global mean per model and site (Stage A's cosine) | none (then cosine is dominated by the shared mean direction) |
+| 6 | Reading | cosine | dot (deferred) |
+| 7 | Prediction geometry | Hellinger distance of the one-step distribution | centred logits; top-k overlap |
+| 8 | Product | A_l S_F A_l; partner A_l² | lazy prediction walk; S_F²; prediction as an end site |
+| 9 | Units for the pair | the partner's c_l and t* for both, so the difference is at fixed coupling | each run its own fitted units |
+| 10 | References | random and cut-token-preserving wrong pairings, prediction only, same relabelling in both models | free relabelling only |
+| 11 | Graph rule | PR64 with an equivariant tie rule, fixed | kNN15, or a switch chosen in the pilot |
+| 12 | Uncertainty | two disjoint halves for the primary count | bootstrap (duplicates break the graph rule) |
+| 13 | Viewer | one chunk first; scatter only on resolved modes | animated pooled PCA (undefined: the pooled scatter of the slices is the identity) |
+| 14 | Compute | CPU numpy throughout after extraction | a GPU port |
 
-## 15. Deferred
+## 16. Deferred
 
-- **The multi-step extended logit row** (section 5): J probe continuations per chunk; about $0.60 at J = 16.
-- **A sentence-embedding baseline** (the owner's list): the same chunks embedded by a SentenceTransformers model, as a
-  further comparison in the count and as a past-only walk, to say what a retrieval-style similarity of chunks shares
-  with the prediction.
-- **A training-checkpoint axis** (Pythia's public checkpoints): the count and the low space against training step.
-- A tiny transformer trained on Mess3, in place of synthetic layers; the order-only contrast; other chunk lengths and
-  memories; a one-text version of the product; out-of-sample extension (Nyström) of new chunks; the dot reading
-  through depth; a GPU port of the solver; the prediction as an end site, as a comparison.
+Multi-step prediction rows (probe continuations, about $0.60) with a source built so that two beliefs agree for one
+step and differ for two; a sentence-embedding baseline on the same chunks (owner's list); a training-checkpoint axis;
+the dot reading; kNN; 4,096 chunks; a held-out outcome for predictive utility (observed next token with matched
+controls); a tiny transformer trained on Mess3; an order-only contrast; a one-text version; out-of-sample extension.
 
-## 16. Open questions for the owner
+## 17. Open questions for the owner
 
-1. **Size.** 4,096 chunks (projected $8.75, cap $12) or 2,048 (about $5, cap $7)? The question can be answered with
-   2,048; 4,096 gives the attribute readouts more power, and each replicate half is then as large as DepthEmbedding's
-   whole probe.
-2. **The recent past at memory 8.** It keeps the three comparisons distinct; at memory 64 inside a 64-token chunk the
-   lag-by-lag comparison would nearly equal the chunk average. Acceptable?
-3. **Billing.** Please confirm the Modal workspace's remaining limit for this cycle is above the cap.
-4. **Next step if E4 is interesting:** the multi-step prediction row (about $0.60) or the sentence-embedding baseline
-   first?
+1. **Tier:** if the pilot does not fit tier 1, are tiers 2 and 3 acceptable as defined?
+2. **Claim:** agreement beyond the cut token (tested by the token-preserving reference) is the strongest claim made.
+   Enough?
+3. **Billing:** the workspace's remaining Modal limit this cycle is above $8?
+4. **Recent past at memory 8** rather than 64: acceptable?
+
+## 18. Response to review 1
+
+| # | Finding | Response | Where |
+|---|---|---|---|
+| 1 | Product modes reproduce the prediction under a flat layer | Accepted. Described as prediction roughness after layer smoothing; P10 states the flat-layer and token-function cases; K6 is a mandatory fixture; only pairing-dependent statistics are evidence; prediction-only and wrong-pairing references beside every picture; the false v1 claim that relative units undo halving is removed. Adapted on units: rather than only reporting each run's own c_l and t*, the pair shares the partner's, so the difference is at fixed coupling (P9); own values reported | 5, 6, 7, 9, 11 |
+| 2 | Hankel conclusion overstated | Accepted. P6 ends at sample canonical correlations; realisation result is conditional motivation; "one-step predictive distribution"; layer 16 an endpoint reference | 3, 5 |
+| 3 | Gate fails on ties, passes on the symbol | Accepted. Documents, identical vectors, roundoff and graph ties distinguished; equivariant tie rule; within-symbol belief scored against symbol-only sites, prediction-only, random and symbol-preserving wrong pairings; donor scored; local gating, leakage reported; capture uses full-rank orthonormal eigenvectors; new seeds, frozen. K4 strict occupancy ordering removed | 3, 4, 9 |
+| 4 | Four-state source has the wrong known answer | Accepted; removed and deferred with the multi-step row | 5, 16 |
+| 5 | The shuffle tests a narrower null | Accepted. Named literally; spectrum and threshold shown; common relabellings; six prespecified tests; family rate for the 54 cells stated; other patterns exploratory, "indeterminate" defined | 1, 8 |
+| 6 | Nuisance agreement and circularity | Accepted. Full-text de-duplication and cut distributions; cut-token-preserving reference with coverage; same wrong relabelling in both models for the increment; prediction-only agreement; Hellinger token decomposition; no utility claim | 2, 6, 8 |
+| 7 | Summaries do not isolate order; centring contradiction | Accepted. Three summaries of contextualised states; reversal fixture; pooled-norm check; one sentence on global centring | 3, 10 |
+| 8 | Flat-tail switch; `site_spectrum` trap | Accepted. One rule, PR64 (dense, no floor, so floor sensitivity does not arise); final-walk tails, gaps, near-disconnection report; cutoff rule with "unresolved"; `site_scales_mz` wrapper with the all-negative test, `spacetime.py` unedited | 4, 7, 10 |
+| 9 | Pooled PCA axes undefined | Accepted. Chunk-first viewer with neighbours and spectrum; scatter only on resolved joint modes | 11 |
+| 10 | Pilot does not bound the work | Accepted. Separate ledger and cap, durable reservations with start-up, audit reserved first, reconciliation outside the coordinator, end-to-end pilot slice, matrix-free nulls, narrow extraction with native logits, re-admission after 64 documents, tiers defined. $5.60 is a projection, not a bound | 2, 13 |
+| 11 | Audit can certify a wrong answer | Accepted. Three inventories; independent low-end ordering by full `eigvalsh`; complete-spectrum fixture; lag and averaging paths and one viewer card audited; gate filter re-derived; worked example on the page | 11, 12 |
+| Size | Smallest Stage B worth running | Adopted as the plan | throughout |
