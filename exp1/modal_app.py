@@ -50,7 +50,9 @@ HW = {"U0": (None, 2, 8, 40 * 60, 20 * 60),
       # 34 minutes, untimed by the pilot), then a restarted worker repeated it and outlasted the coordinator. The
       # predictions are done; what remains is single-threaded, so the unit is smaller and every step is resumable.
       "readout": (None, 8, 32, 60 * 60, 30 * 60),
-      "audit-a": (None, 16, 64, 30 * 60, 30 * 60),
+      # 50 min: the first attempt (2026-11-23) finished every check in about 25 minutes and then hit a 30-minute
+      # limit while hashing the published files for the inventory, so no report was written.
+      "audit-a": (None, 16, 64, 50 * 60, 40 * 60),
       # Must outlast the longest unit it waits for.
       "coordinator": (None, 0.25, 1, 100 * 60, 0)}
 PROBE_PATH = ROOT / "probe" / "probe.json"
@@ -580,7 +582,7 @@ def _held_verification(rows, plan):
 
 # The audit's work that does not scale with the number of full rows (loading and centring, saved pairs, the 1% token
 # sample, readout): its author's estimate at full size, not a measurement.
-AUDIT_FIXED_SECONDS = 12 * 60
+AUDIT_FIXED_SECONDS = 25 * 60  # measured on the first attempt: about 13 minutes of checks plus the inventory
 
 
 def _audit_rows(pilot, groups):
