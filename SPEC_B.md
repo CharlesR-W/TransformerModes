@@ -1,9 +1,14 @@
 # TransformerModes, experiment 1, Stage B: independent chunks, through depth, and the next-token prediction
 
-Spec B v3.1, 2026-11-24. History: v1 (design); v2 (review 1, `reviews/spec-b-v1-astra.md`); v3 (review 2,
+Spec B v3.3, 2026-11-24. History: v1 (design); v2 (review 1, `reviews/spec-b-v1-astra.md`); v3 (review 2,
 `reviews/spec-b-v2-astra.md`); v3.1 (the corrections of `reviews/spec-b-v3-astra.md`, applied by the orchestrator:
 toy sizes for the exhaustive fixture, smallest gaps and the solver hand-off, coordinator schedule, moved fraction
-before extraction, inertia guards, spot-check wording); responses in section 18. Replaces the provisional Stage B of `SPEC.md` (sections 6-8,
+before extraction, inertia guards, spot-check wording); v3.2 (before the gate's first run: every synthetic parameter
+and stream fixed, a declared K0-only fixture calibration on development seeds, six implementation readings confirmed
+or corrected, the solver's skipped-multiplicity fact recorded); v3.3 (the reviewer's check of v3.2, applied by the
+orchestrator: development seeds moved to 1170-1174 so no generator state is shared with the confirmatory phase, the
+calibration's guarantee stated honestly, the confirmatory runner verifies the committed parameter hash); responses in
+section 18. Replaces the provisional Stage B of `SPEC.md` (sections 6-8,
 16). Inherits from `SPEC.md`: models, revisions, tokenizers, separators, forward-pass settings (section 2), the corpus
 file (section 3), the site machinery (section 12). Exploratory. Sources: the owner's direction (2026-11-24), Stage A's
 results, `exp1/spacetime.py` and `exp1/kernels.py` (DepthEmbedding's operator and graph rule, unchanged).
@@ -119,6 +124,9 @@ d_ij)) with 1/Σ_j q(j|i)² = 64 by bisection, identical to `_cond_rows` (tested
 tied-minimum set is T_i = {j : d_ij - min_j d_ij ≤ 1e-12}; if |T_i| ≥ 64 the row is uniform on T_i and zero elsewhere
 (an explicit convention: the β → ∞ limit when the ties are exact; with |T_i| = 64 the target is met, above 64 it is
 exceeded); such rows are counted and reported. Equal distances get equal weight, so the rule is permutation-equivariant.
+**Target above N - 1** (only in toy fixtures with N ≤ 64): no row can reach 64, so every row is the uniform
+diagnostic row over the other N - 1 chunks, the walk is reported as "target unattainable", and it is never admissible
+for a primary solve.
 Then W = (q + q^T)/2, symmetric Sinkhorn to 1e-11 (`kernels.sinkhorn_sym`), S the walk, A = (I + S)/2.
 
 The walk is therefore **not** guaranteed positive everywhere: tied rows are zero off their tie sets and untied rows can
@@ -210,6 +218,15 @@ state at the cut.
 required run (both models' past-only and correct products, and every wrong pairing of the reference used). Individual
 wrong pairings are never dropped. E needs no exclusion: a sum of the lowest 16 eigenvalues is defined at a tie.
 
+**Mode ordering is never certified by residuals alone.** The unmodified `spacetime.modes` (Lanczos on the inverse from
+one start vector) can return fewer than all members of an exactly repeated eigenspace while every returned pair has a
+tiny residual: on the flat fixture it skipped members with an ordering error of 1.0 at residual 3e-12. `solve_b`
+therefore uses an **exact branch** whenever every site matrix M_l is the same matrix (the flat fixture K6, Stage A's
+identical-site operator fixtures): the eigenpairs are the separable products of the one site's mean-zero eigenpairs
+(μ, φ) with the path harmonics, eigenvalue (1 - μ)/c + t·4 sin²(jπ/(2L)) and vector φ ⊗ cos(jπ(l + 1/2)/L),
+assembled and sorted analytically. Every other solve, including every real solve, uses the reused solver, and its
+ordering is certified only by the inertia check of section 12 (item 4), never by its residuals.
+
 ## 8. Measured quantities
 
 **8.1 Per-layer count (exploratory).** For each model, summary and layer (0, 2, ..., 16): the top 64 mean-zero
@@ -253,21 +270,70 @@ N = 1,024 independent sequences of 192 symbols, cut at the last; chunk = the las
 70, 71, 72** (never the reviewer's 60-62). Recovery is scored on the **within-symbol belief** c_w (belief minus its mean
 within the current-symbol class), because the current symbol explains about 80% of belief variance.
 
-**Synthetic layers** (width 64, 8 sites): x_l(i, s) = β_l R_l c(i, s) + Q_l g_i + η_l E_l e(i, s) + 0.07 ε; c the
-centred belief at total variance 2; g_i a per-sequence distractor in R^4, constant along the chunk, total variance 6;
-e the one-hot current symbol at total variance 1; ε standard normal; R_l, Q_l, E_l fixed random orthonormal columns
-(`default_rng(31)`). Sites 0-1 **absent** (β = η = 0); sites 2 and 7 **symbol-only** (β = 0, η = 1); 3-5 **present**;
-6 **scrambled** (belief and symbol of donor π(i), π from `default_rng(33)`). **Unrelated-future control:** every
-synthetic record (sequences, layers, distractors, noise, π) is held fixed; only the futures are replaced, by those of an
-independent set of 1,024 sequences from `default_rng(80 + seed)`, whose beliefs are the donors.
+**Synthetic layers** (width 64, 8 sites; every value and stream below is part of the frozen fixture). The records are
+the chunk's 64 positions (the last 64 of the 192); x_l(i, s) = β_l R_l c(i, s) + Q_l g_i + η_l E_l e(i, s) + 0.07 ε_l(i, s).
+
+| Item | Fixed as |
+|---|---|
+| c | the filtered belief (3 probability coordinates, rank 2) at each record, centred over all N × 64 records, scaled so the mean squared norm per record is 2 |
+| e | the one-hot current symbol (3 coordinates) at each record, centred and scaled the same way to mean squared norm 1 |
+| g_i | 4 standard normal coordinates per sequence, constant along the chunk, centred over the N sequences, scaled to mean squared norm v_g (v_g = 6 unless the calibration below moves it) |
+| ε_l | independent standard normal (N, 64, 64) per site; scale 0.07 per coordinate |
+| loadings | per site, one 64 × 10 matrix with **jointly** orthonormal columns: QR of a standard normal 64 × 10 draw with the signs of diag(R) made positive, drawn site by site (0 to 7) from `default_rng(31)`; columns 1-3 are R_l, 4-7 Q_l, 8-10 E_l |
+| β_l, η_l | absent (sites 0, 1): 0, 0; symbol-only (2, 7): 0, 1; present (3, 4, 5): 1, 1; scrambled (6): 1, 1 |
+| scramble | π = `default_rng(33).permutation(N)`; at site 6 only c and e are the donor π(i)'s, while g and ε stay the recipient's |
+| stream for g and ε | `default_rng(seed + 100)`: g first, then ε for sites 0 to 7 in order (drawn for every site, absent sites included) |
+| sequences | `default_rng(seed)`; the initial hidden state uniform, then per step a transition draw and an emission draw |
+| gate input | the state at the cut: record 64 (position 192) of each site |
+
+**Unrelated-future control:** every synthetic record (sequences, layers, g, ε, π, loadings) is held fixed; only the
+futures are replaced, by the next-symbol distributions of an independent set of N sequences from `default_rng(80 +
+seed)`, whose within-symbol beliefs are the donors. Its symbol-preserving relabellings use the **recipient's** current
+symbols (the layer's), as in the true-future run, because the reference asks about pairing beyond what the layer's own
+symbol carries.
 
 **Capture** of c_w by a site walk = ||U^T Q||_F²/2, U the top 16 mean-zero eigenvectors, Q an orthonormal basis of c_w;
 chance 16/1,023 ≈ 0.016. **Gain** at a site = capture under the given pairing minus the largest capture among 19
 wrong pairings of the named kind (random, `default_rng(90 + seed)`; symbol-preserving, `default_rng(95 + seed)`).
 Counts use 99 relabellings.
 
-**Order.** (1) analytic, tie and calibration fixtures (section 10); (2) **K0 alone**; (3) only if K0 passes, the null
-loops and K1-K6. **If K0 fails:** stop with "fixture uninformative", spend nothing further, do not adjust and retry; a
+**Fixture calibration (declared; development seeds only; free, local).** One parameter, the distractor's size v_g,
+may be moved, upward only (a larger distractor makes the belief a smaller part of each layer's raw variance). This is
+not claimed to be a conservative direction for K1-K5: cosine normalisation, adaptive graph weights and both the
+observed and the wrong-pairing eigenspaces change with v_g, and a stronger distractor could make a negative-control
+ceiling easier to meet. The safeguard is that only K0's quantities select the first qualifying value, the rule is
+frozen in advance, and K1-K5 are tested once on fresh records. A pass is therefore a pass **on this calibrated
+fixture**, not evidence of robustness across distractor strengths, and the page says so. It is chosen before any
+confirmatory run, from K0's quantities alone:
+
+1. **Seeds 1170, 1171, 1172, 1173, 1174**, N = 1,024, the production graph path, state at the cut. (Not 170-174:
+   the confirmatory seeds' distractor and noise stream is `seed + 100`, that is 170-172. The development phase's
+   streams, 1170-1174 and 1270-1274, share no generator state with the confirmatory phase's 70-72 and 170-172; the
+   loadings (31) and the scramble (33) are shared on purpose. A test asserts the disjointness.) The same underlying
+   draws are reused at every grid point; only the scaling of g changes. The generator code, the grid and the stopping
+   rule are frozen (committed) before the development seeds are run.
+2. **Computed and looked at:** the prediction-only capture (one per seed), the past-only capture at sites 3, 4, 5, and
+   the graph diagnostics of section 4. **Not computed:** any product walk with the prediction, any wrong pairing, count,
+   gain, through-depth solve or K1-K6 quantity. The calibration entry point does not call those paths.
+3. **Prediction first.** The prediction-only capture does not depend on v_g. If its minimum over the five seeds is below
+   0.55, stop: "fixture uninformative at design"; no grid point can repair it.
+4. **Grid, in this order:** v_g = 6, 9, 13.5, 20.25. **Rule:** the first value at which the largest past-only capture
+   at sites 3-5 over the five seeds is at most 0.27. The margins (0.55, 0.27 against K0's 0.5, 0.3) guard the
+   confirmatory seeds against sampling variation.
+5. **If no value qualifies:** stop, "fixture uninformative at design". A redesign is a new spec version with fresh
+   confirmatory seeds and a new gate-only authorisation.
+6. **Freeze:** the chosen v_g, every development number at every grid point tried, and the SHA-256 of the parameter
+   file are committed before seeds 70-72 run. The confirmatory runner reads that committed file, verifies its
+   SHA-256 and refuses to run on a mismatch. Those seeds are then run once, and K0 is applied to them unchanged.
+
+This front-loads onto free development seeds the redesign that a K0 failure would force anyway. Calibration cannot
+make K1-K5 easier: it never sees them, it moves only toward a weaker belief, and the confirmatory seeds stay unseen.
+About 5 minutes per seed per grid point on one core (9 graphs at N = 1,024; the prediction graph once per seed), at
+most 100 core-minutes, under 1 GB.
+
+**Order.** (1) analytic, tie and calibration-by-ranking fixtures (section 10); (2) the fixture calibration above;
+(3) on seeds 70-72, **K0 alone**; (4) only if K0 passes on every confirmatory seed, the null loops and K1-K6. **If K0
+fails on a confirmatory seed:** stop with "fixture uninformative", spend nothing further, do not adjust and retry; a
 redesign gets a new spec version, fresh confirmatory seeds and a new gate-only authorisation. It is not a result about
 the method.
 
@@ -279,17 +345,18 @@ donor-prediction modes without fault (P10), so donor captures are reported raw.
 | K0 | present sites | fixture suitable: past-only capture ≤ 0.3 and prediction-only capture ≥ 0.5 |
 | K1 | present sites | gain ≥ 0.2 against both kinds of wrong pairing; n_l ≥ 1 against symbol-preserving relabelling |
 | K2 | symbol-only sites | gain against symbol-preserving pairings ≤ 0.05; n_l against symbol-preserving relabelling summed over both sites ≤ 1 |
-| K3 | absent and scrambled sites | n_l against random relabelling summed over the three ≤ 1; scrambled site gain ≤ 0.05 |
+| K3 | absent and scrambled sites | n_l against random relabelling summed over the three ≤ 1; scrambled-site gain ≤ 0.05 against **both** kinds of wrong pairing (as K4; both gains are computed at every site anyway) |
 | K4 | unrelated future, every site | gain ≤ 0.05 against both kinds; n_l against random summed over 8 sites ≤ 1 |
 | K5 | primary test machinery | E against 19 symbol-preserving pairings: rank 1 of 20 in every seed (true future); not rank 1 in at least two seeds (unrelated future) |
-| K6 | flat-layer fixture (exact) | S_l the complete graph at every site: site spectra of correct and wrong products equal (1e-12); E = E_Π (1e-10); the product projector onto each isolated eigenvalue equals the relabelled one (1e-8); n_l = 0; the past-only lowest eigenvalue has multiplicity N - 1, so the past-only space and Δ are reported **unresolved**, and the run must say so |
+| K6 | flat-layer fixture (exact, at the gate's N, through the exact branch of section 7) | S_l the complete graph at every site and the constructed prediction walk of `gate_b.k6_flat` (the complete graph plus two well-separated sign-contrast directions, so isolated eigenvalues exist); the count uses the gate's 99 random relabellings; spectra, E and projectors are compared on the first 3 of them (the equalities are exact theorems): site spectra of correct and wrong products equal (1e-12); E = E_Π (1e-10); the product projector onto each isolated eigenvalue equals the relabelled one (1e-8); n_l = 0; the past-only lowest eigenvalue has multiplicity N - 1, so the past-only space and Δ are reported **unresolved**, and the run must say so |
 
 **Reported, not gated:** raw donor and recipient captures; occupancy; belief energy ||Q^T G_l||_F² at non-present
 sites (depth leakage); past-unit and own c_l, t*.
 
 **Where it can run.** About 1 hour on 4 free cores and under 2 GB of memory (N = 1,024 matrices are 8 MB; the null
-loops dominate: 8 sites × 2 futures × 3 references × 99 jobs per seed at about 0.2 s each), plus 10 minutes of
-fixtures. On the VPS when its load allows (free); otherwise the stage (i) Modal unit.
+loops dominate: 8 sites × 2 futures × 2 references (random, symbol-preserving) × 99 count jobs per seed at about 0.2 s
+each, plus 2 × 19 gain relabellings per site and future), plus 10 minutes of fixtures and at most 100 core-minutes of
+fixture calibration. On the VPS when its load allows (free); otherwise the stage (i) Modal unit.
 
 ## 10. Fixtures and checks before spend (VPS, free; under 15 minutes, under 1 GB)
 
@@ -305,7 +372,10 @@ fixtures. On the VPS when its load allows (free); otherwise the stage (i) Modal 
 - **Calibration by exhaustive ranking:** N = 6, L = 2, independent random walks; all 720 relabellings enumerated.
   This toy has only 5 mean-zero directions per site and 10 through-depth modes, so it uses its own sizes, stated
   here: scale rank r = 2 (c_l from the 2 smallest gaps), K = 2 for E and Δ with an isolated 2/3 boundary required,
-  direct dense spectra. For each labelling taken as "observed": the rank of the **leading product eigenvalue**
+  direct dense spectra. Its layer walks are independently perturbed random Sinkhorn walks (one per site, so the
+  sites differ), and its prediction walks carry a positive holding probability (a nonzero diagonal) so that an
+  isolated 2/3 boundary exists to test; production prediction walks remain non-lazy with zero diagonal (section 5).
+  For each labelling taken as "observed": the rank of the **leading product eigenvalue**
   among the other 719 (the count has no p-value of its own; its exceedance rule is what is tested), and the p-values
   of E and Δ, all with the production tie conventions; "rank 1" in K5 uses the same conservative energy-tie rule.
   Their distributions must be uniform or conservative at every level.
@@ -360,7 +430,9 @@ different agent. Both models:
 3. **Rebuild:** state at the cut, 8 sites and the prediction walk at full N with its own bisection, tie convention and
    Sinkhorn (1e-9); its own products, c_l (shifted constant) and t*; the published 20 modes satisfy the eigen-equation
    (residual ≤ 1e-7), mean-zero, orthonormal.
-4. **No skipped modes (inertia):** for the primary correct product and its partner in each model, with σ = (λ_16 +
+4. **No skipped modes (inertia).** This is what certifies mode ordering for real solves; residuals do not (section 7).
+   It is applied to the primary correct product and its partner in each model, and to the 5 wrong pairings whose E is
+   replayed in item 5 (a skipped low mode in a wrong pairing would inflate E_Π and favour the correct pairing). With σ = (λ_16 +
    λ_17)/2 when g_16 ≥ 1e-6: the number of negative eigenvalues of L - σI from its own block LDL^T elimination (the
    inertia of the 8 Schur complements, each by `eigvalsh`), minus the number of slice-constant eigenvalues t·4
    sin²(jπ/16) below σ (exactly known), must equal 16; with σ' = λ_1 - max(1e-6, 10 × the stored residual of mode 1)
