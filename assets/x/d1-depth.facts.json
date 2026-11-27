@@ -1,0 +1,1192 @@
+{
+ "sets": {
+  "value": 11,
+  "text": "11",
+  "source": "meta.json sets"
+ },
+ "models": {
+  "value": 2,
+  "text": "2",
+  "source": "meta.json models"
+ },
+ "k": {
+  "value": 16,
+  "text": "16",
+  "source": "gen_d1.py K: questions 2 and 3 compare the first 16 modes"
+ },
+ "kp": {
+  "value": 8,
+  "text": "8",
+  "source": "gen_d1.py KP: placement measures (section 6) exist for the top 8 and top 64; 8 is used"
+ },
+ "draws": {
+  "value": 20,
+  "text": "20",
+  "source": "aggregates.json permutations.n_draws"
+ },
+ "set.doc00.ctx": {
+  "value": "c00",
+  "text": "c00",
+  "source": "meta.json sets[doc00].contexts"
+ },
+ "set.doc01.ctx": {
+  "value": "c01",
+  "text": "c01",
+  "source": "meta.json sets[doc01].contexts"
+ },
+ "set.doc02.ctx": {
+  "value": "c02",
+  "text": "c02",
+  "source": "meta.json sets[doc02].contexts"
+ },
+ "set.doc04.ctx": {
+  "value": "c04",
+  "text": "c04",
+  "source": "meta.json sets[doc04].contexts"
+ },
+ "set.paira.ctx": {
+  "value": "c00 and c01",
+  "text": "c00 and c01",
+  "source": "meta.json sets[pairA].contexts"
+ },
+ "set.pairb.ctx": {
+  "value": "c02 and c04",
+  "text": "c02 and c04",
+  "source": "meta.json sets[pairB].contexts"
+ },
+ "set.d04.ctx": {
+  "value": "c00, c01, c02 and c04",
+  "text": "c00, c01, c02 and c04",
+  "source": "meta.json sets[d04].contexts"
+ },
+ "set.d08.ctx": {
+  "value": "c00 to c07",
+  "text": "c00 to c07",
+  "source": "meta.json sets[d08].contexts"
+ },
+ "set.d16.ctx": {
+  "value": "c00 to c15",
+  "text": "c00 to c15",
+  "source": "meta.json sets[d16].contexts"
+ },
+ "set.d32.ctx": {
+  "value": "c00 to c31",
+  "text": "c00 to c31",
+  "source": "meta.json sets[d32].contexts"
+ },
+ "set.rand.ctx": {
+  "value": "r0 to r3",
+  "text": "r0 to r3",
+  "source": "meta.json sets[rand].contexts"
+ },
+ "set.doc00.each": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "meta.json sets[doc00].n / len(contexts)"
+ },
+ "set.doc01.each": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "meta.json sets[doc01].n / len(contexts)"
+ },
+ "set.doc02.each": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "meta.json sets[doc02].n / len(contexts)"
+ },
+ "set.doc04.each": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "meta.json sets[doc04].n / len(contexts)"
+ },
+ "set.paira.each": {
+  "value": 1024,
+  "text": "1,024",
+  "source": "meta.json sets[pairA].n / len(contexts)"
+ },
+ "set.pairb.each": {
+  "value": 1024,
+  "text": "1,024",
+  "source": "meta.json sets[pairB].n / len(contexts)"
+ },
+ "set.d04.each": {
+  "value": 512,
+  "text": "512",
+  "source": "meta.json sets[d04].n / len(contexts)"
+ },
+ "set.d08.each": {
+  "value": 256,
+  "text": "256",
+  "source": "meta.json sets[d08].n / len(contexts)"
+ },
+ "set.d16.each": {
+  "value": 128,
+  "text": "128",
+  "source": "meta.json sets[d16].n / len(contexts)"
+ },
+ "set.d32.each": {
+  "value": 64,
+  "text": "64",
+  "source": "meta.json sets[d32].n / len(contexts)"
+ },
+ "set.rand.each": {
+  "value": 512,
+  "text": "512",
+  "source": "meta.json sets[rand].n / len(contexts)"
+ },
+ "k8": {
+  "value": 8,
+  "text": "8",
+  "source": "the smallest of the three mode counts the release reports (SPEC_DEPTH.md section 6: k = 8, 16, 64)"
+ },
+ "k64": {
+  "value": 64,
+  "text": "64",
+  "source": "the largest of the three mode counts the release reports (SPEC_DEPTH.md section 6: k = 8, 16, 64)"
+ },
+ "weak_pct": {
+  "value": 0.1,
+  "text": "10%",
+  "source": "SPEC_DEPTH.md section 7, control 4 (a): a same-id reference is called uninformative where under 10% of tokens can move (the release's within_id_uninformative)"
+ },
+ "ladder_tokens": {
+  "value": 992,
+  "text": "992",
+  "source": "aggregates.json cross.records[kind=ladder].count (the same in every ladder record)"
+ },
+ "q1.band.modes": {
+  "value": 30,
+  "text": "30",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].band not null, count over models and sets"
+ },
+ "q1.band.total": {
+  "value": 352,
+  "text": "352",
+  "source": "u/<model>/<set>/tstar.json modes[0..15], count over models and sets"
+ },
+ "q1.band.units": {
+  "value": 13,
+  "text": "13",
+  "source": "embeddings (model, set) at t* with at least one of modes 1..16 in a near-tied band"
+ },
+ "q1.units": {
+  "value": 22,
+  "text": "22",
+  "source": "models times sets"
+ },
+ "q1.adj.min": {
+  "value": 0.8814836352913118,
+  "text": "0.88",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].adjacent_cos_mean (median over the 16 modes), minimum over models and sets"
+ },
+ "q1.adj.max": {
+  "value": 0.9888541802155733,
+  "text": "0.99",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].adjacent_cos_mean (median over the 16 modes), maximum over models and sets"
+ },
+ "q1.adj16.min": {
+  "value": 0.5458076389110045,
+  "text": "0.55",
+  "source": "u/<model>/<set>/tstar_div16.json modes[0..15].adjacent_cos_mean (median over the 16 modes), minimum"
+ },
+ "q1.adj16.max": {
+  "value": 0.9098192888212742,
+  "text": "0.91",
+  "source": "u/<model>/<set>/tstar_div16.json modes[0..15].adjacent_cos_mean (median over the 16 modes), maximum"
+ },
+ "q1.support.min": {
+  "value": 0.038679348755973064,
+  "text": "4%",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].token_support (median over the 16 modes), minimum"
+ },
+ "q1.support.max": {
+  "value": 0.32300300195998016,
+  "text": "32%",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].token_support (median over the 16 modes), maximum"
+ },
+ "q1.end.min": {
+  "value": -0.15250506593388646,
+  "text": "-0.15",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].endpoint_cos (median over the 16 modes), minimum over models and sets except the one largest in size"
+ },
+ "q1.end.max": {
+  "value": 0.11600859016093104,
+  "text": "0.12",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].endpoint_cos (median over the 16 modes), maximum over models and sets except the one largest in size"
+ },
+ "q1.end.out": {
+  "value": 0.5076139259132467,
+  "text": "0.51",
+  "source": "u/olmo/rand/tstar.json modes[0..15].endpoint_cos (median over the 16 modes)"
+ },
+ "q1.end.out_who": {
+  "value": "OLMo-1B's rand",
+  "text": "OLMo-1B's rand",
+  "source": "the model and set of q1.end.out"
+ },
+ "q1.absend.min": {
+  "value": 0.08290515627197631,
+  "text": "0.08",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].endpoint_cos (median over the 16 modes) taken in absolute value (median over the 16 modes of |endpoint_cos|), minimum over models and sets"
+ },
+ "q1.absend.max": {
+  "value": 0.7114284593913713,
+  "text": "0.71",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].endpoint_cos (median over the 16 modes) taken in absolute value (median of |endpoint_cos|), maximum over models and sets"
+ },
+ "q1.doc.pairs": {
+  "value": 0.04401895500292298,
+  "text": "0.044",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].document_share (median over the 16 modes) for pairA and pairB, maximum over both models"
+ },
+ "q1.doc.d32.pythia": {
+  "value": 0.4543679052457941,
+  "text": "0.45",
+  "source": "u/pythia/d32/tstar.json modes[0..15].document_share (median over the 16 modes)"
+ },
+ "q1.doc.d32.olmo": {
+  "value": 0.2922670179337994,
+  "text": "0.29",
+  "source": "u/olmo/d32/tstar.json modes[0..15].document_share (median over the 16 modes)"
+ },
+ "q1.doc.rand.min": {
+  "value": 0.003005272003709728,
+  "text": "0.003",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].document_share (median over the 16 modes) for rand (between-sequence share), minimum over both models"
+ },
+ "q1.doc.rand.max": {
+  "value": 0.004685488637783423,
+  "text": "0.005",
+  "source": "u/<model>/<set>/tstar.json modes[0..15].document_share (median over the 16 modes) for rand (between-sequence share), maximum over both models"
+ },
+ "q1.depth.max": {
+  "value": 0.20259614467167808,
+  "text": "20.3%",
+  "source": "u/<model>/d32/tstar.json modes[0..15].depth_weight, the largest entry over both models"
+ },
+ "q2.pythia.doc00_paira": {
+  "value": 0.13013754225957747,
+  "text": "0.13",
+  "source": "aggregates.json cross.records[kind=ladder, model=pythia, set_a=doc00, set_b=pairA, strength=tstar].scores.16.stacked"
+ },
+ "q2.pythia.paira_d04": {
+  "value": 0.4742242766889294,
+  "text": "0.47",
+  "source": "aggregates.json cross.records[kind=ladder, model=pythia, set_a=pairA, set_b=d04, strength=tstar].scores.16.stacked"
+ },
+ "q2.pythia.d04_d08": {
+  "value": 0.25140852716970596,
+  "text": "0.25",
+  "source": "aggregates.json cross.records[kind=ladder, model=pythia, set_a=d04, set_b=d08, strength=tstar].scores.16.stacked"
+ },
+ "q2.pythia.d08_d16": {
+  "value": 0.5543960272866443,
+  "text": "0.55",
+  "source": "aggregates.json cross.records[kind=ladder, model=pythia, set_a=d08, set_b=d16, strength=tstar].scores.16.stacked"
+ },
+ "q2.pythia.d16_d32": {
+  "value": 0.590971327110533,
+  "text": "0.59",
+  "source": "aggregates.json cross.records[kind=ladder, model=pythia, set_a=d16, set_b=d32, strength=tstar].scores.16.stacked"
+ },
+ "q2.pythia.d32_rand": {
+  "value": 0.22694188720341363,
+  "text": "0.23",
+  "source": "aggregates.json cross.records[kind=ladder, model=pythia, set_a=d32, set_b=rand, strength=tstar].scores.16.stacked"
+ },
+ "q2.olmo.doc00_paira": {
+  "value": 0.24423757180741482,
+  "text": "0.24",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, set_a=doc00, set_b=pairA, strength=tstar].scores.16.stacked"
+ },
+ "q2.olmo.paira_d04": {
+  "value": 0.5343656773857176,
+  "text": "0.53",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, set_a=pairA, set_b=d04, strength=tstar].scores.16.stacked"
+ },
+ "q2.olmo.d04_d08": {
+  "value": 0.33100087207827067,
+  "text": "0.33",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, set_a=d04, set_b=d08, strength=tstar].scores.16.stacked"
+ },
+ "q2.olmo.d08_d16": {
+  "value": 0.6363666620230217,
+  "text": "0.64",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, set_a=d08, set_b=d16, strength=tstar].scores.16.stacked"
+ },
+ "q2.olmo.d16_d32": {
+  "value": 0.5753474764489087,
+  "text": "0.58",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, set_a=d16, set_b=d32, strength=tstar].scores.16.stacked"
+ },
+ "q2.olmo.d32_rand": {
+  "value": 0.21257533720676647,
+  "text": "0.21",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, set_a=d32, set_b=rand, strength=tstar].scores.16.stacked"
+ },
+ "q2.cut_count": {
+  "value": 1,
+  "text": "1",
+  "source": "aggregates.json cross.records[kind=ladder, strength=tstar].scores.16.cuts_band, count"
+ },
+ "q2.steps": {
+  "value": 12,
+  "text": "12",
+  "source": "ladder steps times models"
+ },
+ "q2.cut_list": {
+  "value": "Pythia-1b doc00 → pairA",
+  "text": "Pythia-1b doc00 → pairA",
+  "source": "aggregates.json cross.records[kind=ladder, strength=tstar].scores.16.cuts_band"
+ },
+ "q2.olmo.min": {
+  "value": 0.24423757180741482,
+  "text": "0.24",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, strength=tstar].scores.16.stacked, minimum over the document steps (doc00 to d32)"
+ },
+ "q2.olmo.max": {
+  "value": 0.6363666620230217,
+  "text": "0.64",
+  "source": "aggregates.json cross.records[kind=ladder, model=olmo, strength=tstar].scores.16.stacked, maximum over the document steps"
+ },
+ "q2.rr.pythia.doc00": {
+  "value": 0.6901840176673232,
+  "text": "0.69",
+  "source": "cross.json records[kind=ladder, model=pythia, strength=tstar, set_a=doc00 (sizes_a) or set_b=doc00 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.pythia.paira": {
+  "value": 0.4627482972335414,
+  "text": "0.46",
+  "source": "cross.json records[kind=ladder, model=pythia, strength=tstar, set_a=pairA (sizes_a) or set_b=pairA (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.pythia.d04": {
+  "value": 0.701534194509452,
+  "text": "0.70",
+  "source": "cross.json records[kind=ladder, model=pythia, strength=tstar, set_a=d04 (sizes_a) or set_b=d04 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.pythia.d08": {
+  "value": 0.7100312422502414,
+  "text": "0.71",
+  "source": "cross.json records[kind=ladder, model=pythia, strength=tstar, set_a=d08 (sizes_a) or set_b=d08 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.pythia.d16": {
+  "value": 0.7665847262652316,
+  "text": "0.77",
+  "source": "cross.json records[kind=ladder, model=pythia, strength=tstar, set_a=d16 (sizes_a) or set_b=d16 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.pythia.d32": {
+  "value": 0.9665696339141274,
+  "text": "0.97",
+  "source": "cross.json records[kind=ladder, model=pythia, strength=tstar, set_a=d32 (sizes_a) or set_b=d32 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.pythia.rand": {
+  "value": 0.9822821279363564,
+  "text": "0.98",
+  "source": "cross.json records[kind=ladder, model=pythia, strength=tstar, set_a=rand (sizes_a) or set_b=rand (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.pythia.min": {
+  "value": 0.4627482972335414,
+  "text": "0.46",
+  "source": "the same, minimum over doc00 to d32 for pythia, flagged values (cuts_band) left out"
+ },
+ "q2.rr.pythia.max": {
+  "value": 0.9665696339141274,
+  "text": "0.97",
+  "source": "the same, maximum over doc00 to d32 for pythia, flagged values left out"
+ },
+ "q2.rr.olmo.doc00": {
+  "value": 1.0526707562132873,
+  "text": "1.05",
+  "source": "cross.json records[kind=ladder, model=olmo, strength=tstar, set_a=doc00 (sizes_a) or set_b=doc00 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.olmo.paira": {
+  "value": 0.6733733685274979,
+  "text": "0.67",
+  "source": "cross.json records[kind=ladder, model=olmo, strength=tstar, set_a=pairA (sizes_a) or set_b=pairA (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.olmo.d04": {
+  "value": 0.8501862780298635,
+  "text": "0.85",
+  "source": "cross.json records[kind=ladder, model=olmo, strength=tstar, set_a=d04 (sizes_a) or set_b=d04 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.olmo.d08": {
+  "value": 0.8024168223035025,
+  "text": "0.80",
+  "source": "cross.json records[kind=ladder, model=olmo, strength=tstar, set_a=d08 (sizes_a) or set_b=d08 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.olmo.d16": {
+  "value": 0.9125102431370928,
+  "text": "0.91",
+  "source": "cross.json records[kind=ladder, model=olmo, strength=tstar, set_a=d16 (sizes_a) or set_b=d16 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.olmo.d32": {
+  "value": 0.9552162243920452,
+  "text": "0.96",
+  "source": "cross.json records[kind=ladder, model=olmo, strength=tstar, set_a=d32 (sizes_a) or set_b=d32 (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.olmo.rand": {
+  "value": 0.9655451144604033,
+  "text": "0.97",
+  "source": "cross.json records[kind=ladder, model=olmo, strength=tstar, set_a=rand (sizes_a) or set_b=rand (sizes_b)].8.pooled_radius_ratio"
+ },
+ "q2.rr.olmo.min": {
+  "value": 0.6733733685274979,
+  "text": "0.67",
+  "source": "the same, minimum over doc00 to d32 for olmo, flagged values (cuts_band) left out"
+ },
+ "q2.rr.olmo.max": {
+  "value": 1.0526707562132873,
+  "text": "1.05",
+  "source": "the same, maximum over doc00 to d32 for olmo, flagged values left out"
+ },
+ "q2.rr.cut_list": {
+  "value": "OLMo-1B d08",
+  "text": "OLMo-1B d08",
+  "source": "cross.json records[kind=ladder, strength=tstar].sizes_a/sizes_b.8.cuts_band"
+ },
+ "q3.fixed.min": {
+  "value": 0.24523693209574987,
+  "text": "25%",
+  "source": "rows.json sets.<set> with texts.json ids: distinct word pieces / tokens, minimum over the document sets (a random reordering within a group leaves one token in place on average)"
+ },
+ "q3.fixed.max": {
+  "value": 0.51611328125,
+  "text": "52%",
+  "source": "the same, maximum over the document sets"
+ },
+ "q3.fixed.rand": {
+  "value": 0.90234375,
+  "text": "90%",
+  "source": "the same for rand"
+ },
+ "q3.own.min": {
+  "value": 0.6209310584840506,
+  "text": "0.62",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].scores.16.matched.stacked, minimum over sets whose first 16 modes cut no group"
+ },
+ "q3.own.max": {
+  "value": 0.7192775591983054,
+  "text": "0.72",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].scores.16.matched.stacked, maximum over the same sets"
+ },
+ "q3.stable": {
+  "value": 10,
+  "text": "10",
+  "source": "sets with scores.16.matched.cuts_band false"
+ },
+ "q3.cut_list": {
+  "value": "doc00",
+  "text": "doc00",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].scores.16.matched.cuts_band"
+ },
+ "q3.sameid.min": {
+  "value": 0.36531428278133127,
+  "text": "0.37",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].scores.16.within_id_and_cohort.mean[-1] (all layers stacked), minimum over the document sets that cut no group"
+ },
+ "q3.sameid.max": {
+  "value": 0.5393547849842572,
+  "text": "0.54",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].scores.16.within_id_and_cohort.mean[-1], maximum over the same sets"
+ },
+ "q3.gap.min": {
+  "value": 0.1110305369387985,
+  "text": "0.11",
+  "source": "q3: matched.stacked − within_id_and_cohort.mean[-1], minimum over the same document sets"
+ },
+ "q3.gap.max": {
+  "value": 0.25561677570271935,
+  "text": "0.26",
+  "source": "q3: matched.stacked − within_id_and_cohort.mean[-1], maximum over the same document sets"
+ },
+ "q3.free.max": {
+  "value": 0.004732056156127044,
+  "text": "0.005",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].scores.16.free.mean[-1] (mean of the draws), maximum over all sets"
+ },
+ "q3.mov.min": {
+  "value": 0.5986328125,
+  "text": "60%",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].movable_share, minimum over the document sets"
+ },
+ "q3.mov.max": {
+  "value": 0.8646800195407914,
+  "text": "86%",
+  "source": "aggregates.json permutations.records[set=<set>, panel=construction, cohort=in_set, strength=tstar].movable_share, maximum over the document sets"
+ },
+ "q3.rand.own": {
+  "value": 0.6226650343187057,
+  "text": "0.623",
+  "source": "aggregates.json permutations.records[set=rand, panel=construction, cohort=in_set, strength=tstar].scores.16.matched.stacked"
+ },
+ "q3.rand.sameid": {
+  "value": 0.6221407740697166,
+  "text": "0.622",
+  "source": "aggregates.json permutations.records[set=rand, panel=construction, cohort=in_set, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q3.rand.mov": {
+  "value": 0.1923828125,
+  "text": "19%",
+  "source": "aggregates.json permutations.records[set=rand, panel=construction, cohort=in_set, strength=tstar].movable_share"
+ },
+ "q3.layer.l0.min": {
+  "value": 0.5899871118983843,
+  "text": "0.59",
+  "source": "aggregates.json gaussian.records[set=<set>].scores.16.real[0], minimum over sets"
+ },
+ "q3.layer.l0.max": {
+  "value": 0.727623627161625,
+  "text": "0.73",
+  "source": "aggregates.json gaussian.records[set=<set>].scores.16.real[0], maximum over sets"
+ },
+ "q3.layer.d32.l0": {
+  "value": 0.6855227652470681,
+  "text": "0.69",
+  "source": "aggregates.json gaussian.records[set=d32].scores.16.real[0]"
+ },
+ "q3.layer.d32.l13.min": {
+  "value": 0.12010710369823407,
+  "text": "0.12",
+  "source": "aggregates.json gaussian.records[set=d32].scores.16.real[1..3], minimum"
+ },
+ "q3.layer.d32.l13.max": {
+  "value": 0.13903631780584585,
+  "text": "0.14",
+  "source": "aggregates.json gaussian.records[set=d32].scores.16.real[1..3], maximum"
+ },
+ "q3.layer.d32.late.min": {
+  "value": 0.497361877258356,
+  "text": "0.50",
+  "source": "aggregates.json gaussian.records[set=d32].scores.16.real[4..16], minimum"
+ },
+ "q3.layer.d32.late.max": {
+  "value": 0.6829804051574493,
+  "text": "0.68",
+  "source": "aggregates.json gaussian.records[set=d32].scores.16.real[4..16], maximum"
+ },
+ "q3.layer.d32.ref": {
+  "value": 0.6122364566386647,
+  "text": "0.61",
+  "source": "aggregates.json gaussian.records[set=d32].scores.16.gaussian"
+ },
+ "q3.layer.ref.min": {
+  "value": 0.5104009403281059,
+  "text": "0.51",
+  "source": "aggregates.json gaussian.records[set=<set>].scores.16.gaussian, minimum over the document sets"
+ },
+ "q3.layer.ref.max": {
+  "value": 0.6528193645417012,
+  "text": "0.65",
+  "source": "aggregates.json gaussian.records[set=<set>].scores.16.gaussian, maximum over the document sets"
+ },
+ "q3.layer.rand.ref": {
+  "value": 0.0426913999731276,
+  "text": "0.043",
+  "source": "aggregates.json gaussian.records[set=rand].scores.16.gaussian"
+ },
+ "q3.layer.rand.l0": {
+  "value": 0.5899871118983843,
+  "text": "0.59",
+  "source": "aggregates.json gaussian.records[set=rand].scores.16.real[0]"
+ },
+ "q3.layer.rand.late.min": {
+  "value": 0.5014943738045939,
+  "text": "0.50",
+  "source": "aggregates.json gaussian.records[set=rand].scores.16.real[4..16], minimum"
+ },
+ "q3.layer.rand.late.max": {
+  "value": 0.7308113547677884,
+  "text": "0.73",
+  "source": "aggregates.json gaussian.records[set=rand].scores.16.real[4..16], maximum"
+ },
+ "q3.layer.above_count": {
+  "value": 10,
+  "text": "10",
+  "source": "aggregates.json gaussian.records[set=<set>].scores.16.real: sets in which some layer after 0 exceeds layer 0"
+ },
+ "q3.layer.l1.min": {
+  "value": 0.12733590055364913,
+  "text": "0.13",
+  "source": "aggregates.json gaussian.records[set=<set>].scores.16.real[1], minimum over sets"
+ },
+ "q3.layer.l1.max": {
+  "value": 0.5347248349541978,
+  "text": "0.53",
+  "source": "aggregates.json gaussian.records[set=<set>].scores.16.real[1], maximum over sets"
+ },
+ "q4.pythia.d32.natural.seen_sequence_new_position.rr": {
+  "value": 0.9559886796609987,
+  "text": "0.96",
+  "source": "units/pythia/d32/tstar/facts.json placement.natural.seen_sequence_new_position.8.pooled_radius_ratio"
+ },
+ "q4.pythia.d32.natural.seen_sequence_new_position.co": {
+  "value": 0.023796255997237295,
+  "text": "0.02",
+  "source": "units/pythia/d32/tstar/facts.json placement.natural.seen_sequence_new_position.8.pooled_centre_offset"
+ },
+ "q4.pythia.d32.shuffled.unseen_sequence.rr": {
+  "value": 0.5247497805920965,
+  "text": "0.52",
+  "source": "units/pythia/d32/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.pythia.d32.shuffled.unseen_sequence.co": {
+  "value": 0.23448397322042394,
+  "text": "0.23",
+  "source": "units/pythia/d32/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.pythia.d32.random.unseen_sequence.rr": {
+  "value": 0.4102431378629618,
+  "text": "0.41",
+  "source": "units/pythia/d32/tstar/facts.json placement.random.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.pythia.d32.random.unseen_sequence.co": {
+  "value": 0.2714376622945149,
+  "text": "0.27",
+  "source": "units/pythia/d32/tstar/facts.json placement.random.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.pythia.rand.random.seen_sequence_new_position.rr": {
+  "value": 0.9539292597811432,
+  "text": "0.95",
+  "source": "units/pythia/rand/tstar/facts.json placement.random.seen_sequence_new_position.8.pooled_radius_ratio"
+ },
+ "q4.pythia.rand.random.seen_sequence_new_position.co": {
+  "value": 0.046221446058713096,
+  "text": "0.05",
+  "source": "units/pythia/rand/tstar/facts.json placement.random.seen_sequence_new_position.8.pooled_centre_offset"
+ },
+ "q4.pythia.rand.random.unseen_sequence.rr": {
+  "value": 0.9149599369657484,
+  "text": "0.91",
+  "source": "units/pythia/rand/tstar/facts.json placement.random.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.pythia.rand.random.unseen_sequence.co": {
+  "value": 0.050502610536466944,
+  "text": "0.05",
+  "source": "units/pythia/rand/tstar/facts.json placement.random.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.pythia.rand.natural.unseen_sequence.rr": {
+  "value": 0.9787616182591948,
+  "text": "0.98",
+  "source": "units/pythia/rand/tstar/facts.json placement.natural.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.pythia.rand.natural.unseen_sequence.co": {
+  "value": 0.5335410532796766,
+  "text": "0.53",
+  "source": "units/pythia/rand/tstar/facts.json placement.natural.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.pythia.rand.shuffled.unseen_sequence.rr": {
+  "value": 1.0169664036613435,
+  "text": "1.02",
+  "source": "units/pythia/rand/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.pythia.rand.shuffled.unseen_sequence.co": {
+  "value": 0.3955744632032088,
+  "text": "0.40",
+  "source": "units/pythia/rand/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.olmo.d32.natural.seen_sequence_new_position.rr": {
+  "value": 0.9497732465576371,
+  "text": "0.95",
+  "source": "units/olmo/d32/tstar/facts.json placement.natural.seen_sequence_new_position.8.pooled_radius_ratio"
+ },
+ "q4.olmo.d32.natural.seen_sequence_new_position.co": {
+  "value": 0.03142930548235095,
+  "text": "0.03",
+  "source": "units/olmo/d32/tstar/facts.json placement.natural.seen_sequence_new_position.8.pooled_centre_offset"
+ },
+ "q4.olmo.d32.shuffled.unseen_sequence.rr": {
+  "value": 0.7295684449920625,
+  "text": "0.73",
+  "source": "units/olmo/d32/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.olmo.d32.shuffled.unseen_sequence.co": {
+  "value": 0.22407586141981975,
+  "text": "0.22",
+  "source": "units/olmo/d32/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.olmo.d32.random.unseen_sequence.rr": {
+  "value": 0.8263681466177452,
+  "text": "0.83",
+  "source": "units/olmo/d32/tstar/facts.json placement.random.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.olmo.d32.random.unseen_sequence.co": {
+  "value": 0.573594645181088,
+  "text": "0.57",
+  "source": "units/olmo/d32/tstar/facts.json placement.random.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.olmo.rand.random.seen_sequence_new_position.rr": {
+  "value": 0.9465737744108763,
+  "text": "0.95",
+  "source": "units/olmo/rand/tstar/facts.json placement.random.seen_sequence_new_position.8.pooled_radius_ratio"
+ },
+ "q4.olmo.rand.random.seen_sequence_new_position.co": {
+  "value": 0.0558342827972407,
+  "text": "0.06",
+  "source": "units/olmo/rand/tstar/facts.json placement.random.seen_sequence_new_position.8.pooled_centre_offset"
+ },
+ "q4.olmo.rand.random.unseen_sequence.rr": {
+  "value": 0.9239037199824354,
+  "text": "0.92",
+  "source": "units/olmo/rand/tstar/facts.json placement.random.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.olmo.rand.random.unseen_sequence.co": {
+  "value": 0.049615772997586134,
+  "text": "0.05",
+  "source": "units/olmo/rand/tstar/facts.json placement.random.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.olmo.rand.natural.unseen_sequence.rr": {
+  "value": 0.9644470630805957,
+  "text": "0.96",
+  "source": "units/olmo/rand/tstar/facts.json placement.natural.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.olmo.rand.natural.unseen_sequence.co": {
+  "value": 0.29976805888661784,
+  "text": "0.30",
+  "source": "units/olmo/rand/tstar/facts.json placement.natural.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.olmo.rand.shuffled.unseen_sequence.rr": {
+  "value": 0.9499748644807219,
+  "text": "0.95",
+  "source": "units/olmo/rand/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_radius_ratio"
+ },
+ "q4.olmo.rand.shuffled.unseen_sequence.co": {
+  "value": 0.3060297962264753,
+  "text": "0.31",
+  "source": "units/olmo/rand/tstar/facts.json placement.shuffled.unseen_sequence.8.pooled_centre_offset"
+ },
+ "q4.mid_layer": {
+  "value": 8,
+  "text": "8",
+  "source": "the middle layer, (layers - 1) // 2"
+ },
+ "q4.near.pythia.d32.natural.seen_sequence_new_position": {
+  "value": 0.7207581105911681,
+  "text": "0.72",
+  "source": "units/pythia/d32/tstar/facts.json placement.natural.seen_sequence_new_position.nearest_cosine_median[8]"
+ },
+ "q4.near.pythia.d32.shuffled.unseen_sequence": {
+  "value": 0.588646977567234,
+  "text": "0.59",
+  "source": "units/pythia/d32/tstar/facts.json placement.shuffled.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.pythia.d32.random.unseen_sequence": {
+  "value": 0.5604720790076697,
+  "text": "0.56",
+  "source": "units/pythia/d32/tstar/facts.json placement.random.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.pythia.rand.random.seen_sequence_new_position": {
+  "value": 0.7437531857332218,
+  "text": "0.74",
+  "source": "units/pythia/rand/tstar/facts.json placement.random.seen_sequence_new_position.nearest_cosine_median[8]"
+ },
+ "q4.near.pythia.rand.random.unseen_sequence": {
+  "value": 0.7399780207375601,
+  "text": "0.74",
+  "source": "units/pythia/rand/tstar/facts.json placement.random.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.pythia.rand.natural.unseen_sequence": {
+  "value": 0.5611254877000886,
+  "text": "0.56",
+  "source": "units/pythia/rand/tstar/facts.json placement.natural.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.pythia.rand.shuffled.unseen_sequence": {
+  "value": 0.6680726561339267,
+  "text": "0.67",
+  "source": "units/pythia/rand/tstar/facts.json placement.shuffled.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.olmo.d32.natural.seen_sequence_new_position": {
+  "value": 0.4436801528482485,
+  "text": "0.44",
+  "source": "units/olmo/d32/tstar/facts.json placement.natural.seen_sequence_new_position.nearest_cosine_median[8]"
+ },
+ "q4.near.olmo.d32.shuffled.unseen_sequence": {
+  "value": 0.28680121850964585,
+  "text": "0.29",
+  "source": "units/olmo/d32/tstar/facts.json placement.shuffled.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.olmo.d32.random.unseen_sequence": {
+  "value": 0.2834127716948269,
+  "text": "0.28",
+  "source": "units/olmo/d32/tstar/facts.json placement.random.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.olmo.rand.random.seen_sequence_new_position": {
+  "value": 0.6841412108457886,
+  "text": "0.68",
+  "source": "units/olmo/rand/tstar/facts.json placement.random.seen_sequence_new_position.nearest_cosine_median[8]"
+ },
+ "q4.near.olmo.rand.random.unseen_sequence": {
+  "value": 0.6834584592508124,
+  "text": "0.68",
+  "source": "units/olmo/rand/tstar/facts.json placement.random.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.olmo.rand.natural.unseen_sequence": {
+  "value": 0.21376285085444519,
+  "text": "0.21",
+  "source": "units/olmo/rand/tstar/facts.json placement.natural.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.near.olmo.rand.shuffled.unseen_sequence": {
+  "value": 0.5336761053230723,
+  "text": "0.53",
+  "source": "units/olmo/rand/tstar/facts.json placement.shuffled.unseen_sequence.nearest_cosine_median[8]"
+ },
+ "q4.agree.d32.construction.in_set.v": {
+  "value": 0.6475093223855428,
+  "text": "0.648",
+  "source": "aggregates.json permutations.records[set=d32, panel=construction, cohort=in_set, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.d32.construction.in_set.ref": {
+  "value": 0.42535816516663705,
+  "text": "0.425",
+  "source": "aggregates.json permutations.records[set=d32, panel=construction, cohort=in_set, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.d32.construction.in_set.mov": {
+  "value": 0.5986328125,
+  "text": "60%",
+  "source": "aggregates.json permutations.records[set=d32, panel=construction, cohort=in_set, strength=tstar].movable_share"
+ },
+ "q4.agree.d32.natural.seen_sequence_new_position.v": {
+  "value": 0.6430456473615471,
+  "text": "0.643",
+  "source": "aggregates.json permutations.records[set=d32, panel=natural, cohort=seen_sequence_new_position, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.d32.natural.seen_sequence_new_position.ref": {
+  "value": 0.43137249164605596,
+  "text": "0.431",
+  "source": "aggregates.json permutations.records[set=d32, panel=natural, cohort=seen_sequence_new_position, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.d32.natural.seen_sequence_new_position.mov": {
+  "value": 0.5234375,
+  "text": "52%",
+  "source": "aggregates.json permutations.records[set=d32, panel=natural, cohort=seen_sequence_new_position, strength=tstar].movable_share"
+ },
+ "q4.agree.d32.shuffled.unseen_sequence.v": {
+  "value": 0.3834062355430188,
+  "text": "0.383",
+  "source": "aggregates.json permutations.records[set=d32, panel=shuffled, cohort=unseen_sequence, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.d32.shuffled.unseen_sequence.ref": {
+  "value": 0.31079050295435384,
+  "text": "0.311",
+  "source": "aggregates.json permutations.records[set=d32, panel=shuffled, cohort=unseen_sequence, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.d32.shuffled.unseen_sequence.mov": {
+  "value": 0.5732421875,
+  "text": "57%",
+  "source": "aggregates.json permutations.records[set=d32, panel=shuffled, cohort=unseen_sequence, strength=tstar].movable_share"
+ },
+ "q4.agree.d32.random.unseen_sequence.v": {
+  "value": 0.24494995663709132,
+  "text": "0.245",
+  "source": "aggregates.json permutations.records[set=d32, panel=random, cohort=unseen_sequence, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.d32.random.unseen_sequence.ref": {
+  "value": 0.2440021684588261,
+  "text": "0.244",
+  "source": "aggregates.json permutations.records[set=d32, panel=random, cohort=unseen_sequence, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.d32.random.unseen_sequence.mov": {
+  "value": 0.09114583333333333,
+  "text": "9%",
+  "source": "aggregates.json permutations.records[set=d32, panel=random, cohort=unseen_sequence, strength=tstar].movable_share"
+ },
+ "q4.agree.rand.construction.in_set.v": {
+  "value": 0.6226650343187057,
+  "text": "0.623",
+  "source": "aggregates.json permutations.records[set=rand, panel=construction, cohort=in_set, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.rand.construction.in_set.ref": {
+  "value": 0.6221407740697166,
+  "text": "0.622",
+  "source": "aggregates.json permutations.records[set=rand, panel=construction, cohort=in_set, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.rand.construction.in_set.mov": {
+  "value": 0.1923828125,
+  "text": "19%",
+  "source": "aggregates.json permutations.records[set=rand, panel=construction, cohort=in_set, strength=tstar].movable_share"
+ },
+ "q4.agree.rand.random.seen_sequence_new_position.v": {
+  "value": 0.6208028266321455,
+  "text": "0.621",
+  "source": "aggregates.json permutations.records[set=rand, panel=random, cohort=seen_sequence_new_position, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.rand.random.seen_sequence_new_position.ref": {
+  "value": 0.6204975643152472,
+  "text": "0.620",
+  "source": "aggregates.json permutations.records[set=rand, panel=random, cohort=seen_sequence_new_position, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.rand.random.seen_sequence_new_position.mov": {
+  "value": 0.068359375,
+  "text": "7%",
+  "source": "aggregates.json permutations.records[set=rand, panel=random, cohort=seen_sequence_new_position, strength=tstar].movable_share"
+ },
+ "q4.agree.rand.random.unseen_sequence.v": {
+  "value": 0.612583960009644,
+  "text": "0.613",
+  "source": "aggregates.json permutations.records[set=rand, panel=random, cohort=unseen_sequence, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.rand.random.unseen_sequence.ref": {
+  "value": 0.6125545689441303,
+  "text": "0.613",
+  "source": "aggregates.json permutations.records[set=rand, panel=random, cohort=unseen_sequence, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.rand.random.unseen_sequence.mov": {
+  "value": 0.0234375,
+  "text": "2%",
+  "source": "aggregates.json permutations.records[set=rand, panel=random, cohort=unseen_sequence, strength=tstar].movable_share"
+ },
+ "q4.agree.rand.natural.unseen_sequence.v": {
+  "value": 0.4717077740764845,
+  "text": "0.472",
+  "source": "aggregates.json permutations.records[set=rand, panel=natural, cohort=unseen_sequence, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.rand.natural.unseen_sequence.ref": {
+  "value": 0.45457365282081436,
+  "text": "0.455",
+  "source": "aggregates.json permutations.records[set=rand, panel=natural, cohort=unseen_sequence, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.rand.natural.unseen_sequence.mov": {
+  "value": 0.5234375,
+  "text": "52%",
+  "source": "aggregates.json permutations.records[set=rand, panel=natural, cohort=unseen_sequence, strength=tstar].movable_share"
+ },
+ "q4.agree.rand.shuffled.unseen_sequence.v": {
+  "value": 0.5916223557626961,
+  "text": "0.592",
+  "source": "aggregates.json permutations.records[set=rand, panel=shuffled, cohort=unseen_sequence, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.agree.rand.shuffled.unseen_sequence.ref": {
+  "value": 0.5838642606866946,
+  "text": "0.584",
+  "source": "aggregates.json permutations.records[set=rand, panel=shuffled, cohort=unseen_sequence, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.agree.rand.shuffled.unseen_sequence.mov": {
+  "value": 0.5732421875,
+  "text": "57%",
+  "source": "aggregates.json permutations.records[set=rand, panel=shuffled, cohort=unseen_sequence, strength=tstar].movable_share"
+ },
+ "q4.weak_count": {
+  "value": 3,
+  "text": "3",
+  "source": "rows of the q4_agree chart whose within_id_uninformative is true"
+ },
+ "q4.weak_list": {
+  "value": "random tokens in d32, new positions (ref.) in rand, unseen sequence r4 in rand",
+  "text": "random tokens in d32, new positions (ref.) in rand, unseen sequence r4 in rand",
+  "source": "aggregates.json permutations.records[...].within_id_uninformative (under 10% of tokens can move)"
+ },
+ "q4.nat.d32.v": {
+  "value": 0.6444679380303768,
+  "text": "0.64",
+  "source": "aggregates.json permutations.records[set=d32, panel=natural, cohort=outside_doc00, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.nat.d32.ref": {
+  "value": 0.4355052601371375,
+  "text": "0.44",
+  "source": "aggregates.json permutations.records[set=d32, panel=natural, cohort=outside_doc00, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.nat.d32.n": {
+  "value": 992,
+  "text": "992",
+  "source": "aggregates.json permutations.records[set=d32, panel=natural, cohort=outside_doc00, strength=tstar].count"
+ },
+ "q4.nat.rand.v": {
+  "value": 0.4701671960400951,
+  "text": "0.47",
+  "source": "aggregates.json permutations.records[set=rand, panel=natural, cohort=outside_doc00, strength=tstar].scores.16.matched.stacked"
+ },
+ "q4.nat.rand.ref": {
+  "value": 0.45266367264549745,
+  "text": "0.45",
+  "source": "aggregates.json permutations.records[set=rand, panel=natural, cohort=outside_doc00, strength=tstar].scores.16.within_id_and_cohort.mean[-1]"
+ },
+ "q4.nat.rand.n": {
+  "value": 992,
+  "text": "992",
+  "source": "aggregates.json permutations.records[set=rand, panel=natural, cohort=outside_doc00, strength=tstar].count"
+ },
+ "refit.pythia.8.placed": {
+  "value": 0.9582277727136251,
+  "text": "0.96",
+  "source": "aggregates.json refit_agreement.records.pythia.8.placed"
+ },
+ "refit.pythia.8.shared": {
+  "value": 0.9514565168157194,
+  "text": "0.95",
+  "source": "aggregates.json refit_agreement.records.pythia.8.shared"
+ },
+ "refit.pythia.16.placed": {
+  "value": 0.9765734914124885,
+  "text": "0.98",
+  "source": "aggregates.json refit_agreement.records.pythia.16.placed"
+ },
+ "refit.pythia.16.shared": {
+  "value": 0.9697914255539796,
+  "text": "0.97",
+  "source": "aggregates.json refit_agreement.records.pythia.16.shared"
+ },
+ "refit.pythia.64.placed": {
+  "value": 0.8890345095268273,
+  "text": "0.89",
+  "source": "aggregates.json refit_agreement.records.pythia.64.placed"
+ },
+ "refit.pythia.64.shared": {
+  "value": 0.8862594197967396,
+  "text": "0.89",
+  "source": "aggregates.json refit_agreement.records.pythia.64.shared"
+ },
+ "refit.olmo.8.placed": {
+  "value": 0.9596019701841784,
+  "text": "0.96",
+  "source": "aggregates.json refit_agreement.records.olmo.8.placed"
+ },
+ "refit.olmo.8.shared": {
+  "value": 0.9590755625364684,
+  "text": "0.96",
+  "source": "aggregates.json refit_agreement.records.olmo.8.shared"
+ },
+ "refit.olmo.16.placed": {
+  "value": 0.8429155914610895,
+  "text": "0.84",
+  "source": "aggregates.json refit_agreement.records.olmo.16.placed"
+ },
+ "refit.olmo.16.shared": {
+  "value": 0.8585727502860349,
+  "text": "0.86",
+  "source": "aggregates.json refit_agreement.records.olmo.16.shared"
+ },
+ "refit.olmo.64.placed": {
+  "value": 0.9637769686562097,
+  "text": "0.96",
+  "source": "aggregates.json refit_agreement.records.olmo.64.placed"
+ },
+ "refit.olmo.64.shared": {
+  "value": 0.9616973501676329,
+  "text": "0.96",
+  "source": "aggregates.json refit_agreement.records.olmo.64.shared"
+ },
+ "refit.cut_list": {
+  "value": "Pythia-1b at 64, OLMo-1B at 8, OLMo-1B at 64",
+  "text": "Pythia-1b at 64, OLMo-1B at 8, OLMo-1B at 64",
+  "source": "aggregates.json refit_agreement.records.<model>.<k>.cuts_band"
+ },
+ "refit.other_cut": {
+  "value": 3,
+  "text": "3",
+  "source": "aggregates.json refit_agreement.records.<model>.{8,64}.cuts_band, count"
+ },
+ "refit.other_n": {
+  "value": 4,
+  "text": "4",
+  "source": "models times the two other mode counts"
+ },
+ "bands.k8.cut": {
+  "value": 19,
+  "text": "19",
+  "source": "aggregates.json cross.records[*].scores.8.cuts_band, count (both strengths, all kinds)"
+ },
+ "bands.k8.n": {
+  "value": 136,
+  "text": "136",
+  "source": "aggregates.json cross.records[*].scores.8, count"
+ },
+ "bands.k16.cut": {
+  "value": 18,
+  "text": "18",
+  "source": "aggregates.json cross.records[*].scores.16.cuts_band, count (both strengths, all kinds)"
+ },
+ "bands.k16.n": {
+  "value": 136,
+  "text": "136",
+  "source": "aggregates.json cross.records[*].scores.16, count"
+ },
+ "bands.k64.cut": {
+  "value": 126,
+  "text": "126",
+  "source": "aggregates.json cross.records[*].scores.64.cuts_band, count (both strengths, all kinds)"
+ },
+ "bands.k64.n": {
+  "value": 136,
+  "text": "136",
+  "source": "aggregates.json cross.records[*].scores.64, count"
+ },
+ "undef.tstar.count": {
+  "value": 18,
+  "text": "18",
+  "source": "aggregates.json cross.records[kind=models, strength=tstar].scores.16.layers, null entries (a rank below 16 at that layer)"
+ },
+ "undef.tstar.total": {
+  "value": 918,
+  "text": "918",
+  "source": "aggregates.json cross.records[kind=models, strength=tstar].scores.16.layers, all entries"
+ },
+ "undef.tstar.sets": {
+  "value": "doc02 and pairB",
+  "text": "doc02 and pairB",
+  "source": "the sets of the records with a null entry"
+ },
+ "undef.tstar.nsets": {
+  "value": 2,
+  "text": "2",
+  "source": "the number of sets of the records with a null entry"
+ },
+ "undef.tstar_div16.count": {
+  "value": 563,
+  "text": "563",
+  "source": "aggregates.json cross.records[kind=models, strength=tstar_div16].scores.16.layers, null entries (a rank below 16 at that layer)"
+ },
+ "undef.tstar_div16.total": {
+  "value": 918,
+  "text": "918",
+  "source": "aggregates.json cross.records[kind=models, strength=tstar_div16].scores.16.layers, all entries"
+ },
+ "undef.tstar_div16.sets": {
+  "value": "doc00, doc01, doc02, doc04, pairA, pairB, d04, d08, d16, d32 and rand",
+  "text": "doc00, doc01, doc02, doc04, pairA, pairB, d04, d08, d16, d32 and rand",
+  "source": "the sets of the records with a null entry"
+ },
+ "undef.tstar_div16.nsets": {
+  "value": 11,
+  "text": "11",
+  "source": "the number of sets of the records with a null entry"
+ },
+ "tstar.pythia.min": {
+  "value": 4.3315955955189045,
+  "text": "4.33",
+  "source": "meta.json units.pythia/doc02.tstar (the smallest)"
+ },
+ "tstar.pythia.min_set": {
+  "value": "doc02",
+  "text": "doc02",
+  "source": "the set of the smallest t*"
+ },
+ "tstar.pythia.second_set": {
+  "value": "pairB",
+  "text": "pairB",
+  "source": "the set of the second smallest t*"
+ },
+ "tstar.pythia.max": {
+  "value": 20.70162982277664,
+  "text": "20.7",
+  "source": "meta.json units.pythia/d32.tstar (the largest)"
+ },
+ "tstar.olmo.min": {
+  "value": 2.218914068752031,
+  "text": "2.22",
+  "source": "meta.json units.olmo/pairB.tstar (the smallest)"
+ },
+ "tstar.olmo.min_set": {
+  "value": "pairB",
+  "text": "pairB",
+  "source": "the set of the smallest t*"
+ },
+ "tstar.olmo.second_set": {
+  "value": "doc02",
+  "text": "doc02",
+  "source": "the set of the second smallest t*"
+ },
+ "tstar.olmo.max": {
+  "value": 23.125521409786643,
+  "text": "23.1",
+  "source": "meta.json units.olmo/d08.tstar (the largest)"
+ }
+}

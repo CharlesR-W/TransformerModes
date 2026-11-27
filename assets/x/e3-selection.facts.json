@@ -1,0 +1,2702 @@
+{
+ "recommend": {
+  "value": "a construction passed",
+  "text": "a construction passed",
+  "source": "analysis/stage_b_selection.json recommend_stage_b"
+ },
+ "cand.cosine_c_2_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[0] passed"
+ },
+ "cand.cosine_c_2_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[0] primary_rank"
+ },
+ "cand.cosine_c_2_none.worst": {
+  "value": 0.5653228759765625,
+  "text": "57%",
+  "source": "analysis/stage_b_selection.json table[0] worst_adversary_overlap"
+ },
+ "cand.cosine_c_2_none.m1.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[0] models.pythia.passing"
+ },
+ "cand.cosine_c_2_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[0] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_2_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[0] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_2_none.m1.local": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[0] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_2_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[0] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_2_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[0] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_2_none.m2.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[0] models.olmo.passing"
+ },
+ "cand.cosine_c_2_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[0] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_2_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[0] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_2_none.m2.local": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[0] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_2_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[0] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_2_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[0] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_2_window.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[1] passed"
+ },
+ "cand.cosine_c_2_window.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[1] primary_rank"
+ },
+ "cand.cosine_c_2_window.worst": {
+  "value": 0.5558395385742188,
+  "text": "56%",
+  "source": "analysis/stage_b_selection.json table[1] worst_adversary_overlap"
+ },
+ "cand.cosine_c_2_window.m1.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[1] models.pythia.passing"
+ },
+ "cand.cosine_c_2_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[1] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_2_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[1] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_2_window.m1.local": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[1] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_2_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[1] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_2_window.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[1] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_2_window.m2.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[1] models.olmo.passing"
+ },
+ "cand.cosine_c_2_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[1] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_2_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[1] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_2_window.m2.local": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[1] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_2_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[1] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_2_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[1] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_8_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[2] passed"
+ },
+ "cand.cosine_c_8_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[2] primary_rank"
+ },
+ "cand.cosine_c_8_none.worst": {
+  "value": 0.5111236572265625,
+  "text": "51%",
+  "source": "analysis/stage_b_selection.json table[2] worst_adversary_overlap"
+ },
+ "cand.cosine_c_8_none.m1.passing": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/stage_b_selection.json table[2] models.pythia.passing"
+ },
+ "cand.cosine_c_8_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[2] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_8_none.m1.short_mass": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[2] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_8_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[2] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_8_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[2] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_8_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[2] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_8_none.m2.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[2] models.olmo.passing"
+ },
+ "cand.cosine_c_8_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[2] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_8_none.m2.short_mass": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[2] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_8_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[2] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_8_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[2] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_8_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[2] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_8_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[3] passed"
+ },
+ "cand.cosine_c_8_window.rank": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/stage_b_selection.json table[3] primary_rank"
+ },
+ "cand.cosine_c_8_window.worst": {
+  "value": 0.49903106689453125,
+  "text": "50%",
+  "source": "analysis/stage_b_selection.json table[3] worst_adversary_overlap"
+ },
+ "cand.cosine_c_8_window.m1.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.pythia.passing"
+ },
+ "cand.cosine_c_8_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_8_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_8_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_8_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_8_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_8_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.olmo.passing"
+ },
+ "cand.cosine_c_8_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_8_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_8_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_8_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_8_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[3] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_64_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[4] passed"
+ },
+ "cand.cosine_c_64_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[4] primary_rank"
+ },
+ "cand.cosine_c_64_none.worst": {
+  "value": 0.49713134765625,
+  "text": "50%",
+  "source": "analysis/stage_b_selection.json table[4] worst_adversary_overlap"
+ },
+ "cand.cosine_c_64_none.m1.passing": {
+  "value": 2,
+  "text": "2",
+  "source": "analysis/stage_b_selection.json table[4] models.pythia.passing"
+ },
+ "cand.cosine_c_64_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_64_none.m1.short_mass": {
+  "value": 2,
+  "text": "2",
+  "source": "analysis/stage_b_selection.json table[4] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_64_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_64_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_64_none.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_64_none.m2.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[4] models.olmo.passing"
+ },
+ "cand.cosine_c_64_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_64_none.m2.short_mass": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[4] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_64_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_64_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_64_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[4] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_64_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[5] passed"
+ },
+ "cand.cosine_c_64_window.rank": {
+  "value": 3,
+  "text": "3",
+  "source": "analysis/stage_b_selection.json table[5] primary_rank"
+ },
+ "cand.cosine_c_64_window.worst": {
+  "value": 0.46492767333984375,
+  "text": "46%",
+  "source": "analysis/stage_b_selection.json table[5] worst_adversary_overlap"
+ },
+ "cand.cosine_c_64_window.m1.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[5] models.pythia.passing"
+ },
+ "cand.cosine_c_64_window.m1.other_mass": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[5] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_64_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_64_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_64_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_64_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_64_window.m2.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[5] models.olmo.passing"
+ },
+ "cand.cosine_c_64_window.m2.other_mass": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[5] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_64_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_64_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_64_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_64_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[5] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_whole_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[6] passed"
+ },
+ "cand.cosine_c_whole_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[6] primary_rank"
+ },
+ "cand.cosine_c_whole_none.worst": {
+  "value": 0.5542144775390625,
+  "text": "55%",
+  "source": "analysis/stage_b_selection.json table[6] worst_adversary_overlap"
+ },
+ "cand.cosine_c_whole_none.m1.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[6] models.pythia.passing"
+ },
+ "cand.cosine_c_whole_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[6] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_whole_none.m1.short_mass": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[6] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_whole_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[6] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_whole_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[6] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_whole_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[6] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_whole_none.m2.passing": {
+  "value": 1,
+  "text": "1",
+  "source": "analysis/stage_b_selection.json table[6] models.olmo.passing"
+ },
+ "cand.cosine_c_whole_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[6] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_whole_none.m2.short_mass": {
+  "value": 1,
+  "text": "1",
+  "source": "analysis/stage_b_selection.json table[6] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_whole_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[6] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_whole_none.m2.random": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[6] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_whole_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[6] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_whole_window.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[7] passed"
+ },
+ "cand.cosine_c_whole_window.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[7] primary_rank"
+ },
+ "cand.cosine_c_whole_window.worst": {
+  "value": 0.548126220703125,
+  "text": "55%",
+  "source": "analysis/stage_b_selection.json table[7] worst_adversary_overlap"
+ },
+ "cand.cosine_c_whole_window.m1.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[7] models.pythia.passing"
+ },
+ "cand.cosine_c_whole_window.m1.other_mass": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[7] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_whole_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[7] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_whole_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[7] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_c_whole_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[7] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_c_whole_window.m1.embedding": {
+  "value": 6,
+  "text": "6",
+  "source": "analysis/stage_b_selection.json table[7] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_c_whole_window.m2.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[7] models.olmo.passing"
+ },
+ "cand.cosine_c_whole_window.m2.other_mass": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[7] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_c_whole_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[7] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_c_whole_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[7] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_c_whole_window.m2.random": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[7] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_c_whole_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[7] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_2_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[8] passed"
+ },
+ "cand.cosine_o_2_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[8] primary_rank"
+ },
+ "cand.cosine_o_2_none.worst": {
+  "value": 0.6206512451171875,
+  "text": "62%",
+  "source": "analysis/stage_b_selection.json table[8] worst_adversary_overlap"
+ },
+ "cand.cosine_o_2_none.m1.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[8] models.pythia.passing"
+ },
+ "cand.cosine_o_2_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[8] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_2_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[8] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_2_none.m1.local": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[8] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_2_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[8] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_2_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[8] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_2_none.m2.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[8] models.olmo.passing"
+ },
+ "cand.cosine_o_2_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[8] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_2_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[8] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_2_none.m2.local": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[8] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_2_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[8] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_2_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[8] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_2_window.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[9] passed"
+ },
+ "cand.cosine_o_2_window.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[9] primary_rank"
+ },
+ "cand.cosine_o_2_window.worst": {
+  "value": 0.6117630004882812,
+  "text": "61%",
+  "source": "analysis/stage_b_selection.json table[9] worst_adversary_overlap"
+ },
+ "cand.cosine_o_2_window.m1.passing": {
+  "value": 1,
+  "text": "1",
+  "source": "analysis/stage_b_selection.json table[9] models.pythia.passing"
+ },
+ "cand.cosine_o_2_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[9] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_2_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[9] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_2_window.m1.local": {
+  "value": 1,
+  "text": "1",
+  "source": "analysis/stage_b_selection.json table[9] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_2_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[9] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_2_window.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[9] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_2_window.m2.passing": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[9] models.olmo.passing"
+ },
+ "cand.cosine_o_2_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[9] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_2_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[9] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_2_window.m2.local": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/stage_b_selection.json table[9] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_2_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[9] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_2_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[9] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_8_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[10] passed"
+ },
+ "cand.cosine_o_8_none.rank": {
+  "value": 10,
+  "text": "10",
+  "source": "analysis/stage_b_selection.json table[10] primary_rank"
+ },
+ "cand.cosine_o_8_none.worst": {
+  "value": 0.5884628295898438,
+  "text": "59%",
+  "source": "analysis/stage_b_selection.json table[10] worst_adversary_overlap"
+ },
+ "cand.cosine_o_8_none.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[10] models.pythia.passing"
+ },
+ "cand.cosine_o_8_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_8_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_8_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_8_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_8_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[10] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_8_none.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.olmo.passing"
+ },
+ "cand.cosine_o_8_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_8_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_8_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_8_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_8_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[10] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_8_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[11] passed"
+ },
+ "cand.cosine_o_8_window.rank": {
+  "value": 16,
+  "text": "16",
+  "source": "analysis/stage_b_selection.json table[11] primary_rank"
+ },
+ "cand.cosine_o_8_window.worst": {
+  "value": 0.5785598754882812,
+  "text": "58%",
+  "source": "analysis/stage_b_selection.json table[11] worst_adversary_overlap"
+ },
+ "cand.cosine_o_8_window.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[11] models.pythia.passing"
+ },
+ "cand.cosine_o_8_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_8_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_8_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_8_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_8_window.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[11] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_8_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.olmo.passing"
+ },
+ "cand.cosine_o_8_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_8_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_8_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_8_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_8_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[11] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_64_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[12] passed"
+ },
+ "cand.cosine_o_64_none.rank": {
+  "value": 9,
+  "text": "9",
+  "source": "analysis/stage_b_selection.json table[12] primary_rank"
+ },
+ "cand.cosine_o_64_none.worst": {
+  "value": 0.5561599731445312,
+  "text": "56%",
+  "source": "analysis/stage_b_selection.json table[12] worst_adversary_overlap"
+ },
+ "cand.cosine_o_64_none.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[12] models.pythia.passing"
+ },
+ "cand.cosine_o_64_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_64_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_64_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_64_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_64_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[12] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_64_none.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.olmo.passing"
+ },
+ "cand.cosine_o_64_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_64_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_64_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_64_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_64_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[12] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_64_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[13] passed"
+ },
+ "cand.cosine_o_64_window.rank": {
+  "value": 15,
+  "text": "15",
+  "source": "analysis/stage_b_selection.json table[13] primary_rank"
+ },
+ "cand.cosine_o_64_window.worst": {
+  "value": 0.5500640869140625,
+  "text": "55%",
+  "source": "analysis/stage_b_selection.json table[13] worst_adversary_overlap"
+ },
+ "cand.cosine_o_64_window.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[13] models.pythia.passing"
+ },
+ "cand.cosine_o_64_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_64_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_64_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_64_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_64_window.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[13] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_64_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.olmo.passing"
+ },
+ "cand.cosine_o_64_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_64_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_64_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_64_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_64_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[13] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_whole_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[14] passed"
+ },
+ "cand.cosine_o_whole_none.rank": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] primary_rank"
+ },
+ "cand.cosine_o_whole_none.worst": {
+  "value": 0.5066604614257812,
+  "text": "51%",
+  "source": "analysis/stage_b_selection.json table[14] worst_adversary_overlap"
+ },
+ "cand.cosine_o_whole_none.m1.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[14] models.pythia.passing"
+ },
+ "cand.cosine_o_whole_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_whole_none.m1.short_mass": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[14] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_whole_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_whole_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_whole_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[14] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_whole_none.m2.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[14] models.olmo.passing"
+ },
+ "cand.cosine_o_whole_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_whole_none.m2.short_mass": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[14] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_whole_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_whole_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_whole_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[14] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_whole_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[15] passed"
+ },
+ "cand.cosine_o_whole_window.rank": {
+  "value": 14,
+  "text": "14",
+  "source": "analysis/stage_b_selection.json table[15] primary_rank"
+ },
+ "cand.cosine_o_whole_window.worst": {
+  "value": 0.47571563720703125,
+  "text": "48%",
+  "source": "analysis/stage_b_selection.json table[15] worst_adversary_overlap"
+ },
+ "cand.cosine_o_whole_window.m1.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.pythia.passing"
+ },
+ "cand.cosine_o_whole_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_whole_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_whole_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.pythia.condition_site_counts.local"
+ },
+ "cand.cosine_o_whole_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.pythia.condition_site_counts.random"
+ },
+ "cand.cosine_o_whole_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.cosine_o_whole_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.olmo.passing"
+ },
+ "cand.cosine_o_whole_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.cosine_o_whole_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.cosine_o_whole_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.olmo.condition_site_counts.local"
+ },
+ "cand.cosine_o_whole_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.olmo.condition_site_counts.random"
+ },
+ "cand.cosine_o_whole_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[15] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_2_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[16] passed"
+ },
+ "cand.dot_c_2_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[16] primary_rank"
+ },
+ "cand.dot_c_2_none.worst": {
+  "value": 0.34082794189453125,
+  "text": "34%",
+  "source": "analysis/stage_b_selection.json table[16] worst_adversary_overlap"
+ },
+ "cand.dot_c_2_none.m1.passing": {
+  "value": 3,
+  "text": "3",
+  "source": "analysis/stage_b_selection.json table[16] models.pythia.passing"
+ },
+ "cand.dot_c_2_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_2_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_2_none.m1.local": {
+  "value": 3,
+  "text": "3",
+  "source": "analysis/stage_b_selection.json table[16] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_2_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_2_none.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_2_none.m2.passing": {
+  "value": 2,
+  "text": "2",
+  "source": "analysis/stage_b_selection.json table[16] models.olmo.passing"
+ },
+ "cand.dot_c_2_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_2_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_2_none.m2.local": {
+  "value": 2,
+  "text": "2",
+  "source": "analysis/stage_b_selection.json table[16] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_2_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_2_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[16] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_2_window.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[17] passed"
+ },
+ "cand.dot_c_2_window.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[17] primary_rank"
+ },
+ "cand.dot_c_2_window.worst": {
+  "value": 0.32198333740234375,
+  "text": "32%",
+  "source": "analysis/stage_b_selection.json table[17] worst_adversary_overlap"
+ },
+ "cand.dot_c_2_window.m1.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[17] models.pythia.passing"
+ },
+ "cand.dot_c_2_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_2_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_2_window.m1.local": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[17] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_2_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_2_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_2_window.m2.passing": {
+  "value": 2,
+  "text": "2",
+  "source": "analysis/stage_b_selection.json table[17] models.olmo.passing"
+ },
+ "cand.dot_c_2_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_2_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_2_window.m2.local": {
+  "value": 2,
+  "text": "2",
+  "source": "analysis/stage_b_selection.json table[17] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_2_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_2_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[17] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_8_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[18] passed"
+ },
+ "cand.dot_c_8_none.rank": {
+  "value": 2,
+  "text": "2",
+  "source": "analysis/stage_b_selection.json table[18] primary_rank"
+ },
+ "cand.dot_c_8_none.worst": {
+  "value": 0.34832763671875,
+  "text": "35%",
+  "source": "analysis/stage_b_selection.json table[18] worst_adversary_overlap"
+ },
+ "cand.dot_c_8_none.m1.passing": {
+  "value": 6,
+  "text": "6",
+  "source": "analysis/stage_b_selection.json table[18] models.pythia.passing"
+ },
+ "cand.dot_c_8_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_8_none.m1.short_mass": {
+  "value": 6,
+  "text": "6",
+  "source": "analysis/stage_b_selection.json table[18] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_8_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_8_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_8_none.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_8_none.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.olmo.passing"
+ },
+ "cand.dot_c_8_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_8_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_8_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_8_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_8_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[18] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_8_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[19] passed"
+ },
+ "cand.dot_c_8_window.rank": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[19] primary_rank"
+ },
+ "cand.dot_c_8_window.worst": {
+  "value": 0.32763671875,
+  "text": "33%",
+  "source": "analysis/stage_b_selection.json table[19] worst_adversary_overlap"
+ },
+ "cand.dot_c_8_window.m1.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.pythia.passing"
+ },
+ "cand.dot_c_8_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_8_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_8_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_8_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_8_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_8_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.olmo.passing"
+ },
+ "cand.dot_c_8_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_8_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_8_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_8_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_8_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[19] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_64_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[20] passed"
+ },
+ "cand.dot_c_64_none.rank": {
+  "value": 1,
+  "text": "1",
+  "source": "analysis/stage_b_selection.json table[20] primary_rank"
+ },
+ "cand.dot_c_64_none.worst": {
+  "value": 0.25336456298828125,
+  "text": "25%",
+  "source": "analysis/stage_b_selection.json table[20] worst_adversary_overlap"
+ },
+ "cand.dot_c_64_none.m1.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[20] models.pythia.passing"
+ },
+ "cand.dot_c_64_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_64_none.m1.short_mass": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[20] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_64_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_64_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_64_none.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_64_none.m2.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[20] models.olmo.passing"
+ },
+ "cand.dot_c_64_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_64_none.m2.short_mass": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[20] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_64_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_64_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_64_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[20] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_64_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[21] passed"
+ },
+ "cand.dot_c_64_window.rank": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[21] primary_rank"
+ },
+ "cand.dot_c_64_window.worst": {
+  "value": 0.21746826171875,
+  "text": "22%",
+  "source": "analysis/stage_b_selection.json table[21] worst_adversary_overlap"
+ },
+ "cand.dot_c_64_window.m1.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.pythia.passing"
+ },
+ "cand.dot_c_64_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_64_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_64_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_64_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_64_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_64_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.olmo.passing"
+ },
+ "cand.dot_c_64_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_64_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_64_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_64_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_64_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[21] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_whole_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[22] passed"
+ },
+ "cand.dot_c_whole_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[22] primary_rank"
+ },
+ "cand.dot_c_whole_none.worst": {
+  "value": 0.19680023193359375,
+  "text": "20%",
+  "source": "analysis/stage_b_selection.json table[22] worst_adversary_overlap"
+ },
+ "cand.dot_c_whole_none.m1.passing": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/stage_b_selection.json table[22] models.pythia.passing"
+ },
+ "cand.dot_c_whole_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_whole_none.m1.short_mass": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/stage_b_selection.json table[22] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_whole_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_whole_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_whole_none.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_whole_none.m2.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[22] models.olmo.passing"
+ },
+ "cand.dot_c_whole_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_whole_none.m2.short_mass": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[22] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_whole_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_whole_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_whole_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[22] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_c_whole_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[23] passed"
+ },
+ "cand.dot_c_whole_window.rank": {
+  "value": 6,
+  "text": "6",
+  "source": "analysis/stage_b_selection.json table[23] primary_rank"
+ },
+ "cand.dot_c_whole_window.worst": {
+  "value": 0.23860931396484375,
+  "text": "24%",
+  "source": "analysis/stage_b_selection.json table[23] worst_adversary_overlap"
+ },
+ "cand.dot_c_whole_window.m1.passing": {
+  "value": 6,
+  "text": "6",
+  "source": "analysis/stage_b_selection.json table[23] models.pythia.passing"
+ },
+ "cand.dot_c_whole_window.m1.other_mass": {
+  "value": 6,
+  "text": "6",
+  "source": "analysis/stage_b_selection.json table[23] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_whole_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_whole_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_c_whole_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_c_whole_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_c_whole_window.m2.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[23] models.olmo.passing"
+ },
+ "cand.dot_c_whole_window.m2.other_mass": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[23] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_c_whole_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_c_whole_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_c_whole_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_c_whole_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[23] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_2_none.passed": {
+  "value": "did not pass",
+  "text": "did not pass",
+  "source": "analysis/stage_b_selection.json table[24] passed"
+ },
+ "cand.dot_o_2_none.rank": {
+  "value": null,
+  "text": "unranked",
+  "source": "analysis/stage_b_selection.json table[24] primary_rank"
+ },
+ "cand.dot_o_2_none.worst": {
+  "value": 0.32662200927734375,
+  "text": "33%",
+  "source": "analysis/stage_b_selection.json table[24] worst_adversary_overlap"
+ },
+ "cand.dot_o_2_none.m1.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[24] models.pythia.passing"
+ },
+ "cand.dot_o_2_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_2_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_2_none.m1.local": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[24] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_2_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_2_none.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_2_none.m2.passing": {
+  "value": 3,
+  "text": "3",
+  "source": "analysis/stage_b_selection.json table[24] models.olmo.passing"
+ },
+ "cand.dot_o_2_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_2_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_2_none.m2.local": {
+  "value": 3,
+  "text": "3",
+  "source": "analysis/stage_b_selection.json table[24] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_2_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_2_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[24] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_2_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[25] passed"
+ },
+ "cand.dot_o_2_window.rank": {
+  "value": 17,
+  "text": "17",
+  "source": "analysis/stage_b_selection.json table[25] primary_rank"
+ },
+ "cand.dot_o_2_window.worst": {
+  "value": 0.31463623046875,
+  "text": "31%",
+  "source": "analysis/stage_b_selection.json table[25] worst_adversary_overlap"
+ },
+ "cand.dot_o_2_window.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[25] models.pythia.passing"
+ },
+ "cand.dot_o_2_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_2_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_2_window.m1.local": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[25] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_2_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_2_window.m1.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_2_window.m2.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[25] models.olmo.passing"
+ },
+ "cand.dot_o_2_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_2_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_2_window.m2.local": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[25] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_2_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_2_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[25] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_8_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[26] passed"
+ },
+ "cand.dot_o_8_none.rank": {
+  "value": 12,
+  "text": "12",
+  "source": "analysis/stage_b_selection.json table[26] primary_rank"
+ },
+ "cand.dot_o_8_none.worst": {
+  "value": 0.5979690551757812,
+  "text": "60%",
+  "source": "analysis/stage_b_selection.json table[26] worst_adversary_overlap"
+ },
+ "cand.dot_o_8_none.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[26] models.pythia.passing"
+ },
+ "cand.dot_o_8_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_8_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_8_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_8_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_8_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[26] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_8_none.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.olmo.passing"
+ },
+ "cand.dot_o_8_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_8_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_8_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_8_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_8_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[26] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_8_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[27] passed"
+ },
+ "cand.dot_o_8_window.rank": {
+  "value": 19,
+  "text": "19",
+  "source": "analysis/stage_b_selection.json table[27] primary_rank"
+ },
+ "cand.dot_o_8_window.worst": {
+  "value": 0.5926895141601562,
+  "text": "59%",
+  "source": "analysis/stage_b_selection.json table[27] worst_adversary_overlap"
+ },
+ "cand.dot_o_8_window.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[27] models.pythia.passing"
+ },
+ "cand.dot_o_8_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_8_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_8_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_8_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_8_window.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[27] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_8_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.olmo.passing"
+ },
+ "cand.dot_o_8_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_8_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_8_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_8_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_8_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[27] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_64_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[28] passed"
+ },
+ "cand.dot_o_64_none.rank": {
+  "value": 11,
+  "text": "11",
+  "source": "analysis/stage_b_selection.json table[28] primary_rank"
+ },
+ "cand.dot_o_64_none.worst": {
+  "value": 0.5427703857421875,
+  "text": "54%",
+  "source": "analysis/stage_b_selection.json table[28] worst_adversary_overlap"
+ },
+ "cand.dot_o_64_none.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[28] models.pythia.passing"
+ },
+ "cand.dot_o_64_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_64_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_64_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_64_none.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_64_none.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[28] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_64_none.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.olmo.passing"
+ },
+ "cand.dot_o_64_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_64_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_64_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_64_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_64_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[28] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_64_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[29] passed"
+ },
+ "cand.dot_o_64_window.rank": {
+  "value": 18,
+  "text": "18",
+  "source": "analysis/stage_b_selection.json table[29] primary_rank"
+ },
+ "cand.dot_o_64_window.worst": {
+  "value": 0.5379104614257812,
+  "text": "54%",
+  "source": "analysis/stage_b_selection.json table[29] worst_adversary_overlap"
+ },
+ "cand.dot_o_64_window.m1.passing": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[29] models.pythia.passing"
+ },
+ "cand.dot_o_64_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_64_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_64_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_64_window.m1.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_64_window.m1.embedding": {
+  "value": 7,
+  "text": "7",
+  "source": "analysis/stage_b_selection.json table[29] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_64_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.olmo.passing"
+ },
+ "cand.dot_o_64_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_64_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_64_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_64_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_64_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[29] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_whole_none.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[30] passed"
+ },
+ "cand.dot_o_whole_none.rank": {
+  "value": 13,
+  "text": "13",
+  "source": "analysis/stage_b_selection.json table[30] primary_rank"
+ },
+ "cand.dot_o_whole_none.worst": {
+  "value": 0.954864501953125,
+  "text": "95%",
+  "source": "analysis/stage_b_selection.json table[30] worst_adversary_overlap"
+ },
+ "cand.dot_o_whole_none.m1.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[30] models.pythia.passing"
+ },
+ "cand.dot_o_whole_none.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_whole_none.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_whole_none.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_whole_none.m1.random": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[30] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_whole_none.m1.embedding": {
+  "value": 6,
+  "text": "6",
+  "source": "analysis/stage_b_selection.json table[30] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_whole_none.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.olmo.passing"
+ },
+ "cand.dot_o_whole_none.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_whole_none.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_whole_none.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_whole_none.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_whole_none.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[30] models.olmo.condition_site_counts.embedding"
+ },
+ "cand.dot_o_whole_window.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "analysis/stage_b_selection.json table[31] passed"
+ },
+ "cand.dot_o_whole_window.rank": {
+  "value": 20,
+  "text": "20",
+  "source": "analysis/stage_b_selection.json table[31] primary_rank"
+ },
+ "cand.dot_o_whole_window.worst": {
+  "value": 0.956451416015625,
+  "text": "96%",
+  "source": "analysis/stage_b_selection.json table[31] worst_adversary_overlap"
+ },
+ "cand.dot_o_whole_window.m1.passing": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[31] models.pythia.passing"
+ },
+ "cand.dot_o_whole_window.m1.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.pythia.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_whole_window.m1.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.pythia.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_whole_window.m1.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.pythia.condition_site_counts.local"
+ },
+ "cand.dot_o_whole_window.m1.random": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[31] models.pythia.condition_site_counts.random"
+ },
+ "cand.dot_o_whole_window.m1.embedding": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json table[31] models.pythia.condition_site_counts.embedding"
+ },
+ "cand.dot_o_whole_window.m2.passing": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.olmo.passing"
+ },
+ "cand.dot_o_whole_window.m2.other_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.olmo.condition_site_counts.other_mass"
+ },
+ "cand.dot_o_whole_window.m2.short_mass": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.olmo.condition_site_counts.short_mass"
+ },
+ "cand.dot_o_whole_window.m2.local": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.olmo.condition_site_counts.local"
+ },
+ "cand.dot_o_whole_window.m2.random": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.olmo.condition_site_counts.random"
+ },
+ "cand.dot_o_whole_window.m2.embedding": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json table[31] models.olmo.condition_site_counts.embedding"
+ },
+ "m.m1.layer10.near_mass": {
+  "value": 0.24949519903424844,
+  "text": "24.95%",
+  "source": "analysis/stage_b_selection.json M, models.pythia.sites.10.query_mass.near"
+ },
+ "m.m1.layer10.top_near": {
+  "value": 0.5228042602539062,
+  "text": "52%",
+  "source": "analysis/stage_b_selection.json M, models.pythia.sites.10.top_origin.near (share of the 64 nearest late tokens within 64 positions)"
+ },
+ "m.near_mass_limit": {
+  "value": 0.25,
+  "text": "25%",
+  "source": "analysis/stage_b_selection.json thresholds.unmasked_near_mass_max"
+ },
+ "m.m1.census_other": {
+  "value": 0.29814199038914274,
+  "text": "30%",
+  "source": "analysis/geometry/pythia/dot_C.json M rows, mean over layers origin[0]"
+ },
+ "m.m1.screen_top_other": {
+  "value": 0.35681915283203125,
+  "text": "36%",
+  "source": "analysis/geometry/pythia/dot_C.json M rows, mean over layers screen_origin[0]"
+ },
+ "m.m1.screen_mass_other": {
+  "value": 0.5988460975689971,
+  "text": "60%",
+  "source": "analysis/geometry/pythia/dot_C.json M rows, mean over layers screen_mass[0]"
+ },
+ "m1.c.mem_none.screen_top_other": {
+  "value": 0.4303417205810547,
+  "text": "43.03%",
+  "source": "analysis/geometry/pythia/cosine_C.json none, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_none.screen_mass_other": {
+  "value": 0.624834348435265,
+  "text": "62.48%",
+  "source": "analysis/geometry/pythia/cosine_C.json none, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_2.screen_top_other": {
+  "value": 0.35596275329589844,
+  "text": "35.60%",
+  "source": "analysis/geometry/pythia/cosine_C.json 2, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_2.screen_mass_other": {
+  "value": 0.6129960044468387,
+  "text": "61.30%",
+  "source": "analysis/geometry/pythia/cosine_C.json 2, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_8.screen_top_other": {
+  "value": 0.18779277801513672,
+  "text": "18.78%",
+  "source": "analysis/geometry/pythia/cosine_C.json 8, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_8.screen_mass_other": {
+  "value": 0.5647694517794253,
+  "text": "56.48%",
+  "source": "analysis/geometry/pythia/cosine_C.json 8, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_64.screen_top_other": {
+  "value": 0.022844314575195312,
+  "text": "2.28%",
+  "source": "analysis/geometry/pythia/cosine_C.json 64, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_64.screen_mass_other": {
+  "value": 0.5059184382891612,
+  "text": "50.59%",
+  "source": "analysis/geometry/pythia/cosine_C.json 64, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_whole.screen_top_other": {
+  "value": 0.0057735443115234375,
+  "text": "0.58%",
+  "source": "analysis/geometry/pythia/cosine_C.json whole, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.c.mem_whole.screen_mass_other": {
+  "value": 0.5025988602933849,
+  "text": "50.26%",
+  "source": "analysis/geometry/pythia/cosine_C.json whole, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m1.name": {
+  "value": "Pythia-1b",
+  "text": "Pythia-1b",
+  "source": "site/manifest.json model_metadata"
+ },
+ "m.m1.score": {
+  "value": 0.014245468415527091,
+  "text": "0.014",
+  "source": "analysis/prediction/pythia.json score for M, mean over layers [4, 8, 12, 16]"
+ },
+ "m.m1.eligible": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/prediction/pythia.json eligible for M"
+ },
+ "m.m1.layers": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/prediction/pythia.json rows for M"
+ },
+ "l.m1.score": {
+  "value": 0.1111652060843366,
+  "text": "0.111",
+  "source": "analysis/prediction/pythia.json score for L, mean over layers [4, 8, 12, 16]"
+ },
+ "l.m1.eligible": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/prediction/pythia.json eligible for L"
+ },
+ "l.m1.layers": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/prediction/pythia.json rows for L"
+ },
+ "flat.m1.walk_other": {
+  "value": 0.5025988602933849,
+  "text": "50%",
+  "source": "analysis/geometry/pythia/cosine_C.json whole, none: screen_mass[0], mean over layers"
+ },
+ "flat.m1.top_other": {
+  "value": 0.0057735443115234375,
+  "text": "0.6%",
+  "source": "analysis/geometry/pythia/cosine_C.json whole, none: screen_origin[0], mean over layers"
+ },
+ "m.m2.census_other": {
+  "value": 0.4624161379677909,
+  "text": "46%",
+  "source": "analysis/geometry/olmo/dot_C.json M rows, mean over layers origin[0]"
+ },
+ "m.m2.screen_top_other": {
+  "value": 0.3910541534423828,
+  "text": "39%",
+  "source": "analysis/geometry/olmo/dot_C.json M rows, mean over layers screen_origin[0]"
+ },
+ "m.m2.screen_mass_other": {
+  "value": 0.6394314987570461,
+  "text": "64%",
+  "source": "analysis/geometry/olmo/dot_C.json M rows, mean over layers screen_mass[0]"
+ },
+ "m2.c.mem_none.screen_top_other": {
+  "value": 0.44507503509521484,
+  "text": "44.51%",
+  "source": "analysis/geometry/olmo/cosine_C.json none, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_none.screen_mass_other": {
+  "value": 0.6596938226796398,
+  "text": "65.97%",
+  "source": "analysis/geometry/olmo/cosine_C.json none, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_2.screen_top_other": {
+  "value": 0.3489494323730469,
+  "text": "34.89%",
+  "source": "analysis/geometry/olmo/cosine_C.json 2, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_2.screen_mass_other": {
+  "value": 0.6476062932386373,
+  "text": "64.76%",
+  "source": "analysis/geometry/olmo/cosine_C.json 2, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_8.screen_top_other": {
+  "value": 0.17329978942871094,
+  "text": "17.33%",
+  "source": "analysis/geometry/olmo/cosine_C.json 8, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_8.screen_mass_other": {
+  "value": 0.6182147062188204,
+  "text": "61.82%",
+  "source": "analysis/geometry/olmo/cosine_C.json 8, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_64.screen_top_other": {
+  "value": 0.02251434326171875,
+  "text": "2.25%",
+  "source": "analysis/geometry/olmo/cosine_C.json 64, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_64.screen_mass_other": {
+  "value": 0.5898958313016476,
+  "text": "58.99%",
+  "source": "analysis/geometry/olmo/cosine_C.json 64, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_whole.screen_top_other": {
+  "value": 0.000125885009765625,
+  "text": "0.01%",
+  "source": "analysis/geometry/olmo/cosine_C.json whole, mask none: screen_origin[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.c.mem_whole.screen_mass_other": {
+  "value": 0.6047394109237714,
+  "text": "60.47%",
+  "source": "analysis/geometry/olmo/cosine_C.json whole, mask none: screen_mass[0], mean over layers [2, 4, 6, 8, 10, 12, 14, 16]"
+ },
+ "m2.name": {
+  "value": "OLMo-1B",
+  "text": "OLMo-1B",
+  "source": "site/manifest.json model_metadata"
+ },
+ "m.m2.score": {
+  "value": 0.012595900687140468,
+  "text": "0.013",
+  "source": "analysis/prediction/olmo.json score for M, mean over layers [4, 8, 12, 16]"
+ },
+ "m.m2.eligible": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/prediction/olmo.json eligible for M"
+ },
+ "m.m2.layers": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/prediction/olmo.json rows for M"
+ },
+ "l.m2.score": {
+  "value": 0.09389113259727636,
+  "text": "0.094",
+  "source": "analysis/prediction/olmo.json score for L, mean over layers [4, 8, 12, 16]"
+ },
+ "l.m2.eligible": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/prediction/olmo.json eligible for L"
+ },
+ "l.m2.layers": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/prediction/olmo.json rows for L"
+ },
+ "flat.m2.walk_other": {
+  "value": 0.6047394109237714,
+  "text": "60%",
+  "source": "analysis/geometry/olmo/cosine_C.json whole, none: screen_mass[0], mean over layers"
+ },
+ "flat.m2.top_other": {
+  "value": 0.000125885009765625,
+  "text": "0.0%",
+  "source": "analysis/geometry/olmo/cosine_C.json whole, none: screen_origin[0], mean over layers"
+ },
+ "cond1.cosine_c_none_full": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/stage_b_selection.json: cosine corpus-mean no-mask candidates with condition 1 at every layer in every model"
+ },
+ "cond1.cosine_c_none": {
+  "value": 4,
+  "text": "4",
+  "source": "analysis/stage_b_selection.json: cosine corpus-mean no-mask candidates"
+ },
+ "m": {
+  "value": "lengths kept (dot), memory 64, one average removed, nothing barred",
+  "text": "lengths kept (dot), memory 64, one average removed, nothing barred",
+  "source": "analysis/stage_b_selection.json M"
+ },
+ "l": {
+  "value": "lengths kept (dot), no memory, one average removed, nothing barred",
+  "text": "lengths kept (dot), no memory, one average removed, nothing barred",
+  "source": "analysis/stage_b_selection.json L"
+ },
+ "r": {
+  "value": "angle (cosine), no memory, one average removed, nothing barred",
+  "text": "angle (cosine), no memory, one average removed, nothing barred",
+  "source": "analysis/stage_b_selection.json R"
+ },
+ "x": {
+  "value": "none",
+  "text": "none",
+  "source": "analysis/stage_b_selection.json X"
+ },
+ "x_reason": {
+  "value": "no eligible passing alternative",
+  "text": "no eligible passing alternative",
+  "source": "analysis/stage_b_selection.json X_reason / reason"
+ },
+ "passing": {
+  "value": 20,
+  "text": "20",
+  "source": "analysis/stage_b_selection.json table[].passed"
+ },
+ "candidates": {
+  "value": 32,
+  "text": "32",
+  "source": "analysis/stage_b_selection.json table"
+ },
+ "required": {
+  "value": 5,
+  "text": "5",
+  "source": "analysis/stage_b_selection.json required_sites"
+ },
+ "sites": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/stage_b_selection.json sites"
+ },
+ "dropped": {
+  "value": 0,
+  "text": "0",
+  "source": "site/manifest.json dropped_groups"
+ }
+}

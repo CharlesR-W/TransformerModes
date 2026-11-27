@@ -1,0 +1,1992 @@
+{
+ "m1.c.mem_none.used": {
+  "value": 0.48419189453125,
+  "text": "48%",
+  "source": "analysis/prediction/pythia.json settings[15].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m1.c.mem_none.dropped": {
+  "value": 0.134246826171875,
+  "text": "13%",
+  "source": "analysis/prediction/pythia.json settings[15].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m1.c.mem_none.unmatched": {
+  "value": 0.381561279296875,
+  "text": "38%",
+  "source": "analysis/prediction/pythia.json settings[15].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m1.c.mem_none.groups": {
+  "value": "frequent tokens in other texts; frequent tokens far in the same text",
+  "text": "frequent tokens in other texts; frequent tokens far in the same text",
+  "source": "analysis/prediction/pythia.json settings[15].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m1.grp.other_rare.mem_none": {
+  "value": 0.05148699890805597,
+  "text": "0.051",
+  "source": "analysis/prediction/pythia.json cosine C none memory none: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.other_frequent.mem_none": {
+  "value": 0.0881512599137972,
+  "text": "0.088",
+  "source": "analysis/prediction/pythia.json cosine C none memory none: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_rare.mem_none": {
+  "value": 0.12136307638991983,
+  "text": "0.121",
+  "source": "analysis/prediction/pythia.json cosine C none memory none: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_frequent.mem_none": {
+  "value": 0.1685722216355645,
+  "text": "0.169",
+  "source": "analysis/prediction/pythia.json cosine C none memory none: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_rare.mem_none": {
+  "value": 0.08171209397240937,
+  "text": "0.082",
+  "source": "analysis/prediction/pythia.json cosine C none memory none: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_frequent.mem_none": {
+  "value": 0.12359090175443627,
+  "text": "0.124",
+  "source": "analysis/prediction/pythia.json cosine C none memory none: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.c.mem_2.used": {
+  "value": 0.4869333902994792,
+  "text": "49%",
+  "source": "analysis/prediction/pythia.json settings[18].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m1.c.mem_2.dropped": {
+  "value": 0.16426595052083334,
+  "text": "16%",
+  "source": "analysis/prediction/pythia.json settings[18].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m1.c.mem_2.unmatched": {
+  "value": 0.3488006591796875,
+  "text": "35%",
+  "source": "analysis/prediction/pythia.json settings[18].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m1.c.mem_2.groups": {
+  "value": "frequent tokens in other texts; frequent tokens far in the same text",
+  "text": "frequent tokens in other texts; frequent tokens far in the same text",
+  "source": "analysis/prediction/pythia.json settings[18].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m1.grp.other_rare.mem_2": {
+  "value": 0.03309881059691946,
+  "text": "0.033",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.other_frequent.mem_2": {
+  "value": 0.07466942481006941,
+  "text": "0.075",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_rare.mem_2": {
+  "value": 0.07854031389442157,
+  "text": "0.079",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_frequent.mem_2": {
+  "value": 0.13504845326896553,
+  "text": "0.135",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_rare.mem_2": {
+  "value": 0.04977574359530851,
+  "text": "0.050",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_frequent.mem_2": {
+  "value": 0.08952518177405597,
+  "text": "0.090",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.c.mem_8.used": {
+  "value": 0.4483998616536458,
+  "text": "45%",
+  "source": "analysis/prediction/pythia.json settings[21].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m1.c.mem_8.dropped": {
+  "value": 0.20359293619791666,
+  "text": "20%",
+  "source": "analysis/prediction/pythia.json settings[21].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m1.c.mem_8.unmatched": {
+  "value": 0.3480072021484375,
+  "text": "35%",
+  "source": "analysis/prediction/pythia.json settings[21].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m1.c.mem_8.groups": {
+  "value": "frequent tokens in other texts; frequent tokens far in the same text",
+  "text": "frequent tokens in other texts; frequent tokens far in the same text",
+  "source": "analysis/prediction/pythia.json settings[21].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m1.grp.other_rare.mem_8": {
+  "value": 0.010591808779299522,
+  "text": "0.011",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.other_frequent.mem_8": {
+  "value": 0.04903892394861036,
+  "text": "0.049",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_rare.mem_8": {
+  "value": 0.036838233399389,
+  "text": "0.037",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_frequent.mem_8": {
+  "value": 0.07065025173786697,
+  "text": "0.071",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_rare.mem_8": {
+  "value": 0.01560759068898689,
+  "text": "0.016",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_frequent.mem_8": {
+  "value": 0.04244499489432523,
+  "text": "0.042",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.c.mem_64.used": {
+  "value": 0.3898468017578125,
+  "text": "39%",
+  "source": "analysis/prediction/pythia.json settings[24].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m1.c.mem_64.dropped": {
+  "value": 0.15161641438802084,
+  "text": "15%",
+  "source": "analysis/prediction/pythia.json settings[24].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m1.c.mem_64.unmatched": {
+  "value": 0.4585367838541667,
+  "text": "46%",
+  "source": "analysis/prediction/pythia.json settings[24].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m1.c.mem_64.groups": {
+  "value": "frequent tokens in other texts; rare tokens far in the same text; frequent tokens far in the same text",
+  "text": "frequent tokens in other texts; rare tokens far in the same text; frequent tokens far in the same text",
+  "source": "analysis/prediction/pythia.json settings[24].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m1.grp.other_rare.mem_64": {
+  "value": 0.00948770093992566,
+  "text": "0.009",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.other_frequent.mem_64": {
+  "value": 0.015507684405843485,
+  "text": "0.016",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_rare.mem_64": {
+  "value": 0.011928843782670236,
+  "text": "0.012",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_frequent.mem_64": {
+  "value": 0.026183862523839647,
+  "text": "0.026",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_rare.mem_64": {
+  "value": 0.004338017721822495,
+  "text": "0.004",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_frequent.mem_64": {
+  "value": 0.013072713403083927,
+  "text": "0.013",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.c.mem_whole.used": {
+  "value": 0.058980305989583336,
+  "text": "6%",
+  "source": "analysis/prediction/pythia.json settings[27].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m1.c.mem_whole.dropped": {
+  "value": 0.3112589518229167,
+  "text": "31%",
+  "source": "analysis/prediction/pythia.json settings[27].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m1.c.mem_whole.unmatched": {
+  "value": 0.6297607421875,
+  "text": "63%",
+  "source": "analysis/prediction/pythia.json settings[27].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m1.c.mem_whole.groups": {
+  "value": "rare tokens far in the same text; frequent tokens far in the same text",
+  "text": "rare tokens far in the same text; frequent tokens far in the same text",
+  "source": "analysis/prediction/pythia.json settings[27].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m1.grp.other_rare.mem_whole": {
+  "value": -0.0009972131235721612,
+  "text": "-0.001",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.other_frequent.mem_whole": {
+  "value": -0.0014274688266844328,
+  "text": "-0.001",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_rare.mem_whole": {
+  "value": 0.0037273056947752896,
+  "text": "0.004",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.far_frequent.mem_whole": {
+  "value": 0.004727704335134654,
+  "text": "0.005",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_rare.mem_whole": {
+  "value": 0.0017467236323191215,
+  "text": "0.002",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.grp.near_frequent.mem_whole": {
+  "value": 0.0037067677553483287,
+  "text": "0.004",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m1.name": {
+  "value": "Pythia-1b",
+  "text": "Pythia-1b",
+  "source": "site/manifest.json model_metadata"
+ },
+ "m1.layer": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/prediction/pythia.json: lead layer or nearest"
+ },
+ "m1.c.mem_none.score": {
+  "value": 0.12125642124653366,
+  "text": "0.121",
+  "source": "analysis/prediction/pythia.json settings[15] score"
+ },
+ "m1.c.mem_none.p5": {
+  "value": 0.10599095407696103,
+  "text": "0.106",
+  "source": "analysis/prediction/pythia.json settings[15] bootstrap_percentiles[0]"
+ },
+ "m1.c.mem_none.p95": {
+  "value": 0.13314746133242464,
+  "text": "0.133",
+  "source": "analysis/prediction/pythia.json settings[15] bootstrap_percentiles[2]"
+ },
+ "m1.c.mem_none.coverage": {
+  "value": 0.618438720703125,
+  "text": "62%",
+  "source": "analysis/prediction/pythia.json settings[15] coverage"
+ },
+ "m1.c.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[15] eligible"
+ },
+ "m1.c.mem_none.top1": {
+  "value": 0.21720814459275528,
+  "text": "22%",
+  "source": "analysis/prediction/pythia.json settings[15] top1_neighbour"
+ },
+ "m1.c.mem_none.top1_control": {
+  "value": 0.0968006411800955,
+  "text": "10%",
+  "source": "analysis/prediction/pythia.json settings[15] top1_control"
+ },
+ "m1.c.mem_2.score": {
+  "value": 0.09951439054566277,
+  "text": "0.100",
+  "source": "analysis/prediction/pythia.json settings[18] score"
+ },
+ "m1.c.mem_2.p5": {
+  "value": 0.08821067484213625,
+  "text": "0.088",
+  "source": "analysis/prediction/pythia.json settings[18] bootstrap_percentiles[0]"
+ },
+ "m1.c.mem_2.p95": {
+  "value": 0.10932879843339047,
+  "text": "0.109",
+  "source": "analysis/prediction/pythia.json settings[18] bootstrap_percentiles[2]"
+ },
+ "m1.c.mem_2.coverage": {
+  "value": 0.6511993408203125,
+  "text": "65%",
+  "source": "analysis/prediction/pythia.json settings[18] coverage"
+ },
+ "m1.c.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[18] eligible"
+ },
+ "m1.c.mem_2.top1": {
+  "value": 0.19442464303754192,
+  "text": "19%",
+  "source": "analysis/prediction/pythia.json settings[18] top1_neighbour"
+ },
+ "m1.c.mem_2.top1_control": {
+  "value": 0.09463645978495598,
+  "text": "9%",
+  "source": "analysis/prediction/pythia.json settings[18] top1_control"
+ },
+ "m1.c.mem_8.score": {
+  "value": 0.06082750019366084,
+  "text": "0.061",
+  "source": "analysis/prediction/pythia.json settings[21] score"
+ },
+ "m1.c.mem_8.p5": {
+  "value": 0.05231570157403476,
+  "text": "0.052",
+  "source": "analysis/prediction/pythia.json settings[21] bootstrap_percentiles[0]"
+ },
+ "m1.c.mem_8.p95": {
+  "value": 0.06779404640594029,
+  "text": "0.068",
+  "source": "analysis/prediction/pythia.json settings[21] bootstrap_percentiles[2]"
+ },
+ "m1.c.mem_8.coverage": {
+  "value": 0.6519927978515625,
+  "text": "65%",
+  "source": "analysis/prediction/pythia.json settings[21] coverage"
+ },
+ "m1.c.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[21] eligible"
+ },
+ "m1.c.mem_8.top1": {
+  "value": 0.13735835189438347,
+  "text": "14%",
+  "source": "analysis/prediction/pythia.json settings[21] top1_neighbour"
+ },
+ "m1.c.mem_8.top1_control": {
+  "value": 0.07474144618723891,
+  "text": "7%",
+  "source": "analysis/prediction/pythia.json settings[21] top1_control"
+ },
+ "m1.c.mem_64.score": {
+  "value": 0.01979720217869065,
+  "text": "0.020",
+  "source": "analysis/prediction/pythia.json settings[24] score"
+ },
+ "m1.c.mem_64.p5": {
+  "value": 0.015921395503734656,
+  "text": "0.016",
+  "source": "analysis/prediction/pythia.json settings[24] bootstrap_percentiles[0]"
+ },
+ "m1.c.mem_64.p95": {
+  "value": 0.02413663955999875,
+  "text": "0.024",
+  "source": "analysis/prediction/pythia.json settings[24] bootstrap_percentiles[2]"
+ },
+ "m1.c.mem_64.coverage": {
+  "value": 0.5414632161458334,
+  "text": "54%",
+  "source": "analysis/prediction/pythia.json settings[24] coverage"
+ },
+ "m1.c.mem_64.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[24] eligible"
+ },
+ "m1.c.mem_64.top1": {
+  "value": 0.06610117679886822,
+  "text": "7%",
+  "source": "analysis/prediction/pythia.json settings[24] top1_neighbour"
+ },
+ "m1.c.mem_64.top1_control": {
+  "value": 0.047322010307597605,
+  "text": "5%",
+  "source": "analysis/prediction/pythia.json settings[24] top1_control"
+ },
+ "m1.c.mem_whole.score": {
+  "value": 0.003031084078114222,
+  "text": "0.003",
+  "source": "analysis/prediction/pythia.json settings[27] score"
+ },
+ "m1.c.mem_whole.p5": {
+  "value": -0.002334515265745637,
+  "text": "-0.002",
+  "source": "analysis/prediction/pythia.json settings[27] bootstrap_percentiles[0]"
+ },
+ "m1.c.mem_whole.p95": {
+  "value": 0.007747336340575795,
+  "text": "0.008",
+  "source": "analysis/prediction/pythia.json settings[27] bootstrap_percentiles[2]"
+ },
+ "m1.c.mem_whole.coverage": {
+  "value": 0.3702392578125,
+  "text": "37%",
+  "source": "analysis/prediction/pythia.json settings[27] coverage"
+ },
+ "m1.c.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[27] eligible"
+ },
+ "m1.c.mem_whole.top1": {
+  "value": 0.0487254772565434,
+  "text": "5%",
+  "source": "analysis/prediction/pythia.json settings[27] top1_neighbour"
+ },
+ "m1.c.mem_whole.top1_control": {
+  "value": 0.04526240902385227,
+  "text": "5%",
+  "source": "analysis/prediction/pythia.json settings[27] top1_control"
+ },
+ "m1.cw.mem_none.score": {
+  "value": 0.11390304337495558,
+  "text": "0.114",
+  "source": "analysis/prediction/pythia.json settings[16] score"
+ },
+ "m1.cw.mem_none.p5": {
+  "value": 0.09909119194043892,
+  "text": "0.099",
+  "source": "analysis/prediction/pythia.json settings[16] bootstrap_percentiles[0]"
+ },
+ "m1.cw.mem_none.p95": {
+  "value": 0.12629552570522093,
+  "text": "0.126",
+  "source": "analysis/prediction/pythia.json settings[16] bootstrap_percentiles[2]"
+ },
+ "m1.cw.mem_none.coverage": {
+  "value": 0.6715189615885416,
+  "text": "67%",
+  "source": "analysis/prediction/pythia.json settings[16] coverage"
+ },
+ "m1.cw.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[16] eligible"
+ },
+ "m1.cw.mem_2.score": {
+  "value": 0.09195766163801664,
+  "text": "0.092",
+  "source": "analysis/prediction/pythia.json settings[19] score"
+ },
+ "m1.cw.mem_2.p5": {
+  "value": 0.07929859961043535,
+  "text": "0.079",
+  "source": "analysis/prediction/pythia.json settings[19] bootstrap_percentiles[0]"
+ },
+ "m1.cw.mem_2.p95": {
+  "value": 0.10305579860809463,
+  "text": "0.103",
+  "source": "analysis/prediction/pythia.json settings[19] bootstrap_percentiles[2]"
+ },
+ "m1.cw.mem_2.coverage": {
+  "value": 0.7192535400390625,
+  "text": "72%",
+  "source": "analysis/prediction/pythia.json settings[19] coverage"
+ },
+ "m1.cw.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[19] eligible"
+ },
+ "m1.cw.mem_8.score": {
+  "value": 0.03821825732148284,
+  "text": "0.038",
+  "source": "analysis/prediction/pythia.json settings[22] score"
+ },
+ "m1.cw.mem_8.p5": {
+  "value": 0.033416099162856316,
+  "text": "0.033",
+  "source": "analysis/prediction/pythia.json settings[22] bootstrap_percentiles[0]"
+ },
+ "m1.cw.mem_8.p95": {
+  "value": 0.042917960853400806,
+  "text": "0.043",
+  "source": "analysis/prediction/pythia.json settings[22] bootstrap_percentiles[2]"
+ },
+ "m1.cw.mem_8.coverage": {
+  "value": 0.7683766682942709,
+  "text": "77%",
+  "source": "analysis/prediction/pythia.json settings[22] coverage"
+ },
+ "m1.cw.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[22] eligible"
+ },
+ "m1.cw.mem_64.score": {
+  "value": 0.014477741565007377,
+  "text": "0.014",
+  "source": "analysis/prediction/pythia.json settings[25] score"
+ },
+ "m1.cw.mem_64.p5": {
+  "value": 0.010779421726192498,
+  "text": "0.011",
+  "source": "analysis/prediction/pythia.json settings[25] bootstrap_percentiles[0]"
+ },
+ "m1.cw.mem_64.p95": {
+  "value": 0.017859604845267787,
+  "text": "0.018",
+  "source": "analysis/prediction/pythia.json settings[25] bootstrap_percentiles[2]"
+ },
+ "m1.cw.mem_64.coverage": {
+  "value": 0.7691853841145834,
+  "text": "77%",
+  "source": "analysis/prediction/pythia.json settings[25] coverage"
+ },
+ "m1.cw.mem_64.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[25] eligible"
+ },
+ "m1.cw.mem_whole.score": {
+  "value": 0.0010583785257061748,
+  "text": "0.001",
+  "source": "analysis/prediction/pythia.json settings[28] score"
+ },
+ "m1.cw.mem_whole.p5": {
+  "value": -2.6828895955895197e-05,
+  "text": "0.000",
+  "source": "analysis/prediction/pythia.json settings[28] bootstrap_percentiles[0]"
+ },
+ "m1.cw.mem_whole.p95": {
+  "value": 0.0021443497338902223,
+  "text": "0.002",
+  "source": "analysis/prediction/pythia.json settings[28] bootstrap_percentiles[2]"
+ },
+ "m1.cw.mem_whole.coverage": {
+  "value": 0.7325998942057291,
+  "text": "73%",
+  "source": "analysis/prediction/pythia.json settings[28] coverage"
+ },
+ "m1.cw.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[28] eligible"
+ },
+ "m1.o.mem_none.score": {
+  "value": 0.1261836790090046,
+  "text": "0.126",
+  "source": "analysis/prediction/pythia.json settings[75] score"
+ },
+ "m1.o.mem_none.p5": {
+  "value": 0.11133744189154217,
+  "text": "0.111",
+  "source": "analysis/prediction/pythia.json settings[75] bootstrap_percentiles[0]"
+ },
+ "m1.o.mem_none.p95": {
+  "value": 0.13776765307197797,
+  "text": "0.138",
+  "source": "analysis/prediction/pythia.json settings[75] bootstrap_percentiles[2]"
+ },
+ "m1.o.mem_none.coverage": {
+  "value": 0.6245778401692709,
+  "text": "62%",
+  "source": "analysis/prediction/pythia.json settings[75] coverage"
+ },
+ "m1.o.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[75] eligible"
+ },
+ "m1.o.mem_2.score": {
+  "value": 0.10397887107569098,
+  "text": "0.104",
+  "source": "analysis/prediction/pythia.json settings[78] score"
+ },
+ "m1.o.mem_2.p5": {
+  "value": 0.09315760566124098,
+  "text": "0.093",
+  "source": "analysis/prediction/pythia.json settings[78] bootstrap_percentiles[0]"
+ },
+ "m1.o.mem_2.p95": {
+  "value": 0.11331006777210896,
+  "text": "0.113",
+  "source": "analysis/prediction/pythia.json settings[78] bootstrap_percentiles[2]"
+ },
+ "m1.o.mem_2.coverage": {
+  "value": 0.6608988444010416,
+  "text": "66%",
+  "source": "analysis/prediction/pythia.json settings[78] coverage"
+ },
+ "m1.o.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[78] eligible"
+ },
+ "m1.o.mem_8.score": {
+  "value": 0.04380155047582446,
+  "text": "0.044",
+  "source": "analysis/prediction/pythia.json settings[81] score"
+ },
+ "m1.o.mem_8.p5": {
+  "value": 0.03925570044383939,
+  "text": "0.039",
+  "source": "analysis/prediction/pythia.json settings[81] bootstrap_percentiles[0]"
+ },
+ "m1.o.mem_8.p95": {
+  "value": 0.04772814726148684,
+  "text": "0.048",
+  "source": "analysis/prediction/pythia.json settings[81] bootstrap_percentiles[2]"
+ },
+ "m1.o.mem_8.coverage": {
+  "value": 0.67047119140625,
+  "text": "67%",
+  "source": "analysis/prediction/pythia.json settings[81] coverage"
+ },
+ "m1.o.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[81] eligible"
+ },
+ "m1.o.mem_64.score": {
+  "value": 0.014839050616111208,
+  "text": "0.015",
+  "source": "analysis/prediction/pythia.json settings[84] score"
+ },
+ "m1.o.mem_64.p5": {
+  "value": 0.012334092198505595,
+  "text": "0.012",
+  "source": "analysis/prediction/pythia.json settings[84] bootstrap_percentiles[0]"
+ },
+ "m1.o.mem_64.p95": {
+  "value": 0.01696540957633077,
+  "text": "0.017",
+  "source": "analysis/prediction/pythia.json settings[84] bootstrap_percentiles[2]"
+ },
+ "m1.o.mem_64.coverage": {
+  "value": 0.5558980305989584,
+  "text": "56%",
+  "source": "analysis/prediction/pythia.json settings[84] coverage"
+ },
+ "m1.o.mem_64.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[84] eligible"
+ },
+ "m1.o.mem_whole.score": {
+  "value": 0.002563153523105808,
+  "text": "0.003",
+  "source": "analysis/prediction/pythia.json settings[87] score"
+ },
+ "m1.o.mem_whole.p5": {
+  "value": 0.0007008622308582936,
+  "text": "0.001",
+  "source": "analysis/prediction/pythia.json settings[87] bootstrap_percentiles[0]"
+ },
+ "m1.o.mem_whole.p95": {
+  "value": 0.005012650560171774,
+  "text": "0.005",
+  "source": "analysis/prediction/pythia.json settings[87] bootstrap_percentiles[2]"
+ },
+ "m1.o.mem_whole.coverage": {
+  "value": 0.3837076822916667,
+  "text": "38%",
+  "source": "analysis/prediction/pythia.json settings[87] coverage"
+ },
+ "m1.o.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[87] eligible"
+ },
+ "m1.ow.mem_none.score": {
+  "value": 0.12077064161824921,
+  "text": "0.121",
+  "source": "analysis/prediction/pythia.json settings[76] score"
+ },
+ "m1.ow.mem_none.p5": {
+  "value": 0.10396899259645558,
+  "text": "0.104",
+  "source": "analysis/prediction/pythia.json settings[76] bootstrap_percentiles[0]"
+ },
+ "m1.ow.mem_none.p95": {
+  "value": 0.133379990755491,
+  "text": "0.133",
+  "source": "analysis/prediction/pythia.json settings[76] bootstrap_percentiles[2]"
+ },
+ "m1.ow.mem_none.coverage": {
+  "value": 0.6750895182291666,
+  "text": "68%",
+  "source": "analysis/prediction/pythia.json settings[76] coverage"
+ },
+ "m1.ow.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[76] eligible"
+ },
+ "m1.ow.mem_2.score": {
+  "value": 0.09884946880279764,
+  "text": "0.099",
+  "source": "analysis/prediction/pythia.json settings[79] score"
+ },
+ "m1.ow.mem_2.p5": {
+  "value": 0.085601147607008,
+  "text": "0.086",
+  "source": "analysis/prediction/pythia.json settings[79] bootstrap_percentiles[0]"
+ },
+ "m1.ow.mem_2.p95": {
+  "value": 0.10985493841567731,
+  "text": "0.110",
+  "source": "analysis/prediction/pythia.json settings[79] bootstrap_percentiles[2]"
+ },
+ "m1.ow.mem_2.coverage": {
+  "value": 0.7252451578776041,
+  "text": "73%",
+  "source": "analysis/prediction/pythia.json settings[79] coverage"
+ },
+ "m1.ow.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[79] eligible"
+ },
+ "m1.ow.mem_8.score": {
+  "value": 0.03944465559845412,
+  "text": "0.039",
+  "source": "analysis/prediction/pythia.json settings[82] score"
+ },
+ "m1.ow.mem_8.p5": {
+  "value": 0.034341480249641336,
+  "text": "0.034",
+  "source": "analysis/prediction/pythia.json settings[82] bootstrap_percentiles[0]"
+ },
+ "m1.ow.mem_8.p95": {
+  "value": 0.043788288160034605,
+  "text": "0.044",
+  "source": "analysis/prediction/pythia.json settings[82] bootstrap_percentiles[2]"
+ },
+ "m1.ow.mem_8.coverage": {
+  "value": 0.7787882486979166,
+  "text": "78%",
+  "source": "analysis/prediction/pythia.json settings[82] coverage"
+ },
+ "m1.ow.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[82] eligible"
+ },
+ "m1.ow.mem_64.score": {
+  "value": 0.011266216010350369,
+  "text": "0.011",
+  "source": "analysis/prediction/pythia.json settings[85] score"
+ },
+ "m1.ow.mem_64.p5": {
+  "value": 0.009107759909653224,
+  "text": "0.009",
+  "source": "analysis/prediction/pythia.json settings[85] bootstrap_percentiles[0]"
+ },
+ "m1.ow.mem_64.p95": {
+  "value": 0.01307548496175492,
+  "text": "0.013",
+  "source": "analysis/prediction/pythia.json settings[85] bootstrap_percentiles[2]"
+ },
+ "m1.ow.mem_64.coverage": {
+  "value": 0.7941131591796875,
+  "text": "79%",
+  "source": "analysis/prediction/pythia.json settings[85] coverage"
+ },
+ "m1.ow.mem_64.eligible": {
+  "value": "eligible",
+  "text": "eligible",
+  "source": "analysis/prediction/pythia.json settings[85] eligible"
+ },
+ "m1.ow.mem_whole.score": {
+  "value": 0.001854688921232765,
+  "text": "0.002",
+  "source": "analysis/prediction/pythia.json settings[88] score"
+ },
+ "m1.ow.mem_whole.p5": {
+  "value": 0.0009532560333195762,
+  "text": "0.001",
+  "source": "analysis/prediction/pythia.json settings[88] bootstrap_percentiles[0]"
+ },
+ "m1.ow.mem_whole.p95": {
+  "value": 0.002761408234974695,
+  "text": "0.003",
+  "source": "analysis/prediction/pythia.json settings[88] bootstrap_percentiles[2]"
+ },
+ "m1.ow.mem_whole.coverage": {
+  "value": 0.7702178955078125,
+  "text": "77%",
+  "source": "analysis/prediction/pythia.json settings[88] coverage"
+ },
+ "m1.ow.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/pythia.json settings[88] eligible"
+ },
+ "m1.readout_layers": {
+  "value": "4, 8, 12, 16",
+  "text": "4, 8, 12, 16",
+  "source": "analysis/prediction/pythia.json sites"
+ },
+ "m1.mean.mem_none.score": {
+  "value": 0.13331051263182125,
+  "text": "0.133",
+  "source": "analysis/prediction/pythia.json cosine C none memory none, mean over layers [4, 8, 12, 16] score"
+ },
+ "m1.mean.mem_none.top1": {
+  "value": 0.22924851010699981,
+  "text": "23%",
+  "source": "analysis/prediction/pythia.json cosine C none memory none, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m1.mean.mem_none.top1_control": {
+  "value": 0.09784500224971163,
+  "text": "10%",
+  "source": "analysis/prediction/pythia.json cosine C none memory none, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m1.mean.mem_none.ratio": {
+  "value": 2.342976185149768,
+  "text": "2.3",
+  "source": "analysis/prediction/pythia.json cosine C none memory none, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m1.mean.mem_none.coverage": {
+  "value": 0.6186485290527344,
+  "text": "62%",
+  "source": "analysis/prediction/pythia.json cosine C none memory none, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m1.mean.mem_none.near_left_out": {
+  "value": 0.13317362467447916,
+  "text": "13%",
+  "source": "analysis/prediction/pythia.json cosine C none memory none, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m1.mean.mem_2.score": {
+  "value": 0.11147776312644848,
+  "text": "0.111",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2, mean over layers [4, 8, 12, 16] score"
+ },
+ "m1.mean.mem_2.top1": {
+  "value": 0.20719254499624534,
+  "text": "21%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m1.mean.mem_2.top1_control": {
+  "value": 0.0962847423467247,
+  "text": "10%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m1.mean.mem_2.ratio": {
+  "value": 2.1518730792272134,
+  "text": "2.2",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m1.mean.mem_2.coverage": {
+  "value": 0.645025889078776,
+  "text": "65%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m1.mean.mem_2.near_left_out": {
+  "value": 0.16114171346028647,
+  "text": "16%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 2, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m1.mean.mem_8.score": {
+  "value": 0.06284437709966528,
+  "text": "0.063",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8, mean over layers [4, 8, 12, 16] score"
+ },
+ "m1.mean.mem_8.top1": {
+  "value": 0.14020230489877067,
+  "text": "14%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m1.mean.mem_8.top1_control": {
+  "value": 0.07592650885147617,
+  "text": "8%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m1.mean.mem_8.ratio": {
+  "value": 1.8465527655568592,
+  "text": "1.8",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m1.mean.mem_8.coverage": {
+  "value": 0.6594327290852865,
+  "text": "66%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m1.mean.mem_8.near_left_out": {
+  "value": 0.24421183268229166,
+  "text": "24%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 8, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m1.mean.mem_64.score": {
+  "value": 0.016758364317208067,
+  "text": "0.017",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64, mean over layers [4, 8, 12, 16] score"
+ },
+ "m1.mean.mem_64.top1": {
+  "value": 0.062367512253221645,
+  "text": "6%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m1.mean.mem_64.top1_control": {
+  "value": 0.046416762082608566,
+  "text": "5%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m1.mean.mem_64.ratio": {
+  "value": 1.3436420261763478,
+  "text": "1.3",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m1.mean.mem_64.coverage": {
+  "value": 0.5635503133138021,
+  "text": "56%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m1.mean.mem_64.near_left_out": {
+  "value": 0.4689432779947917,
+  "text": "47%",
+  "source": "analysis/prediction/pythia.json cosine C none memory 64, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m1.mean.mem_whole.score": {
+  "value": 0.003689912508794361,
+  "text": "0.004",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole, mean over layers [4, 8, 12, 16] score"
+ },
+ "m1.mean.mem_whole.top1": {
+  "value": 0.04535149367505077,
+  "text": "5%",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m1.mean.mem_whole.top1_control": {
+  "value": 0.04054583812187736,
+  "text": "4%",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m1.mean.mem_whole.ratio": {
+  "value": 1.11852401567648,
+  "text": "1.1",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m1.mean.mem_whole.coverage": {
+  "value": 0.3759803771972656,
+  "text": "38%",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m1.mean.mem_whole.near_left_out": {
+  "value": 0.9191207885742188,
+  "text": "92%",
+  "source": "analysis/prediction/pythia.json cosine C none memory whole, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m1.near_covered": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/prediction/pythia.json cosine C none: covered near strata"
+ },
+ "m1.near_strata": {
+  "value": 40,
+  "text": "40",
+  "source": "analysis/prediction/pythia.json cosine C none: near strata"
+ },
+ "m1.all_eligible": {
+  "value": 51,
+  "text": "51",
+  "source": "analysis/prediction/pythia.json eligible, every setting"
+ },
+ "m1.all_settings": {
+  "value": 240,
+  "text": "240",
+  "source": "analysis/prediction/pythia.json settings"
+ },
+ "m1.eligible_count": {
+  "value": 9,
+  "text": "9",
+  "source": "analysis/prediction/pythia.json eligible, cosine, lead layer"
+ },
+ "m1.settings_count": {
+  "value": 30,
+  "text": "30",
+  "source": "analysis/prediction/pythia.json settings, cosine, lead layer"
+ },
+ "m2.c.mem_none.used": {
+  "value": 0.4848887125651042,
+  "text": "48%",
+  "source": "analysis/prediction/olmo.json settings[15].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m2.c.mem_none.dropped": {
+  "value": 0.14300537109375,
+  "text": "14%",
+  "source": "analysis/prediction/olmo.json settings[15].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m2.c.mem_none.unmatched": {
+  "value": 0.3721059163411458,
+  "text": "37%",
+  "source": "analysis/prediction/olmo.json settings[15].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m2.c.mem_none.groups": {
+  "value": "frequent tokens in other texts; frequent tokens far in the same text",
+  "text": "frequent tokens in other texts; frequent tokens far in the same text",
+  "source": "analysis/prediction/olmo.json settings[15].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m2.grp.other_rare.mem_none": {
+  "value": 0.05322263959972806,
+  "text": "0.053",
+  "source": "analysis/prediction/olmo.json cosine C none memory none: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.other_frequent.mem_none": {
+  "value": 0.0821888257586665,
+  "text": "0.082",
+  "source": "analysis/prediction/olmo.json cosine C none memory none: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_rare.mem_none": {
+  "value": 0.12670872506276265,
+  "text": "0.127",
+  "source": "analysis/prediction/olmo.json cosine C none memory none: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_frequent.mem_none": {
+  "value": 0.16522985475867838,
+  "text": "0.165",
+  "source": "analysis/prediction/olmo.json cosine C none memory none: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_rare.mem_none": {
+  "value": 0.07275395767224274,
+  "text": "0.073",
+  "source": "analysis/prediction/olmo.json cosine C none memory none: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_frequent.mem_none": {
+  "value": 0.1149153472364684,
+  "text": "0.115",
+  "source": "analysis/prediction/olmo.json cosine C none memory none: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.c.mem_2.used": {
+  "value": 0.4713338216145833,
+  "text": "47%",
+  "source": "analysis/prediction/olmo.json settings[18].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m2.c.mem_2.dropped": {
+  "value": 0.16163126627604166,
+  "text": "16%",
+  "source": "analysis/prediction/olmo.json settings[18].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m2.c.mem_2.unmatched": {
+  "value": 0.367034912109375,
+  "text": "37%",
+  "source": "analysis/prediction/olmo.json settings[18].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m2.c.mem_2.groups": {
+  "value": "frequent tokens in other texts; frequent tokens far in the same text",
+  "text": "frequent tokens in other texts; frequent tokens far in the same text",
+  "source": "analysis/prediction/olmo.json settings[18].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m2.grp.other_rare.mem_2": {
+  "value": 0.03650727841215667,
+  "text": "0.037",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.other_frequent.mem_2": {
+  "value": 0.07410482949980284,
+  "text": "0.074",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_rare.mem_2": {
+  "value": 0.09137630249362984,
+  "text": "0.091",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_frequent.mem_2": {
+  "value": 0.13541557884842612,
+  "text": "0.135",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_rare.mem_2": {
+  "value": 0.051868023043016305,
+  "text": "0.052",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_frequent.mem_2": {
+  "value": 0.08194089012739658,
+  "text": "0.082",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.c.mem_8.used": {
+  "value": 0.4158833821614583,
+  "text": "42%",
+  "source": "analysis/prediction/olmo.json settings[21].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m2.c.mem_8.dropped": {
+  "value": 0.204559326171875,
+  "text": "20%",
+  "source": "analysis/prediction/olmo.json settings[21].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m2.c.mem_8.unmatched": {
+  "value": 0.3795572916666667,
+  "text": "38%",
+  "source": "analysis/prediction/olmo.json settings[21].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m2.c.mem_8.groups": {
+  "value": "frequent tokens in other texts; frequent tokens far in the same text",
+  "text": "frequent tokens in other texts; frequent tokens far in the same text",
+  "source": "analysis/prediction/olmo.json settings[21].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m2.grp.other_rare.mem_8": {
+  "value": 0.012934355402715555,
+  "text": "0.013",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.other_frequent.mem_8": {
+  "value": 0.049275167454674536,
+  "text": "0.049",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_rare.mem_8": {
+  "value": 0.041082336087438394,
+  "text": "0.041",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_frequent.mem_8": {
+  "value": 0.07386191413759774,
+  "text": "0.074",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_rare.mem_8": {
+  "value": 0.018103441826988205,
+  "text": "0.018",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_frequent.mem_8": {
+  "value": 0.03780064132083542,
+  "text": "0.038",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.c.mem_64.used": {
+  "value": 0.3514506022135417,
+  "text": "35%",
+  "source": "analysis/prediction/olmo.json settings[24].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m2.c.mem_64.dropped": {
+  "value": 0.16637166341145834,
+  "text": "17%",
+  "source": "analysis/prediction/olmo.json settings[24].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m2.c.mem_64.unmatched": {
+  "value": 0.482177734375,
+  "text": "48%",
+  "source": "analysis/prediction/olmo.json settings[24].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m2.c.mem_64.groups": {
+  "value": "rare tokens in other texts; frequent tokens in other texts; rare tokens far in the same text; frequent tokens far in the same text",
+  "text": "rare tokens in other texts; frequent tokens in other texts; rare tokens far in the same text; frequent tokens far in the same text",
+  "source": "analysis/prediction/olmo.json settings[24].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m2.grp.other_rare.mem_64": {
+  "value": 0.009165078959705399,
+  "text": "0.009",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.other_frequent.mem_64": {
+  "value": 0.014157045538655835,
+  "text": "0.014",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_rare.mem_64": {
+  "value": 0.015072893315154856,
+  "text": "0.015",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_frequent.mem_64": {
+  "value": 0.02811239823163297,
+  "text": "0.028",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_rare.mem_64": {
+  "value": 0.005347486546258584,
+  "text": "0.005",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_frequent.mem_64": {
+  "value": 0.012304528959399081,
+  "text": "0.012",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.c.mem_whole.used": {
+  "value": 0.059809366861979164,
+  "text": "6%",
+  "source": "analysis/prediction/olmo.json settings[27].strata, layer 8, weighted pairs: matched in covered groups / all pairs"
+ },
+ "m2.c.mem_whole.dropped": {
+  "value": 0.3105570475260417,
+  "text": "31%",
+  "source": "analysis/prediction/olmo.json settings[27].strata, layer 8, weighted pairs: matched in uncovered groups / all pairs"
+ },
+ "m2.c.mem_whole.unmatched": {
+  "value": 0.6296335856119791,
+  "text": "63%",
+  "source": "analysis/prediction/olmo.json settings[27].strata, layer 8, weighted pairs: sum of the three match-failure counts / all pairs"
+ },
+ "m2.c.mem_whole.groups": {
+  "value": "rare tokens far in the same text; frequent tokens far in the same text",
+  "text": "rare tokens far in the same text; frequent tokens far in the same text",
+  "source": "analysis/prediction/olmo.json settings[27].strata, layer 8, weighted pairs: status = covered"
+ },
+ "m2.grp.other_rare.mem_whole": {
+  "value": -0.007248902343444996,
+  "text": "-0.007",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole: other/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.other_frequent.mem_whole": {
+  "value": -0.0011500817264352688,
+  "text": "-0.001",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole: other/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_rare.mem_whole": {
+  "value": 0.00810222168751385,
+  "text": "0.008",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole: far/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.far_frequent.mem_whole": {
+  "value": 0.007342415092770229,
+  "text": "0.007",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole: far/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_rare.mem_whole": {
+  "value": 0.0005783161167818544,
+  "text": "0.001",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole: near/rare, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.grp.near_frequent.mem_whole": {
+  "value": 0.004361087808927665,
+  "text": "0.004",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole: near/frequent, pooled layers 4/8/12/16, sum of advantage / sum of matched pair weight"
+ },
+ "m2.name": {
+  "value": "OLMo-1B",
+  "text": "OLMo-1B",
+  "source": "site/manifest.json model_metadata"
+ },
+ "m2.layer": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/prediction/olmo.json: lead layer or nearest"
+ },
+ "m2.c.mem_none.score": {
+  "value": 0.10469841021045953,
+  "text": "0.105",
+  "source": "analysis/prediction/olmo.json settings[15] score"
+ },
+ "m2.c.mem_none.p5": {
+  "value": 0.09160402229582984,
+  "text": "0.092",
+  "source": "analysis/prediction/olmo.json settings[15] bootstrap_percentiles[0]"
+ },
+ "m2.c.mem_none.p95": {
+  "value": 0.1146167982435143,
+  "text": "0.115",
+  "source": "analysis/prediction/olmo.json settings[15] bootstrap_percentiles[2]"
+ },
+ "m2.c.mem_none.coverage": {
+  "value": 0.6278940836588541,
+  "text": "63%",
+  "source": "analysis/prediction/olmo.json settings[15] coverage"
+ },
+ "m2.c.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[15] eligible"
+ },
+ "m2.c.mem_none.top1": {
+  "value": 0.21686500369583572,
+  "text": "22%",
+  "source": "analysis/prediction/olmo.json settings[15] top1_neighbour"
+ },
+ "m2.c.mem_none.top1_control": {
+  "value": 0.10746457071403188,
+  "text": "11%",
+  "source": "analysis/prediction/olmo.json settings[15] top1_control"
+ },
+ "m2.c.mem_2.score": {
+  "value": 0.09233747790801383,
+  "text": "0.092",
+  "source": "analysis/prediction/olmo.json settings[18] score"
+ },
+ "m2.c.mem_2.p5": {
+  "value": 0.08133242558548143,
+  "text": "0.081",
+  "source": "analysis/prediction/olmo.json settings[18] bootstrap_percentiles[0]"
+ },
+ "m2.c.mem_2.p95": {
+  "value": 0.10207377139057848,
+  "text": "0.102",
+  "source": "analysis/prediction/olmo.json settings[18] bootstrap_percentiles[2]"
+ },
+ "m2.c.mem_2.coverage": {
+  "value": 0.632965087890625,
+  "text": "63%",
+  "source": "analysis/prediction/olmo.json settings[18] coverage"
+ },
+ "m2.c.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[18] eligible"
+ },
+ "m2.c.mem_2.top1": {
+  "value": 0.19558280385773935,
+  "text": "20%",
+  "source": "analysis/prediction/olmo.json settings[18] top1_neighbour"
+ },
+ "m2.c.mem_2.top1_control": {
+  "value": 0.09896131773652048,
+  "text": "10%",
+  "source": "analysis/prediction/olmo.json settings[18] top1_control"
+ },
+ "m2.c.mem_8.score": {
+  "value": 0.059695638117751984,
+  "text": "0.060",
+  "source": "analysis/prediction/olmo.json settings[21] score"
+ },
+ "m2.c.mem_8.p5": {
+  "value": 0.051370824161298345,
+  "text": "0.051",
+  "source": "analysis/prediction/olmo.json settings[21] bootstrap_percentiles[0]"
+ },
+ "m2.c.mem_8.p95": {
+  "value": 0.06616895647715987,
+  "text": "0.066",
+  "source": "analysis/prediction/olmo.json settings[21] bootstrap_percentiles[2]"
+ },
+ "m2.c.mem_8.coverage": {
+  "value": 0.6204427083333334,
+  "text": "62%",
+  "source": "analysis/prediction/olmo.json settings[21] coverage"
+ },
+ "m2.c.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[21] eligible"
+ },
+ "m2.c.mem_8.top1": {
+  "value": 0.1365685183863658,
+  "text": "14%",
+  "source": "analysis/prediction/olmo.json settings[21] top1_neighbour"
+ },
+ "m2.c.mem_8.top1_control": {
+  "value": 0.07253011230835041,
+  "text": "7%",
+  "source": "analysis/prediction/olmo.json settings[21] top1_control"
+ },
+ "m2.c.mem_64.score": {
+  "value": 0.018154697825260163,
+  "text": "0.018",
+  "source": "analysis/prediction/olmo.json settings[24] score"
+ },
+ "m2.c.mem_64.p5": {
+  "value": 0.013872138421947764,
+  "text": "0.014",
+  "source": "analysis/prediction/olmo.json settings[24] bootstrap_percentiles[0]"
+ },
+ "m2.c.mem_64.p95": {
+  "value": 0.02397435768885908,
+  "text": "0.024",
+  "source": "analysis/prediction/olmo.json settings[24] bootstrap_percentiles[2]"
+ },
+ "m2.c.mem_64.coverage": {
+  "value": 0.517822265625,
+  "text": "52%",
+  "source": "analysis/prediction/olmo.json settings[24] coverage"
+ },
+ "m2.c.mem_64.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[24] eligible"
+ },
+ "m2.c.mem_64.top1": {
+  "value": 0.06255948764063074,
+  "text": "6%",
+  "source": "analysis/prediction/olmo.json settings[24] top1_neighbour"
+ },
+ "m2.c.mem_64.top1_control": {
+  "value": 0.0433351803853982,
+  "text": "4%",
+  "source": "analysis/prediction/olmo.json settings[24] top1_control"
+ },
+ "m2.c.mem_whole.score": {
+  "value": 0.006945244563647155,
+  "text": "0.007",
+  "source": "analysis/prediction/olmo.json settings[27] score"
+ },
+ "m2.c.mem_whole.p5": {
+  "value": 0.003134389227801,
+  "text": "0.003",
+  "source": "analysis/prediction/olmo.json settings[27] bootstrap_percentiles[0]"
+ },
+ "m2.c.mem_whole.p95": {
+  "value": 0.011045193866523948,
+  "text": "0.011",
+  "source": "analysis/prediction/olmo.json settings[27] bootstrap_percentiles[2]"
+ },
+ "m2.c.mem_whole.coverage": {
+  "value": 0.3703664143880208,
+  "text": "37%",
+  "source": "analysis/prediction/olmo.json settings[27] coverage"
+ },
+ "m2.c.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[27] eligible"
+ },
+ "m2.c.mem_whole.top1": {
+  "value": 0.055750172064563286,
+  "text": "6%",
+  "source": "analysis/prediction/olmo.json settings[27] top1_neighbour"
+ },
+ "m2.c.mem_whole.top1_control": {
+  "value": 0.047526744948321764,
+  "text": "5%",
+  "source": "analysis/prediction/olmo.json settings[27] top1_control"
+ },
+ "m2.cw.mem_none.score": {
+  "value": 0.09750226798923561,
+  "text": "0.098",
+  "source": "analysis/prediction/olmo.json settings[16] score"
+ },
+ "m2.cw.mem_none.p5": {
+  "value": 0.08378818430170817,
+  "text": "0.084",
+  "source": "analysis/prediction/olmo.json settings[16] bootstrap_percentiles[0]"
+ },
+ "m2.cw.mem_none.p95": {
+  "value": 0.10851083095280875,
+  "text": "0.109",
+  "source": "analysis/prediction/olmo.json settings[16] bootstrap_percentiles[2]"
+ },
+ "m2.cw.mem_none.coverage": {
+  "value": 0.6878102620442709,
+  "text": "69%",
+  "source": "analysis/prediction/olmo.json settings[16] coverage"
+ },
+ "m2.cw.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[16] eligible"
+ },
+ "m2.cw.mem_2.score": {
+  "value": 0.08321217105570072,
+  "text": "0.083",
+  "source": "analysis/prediction/olmo.json settings[19] score"
+ },
+ "m2.cw.mem_2.p5": {
+  "value": 0.07024877389155908,
+  "text": "0.070",
+  "source": "analysis/prediction/olmo.json settings[19] bootstrap_percentiles[0]"
+ },
+ "m2.cw.mem_2.p95": {
+  "value": 0.09322768937306371,
+  "text": "0.093",
+  "source": "analysis/prediction/olmo.json settings[19] bootstrap_percentiles[2]"
+ },
+ "m2.cw.mem_2.coverage": {
+  "value": 0.71783447265625,
+  "text": "72%",
+  "source": "analysis/prediction/olmo.json settings[19] coverage"
+ },
+ "m2.cw.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[19] eligible"
+ },
+ "m2.cw.mem_8.score": {
+  "value": 0.048241894333756,
+  "text": "0.048",
+  "source": "analysis/prediction/olmo.json settings[22] score"
+ },
+ "m2.cw.mem_8.p5": {
+  "value": 0.04017973706628581,
+  "text": "0.040",
+  "source": "analysis/prediction/olmo.json settings[22] bootstrap_percentiles[0]"
+ },
+ "m2.cw.mem_8.p95": {
+  "value": 0.054686209515334885,
+  "text": "0.055",
+  "source": "analysis/prediction/olmo.json settings[22] bootstrap_percentiles[2]"
+ },
+ "m2.cw.mem_8.coverage": {
+  "value": 0.7583363850911459,
+  "text": "76%",
+  "source": "analysis/prediction/olmo.json settings[22] coverage"
+ },
+ "m2.cw.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[22] eligible"
+ },
+ "m2.cw.mem_64.score": {
+  "value": 0.011679074583160661,
+  "text": "0.012",
+  "source": "analysis/prediction/olmo.json settings[25] score"
+ },
+ "m2.cw.mem_64.p5": {
+  "value": 0.008716989394212024,
+  "text": "0.009",
+  "source": "analysis/prediction/olmo.json settings[25] bootstrap_percentiles[0]"
+ },
+ "m2.cw.mem_64.p95": {
+  "value": 0.015090526555194052,
+  "text": "0.015",
+  "source": "analysis/prediction/olmo.json settings[25] bootstrap_percentiles[2]"
+ },
+ "m2.cw.mem_64.coverage": {
+  "value": 0.7633768717447916,
+  "text": "76%",
+  "source": "analysis/prediction/olmo.json settings[25] coverage"
+ },
+ "m2.cw.mem_64.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[25] eligible"
+ },
+ "m2.cw.mem_whole.score": {
+  "value": 0.00041787876787394645,
+  "text": "0.000",
+  "source": "analysis/prediction/olmo.json settings[28] score"
+ },
+ "m2.cw.mem_whole.p5": {
+  "value": -0.001095492300926239,
+  "text": "-0.001",
+  "source": "analysis/prediction/olmo.json settings[28] bootstrap_percentiles[0]"
+ },
+ "m2.cw.mem_whole.p95": {
+  "value": 0.0014149276319660193,
+  "text": "0.001",
+  "source": "analysis/prediction/olmo.json settings[28] bootstrap_percentiles[2]"
+ },
+ "m2.cw.mem_whole.coverage": {
+  "value": 0.7301127115885416,
+  "text": "73%",
+  "source": "analysis/prediction/olmo.json settings[28] coverage"
+ },
+ "m2.cw.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[28] eligible"
+ },
+ "m2.o.mem_none.score": {
+  "value": 0.1090269584337793,
+  "text": "0.109",
+  "source": "analysis/prediction/olmo.json settings[75] score"
+ },
+ "m2.o.mem_none.p5": {
+  "value": 0.09573077807303586,
+  "text": "0.096",
+  "source": "analysis/prediction/olmo.json settings[75] bootstrap_percentiles[0]"
+ },
+ "m2.o.mem_none.p95": {
+  "value": 0.11926834816607136,
+  "text": "0.119",
+  "source": "analysis/prediction/olmo.json settings[75] bootstrap_percentiles[2]"
+ },
+ "m2.o.mem_none.coverage": {
+  "value": 0.6384836832682291,
+  "text": "64%",
+  "source": "analysis/prediction/olmo.json settings[75] coverage"
+ },
+ "m2.o.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[75] eligible"
+ },
+ "m2.o.mem_2.score": {
+  "value": 0.09520320259092163,
+  "text": "0.095",
+  "source": "analysis/prediction/olmo.json settings[78] score"
+ },
+ "m2.o.mem_2.p5": {
+  "value": 0.08339789108767169,
+  "text": "0.083",
+  "source": "analysis/prediction/olmo.json settings[78] bootstrap_percentiles[0]"
+ },
+ "m2.o.mem_2.p95": {
+  "value": 0.10461152223192291,
+  "text": "0.105",
+  "source": "analysis/prediction/olmo.json settings[78] bootstrap_percentiles[2]"
+ },
+ "m2.o.mem_2.coverage": {
+  "value": 0.6484120686848959,
+  "text": "65%",
+  "source": "analysis/prediction/olmo.json settings[78] coverage"
+ },
+ "m2.o.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[78] eligible"
+ },
+ "m2.o.mem_8.score": {
+  "value": 0.042156646113413264,
+  "text": "0.042",
+  "source": "analysis/prediction/olmo.json settings[81] score"
+ },
+ "m2.o.mem_8.p5": {
+  "value": 0.037624648907351795,
+  "text": "0.038",
+  "source": "analysis/prediction/olmo.json settings[81] bootstrap_percentiles[0]"
+ },
+ "m2.o.mem_8.p95": {
+  "value": 0.04669790677403895,
+  "text": "0.047",
+  "source": "analysis/prediction/olmo.json settings[81] bootstrap_percentiles[2]"
+ },
+ "m2.o.mem_8.coverage": {
+  "value": 0.6403249104817709,
+  "text": "64%",
+  "source": "analysis/prediction/olmo.json settings[81] coverage"
+ },
+ "m2.o.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[81] eligible"
+ },
+ "m2.o.mem_64.score": {
+  "value": 0.01605083256640904,
+  "text": "0.016",
+  "source": "analysis/prediction/olmo.json settings[84] score"
+ },
+ "m2.o.mem_64.p5": {
+  "value": 0.013245626944212708,
+  "text": "0.013",
+  "source": "analysis/prediction/olmo.json settings[84] bootstrap_percentiles[0]"
+ },
+ "m2.o.mem_64.p95": {
+  "value": 0.018584627370949104,
+  "text": "0.019",
+  "source": "analysis/prediction/olmo.json settings[84] bootstrap_percentiles[2]"
+ },
+ "m2.o.mem_64.coverage": {
+  "value": 0.5256093343098959,
+  "text": "53%",
+  "source": "analysis/prediction/olmo.json settings[84] coverage"
+ },
+ "m2.o.mem_64.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[84] eligible"
+ },
+ "m2.o.mem_whole.score": {
+  "value": 0.004709962456066364,
+  "text": "0.005",
+  "source": "analysis/prediction/olmo.json settings[87] score"
+ },
+ "m2.o.mem_whole.p5": {
+  "value": 0.001457879384544449,
+  "text": "0.001",
+  "source": "analysis/prediction/olmo.json settings[87] bootstrap_percentiles[0]"
+ },
+ "m2.o.mem_whole.p95": {
+  "value": 0.0085254753090475,
+  "text": "0.009",
+  "source": "analysis/prediction/olmo.json settings[87] bootstrap_percentiles[2]"
+ },
+ "m2.o.mem_whole.coverage": {
+  "value": 0.3777414957682292,
+  "text": "38%",
+  "source": "analysis/prediction/olmo.json settings[87] coverage"
+ },
+ "m2.o.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[87] eligible"
+ },
+ "m2.ow.mem_none.score": {
+  "value": 0.10506067411402806,
+  "text": "0.105",
+  "source": "analysis/prediction/olmo.json settings[76] score"
+ },
+ "m2.ow.mem_none.p5": {
+  "value": 0.09012235275328455,
+  "text": "0.090",
+  "source": "analysis/prediction/olmo.json settings[76] bootstrap_percentiles[0]"
+ },
+ "m2.ow.mem_none.p95": {
+  "value": 0.11587586886450582,
+  "text": "0.116",
+  "source": "analysis/prediction/olmo.json settings[76] bootstrap_percentiles[2]"
+ },
+ "m2.ow.mem_none.coverage": {
+  "value": 0.6976267496744791,
+  "text": "70%",
+  "source": "analysis/prediction/olmo.json settings[76] coverage"
+ },
+ "m2.ow.mem_none.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[76] eligible"
+ },
+ "m2.ow.mem_2.score": {
+  "value": 0.08885350335569553,
+  "text": "0.089",
+  "source": "analysis/prediction/olmo.json settings[79] score"
+ },
+ "m2.ow.mem_2.p5": {
+  "value": 0.0752786985353847,
+  "text": "0.075",
+  "source": "analysis/prediction/olmo.json settings[79] bootstrap_percentiles[0]"
+ },
+ "m2.ow.mem_2.p95": {
+  "value": 0.09927555417989002,
+  "text": "0.099",
+  "source": "analysis/prediction/olmo.json settings[79] bootstrap_percentiles[2]"
+ },
+ "m2.ow.mem_2.coverage": {
+  "value": 0.7295430501302084,
+  "text": "73%",
+  "source": "analysis/prediction/olmo.json settings[79] coverage"
+ },
+ "m2.ow.mem_2.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[79] eligible"
+ },
+ "m2.ow.mem_8.score": {
+  "value": 0.03647518173392289,
+  "text": "0.036",
+  "source": "analysis/prediction/olmo.json settings[82] score"
+ },
+ "m2.ow.mem_8.p5": {
+  "value": 0.031168841373541666,
+  "text": "0.031",
+  "source": "analysis/prediction/olmo.json settings[82] bootstrap_percentiles[0]"
+ },
+ "m2.ow.mem_8.p95": {
+  "value": 0.04136861696323384,
+  "text": "0.041",
+  "source": "analysis/prediction/olmo.json settings[82] bootstrap_percentiles[2]"
+ },
+ "m2.ow.mem_8.coverage": {
+  "value": 0.7731119791666666,
+  "text": "77%",
+  "source": "analysis/prediction/olmo.json settings[82] coverage"
+ },
+ "m2.ow.mem_8.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[82] eligible"
+ },
+ "m2.ow.mem_64.score": {
+  "value": 0.010554997053649984,
+  "text": "0.011",
+  "source": "analysis/prediction/olmo.json settings[85] score"
+ },
+ "m2.ow.mem_64.p5": {
+  "value": 0.00839242148358613,
+  "text": "0.008",
+  "source": "analysis/prediction/olmo.json settings[85] bootstrap_percentiles[0]"
+ },
+ "m2.ow.mem_64.p95": {
+  "value": 0.01241165984415523,
+  "text": "0.012",
+  "source": "analysis/prediction/olmo.json settings[85] bootstrap_percentiles[2]"
+ },
+ "m2.ow.mem_64.coverage": {
+  "value": 0.7864532470703125,
+  "text": "79%",
+  "source": "analysis/prediction/olmo.json settings[85] coverage"
+ },
+ "m2.ow.mem_64.eligible": {
+  "value": "eligible",
+  "text": "eligible",
+  "source": "analysis/prediction/olmo.json settings[85] eligible"
+ },
+ "m2.ow.mem_whole.score": {
+  "value": 0.0014037395249159358,
+  "text": "0.001",
+  "source": "analysis/prediction/olmo.json settings[88] score"
+ },
+ "m2.ow.mem_whole.p5": {
+  "value": 0.0004421199961951995,
+  "text": "0.000",
+  "source": "analysis/prediction/olmo.json settings[88] bootstrap_percentiles[0]"
+ },
+ "m2.ow.mem_whole.p95": {
+  "value": 0.0021066153791632685,
+  "text": "0.002",
+  "source": "analysis/prediction/olmo.json settings[88] bootstrap_percentiles[2]"
+ },
+ "m2.ow.mem_whole.coverage": {
+  "value": 0.7598419189453125,
+  "text": "76%",
+  "source": "analysis/prediction/olmo.json settings[88] coverage"
+ },
+ "m2.ow.mem_whole.eligible": {
+  "value": "ineligible",
+  "text": "ineligible",
+  "source": "analysis/prediction/olmo.json settings[88] eligible"
+ },
+ "m2.readout_layers": {
+  "value": "4, 8, 12, 16",
+  "text": "4, 8, 12, 16",
+  "source": "analysis/prediction/olmo.json sites"
+ },
+ "m2.mean.mem_none.score": {
+  "value": 0.13071719980015756,
+  "text": "0.131",
+  "source": "analysis/prediction/olmo.json cosine C none memory none, mean over layers [4, 8, 12, 16] score"
+ },
+ "m2.mean.mem_none.top1": {
+  "value": 0.24785803265392942,
+  "text": "25%",
+  "source": "analysis/prediction/olmo.json cosine C none memory none, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m2.mean.mem_none.top1_control": {
+  "value": 0.11096433940774708,
+  "text": "11%",
+  "source": "analysis/prediction/olmo.json cosine C none memory none, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m2.mean.mem_none.ratio": {
+  "value": 2.233672853610707,
+  "text": "2.2",
+  "source": "analysis/prediction/olmo.json cosine C none memory none, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m2.mean.mem_none.coverage": {
+  "value": 0.6321207682291666,
+  "text": "63%",
+  "source": "analysis/prediction/olmo.json cosine C none memory none, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m2.mean.mem_none.near_left_out": {
+  "value": 0.1470464070638021,
+  "text": "15%",
+  "source": "analysis/prediction/olmo.json cosine C none memory none, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m2.mean.mem_2.score": {
+  "value": 0.11419173010691634,
+  "text": "0.114",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2, mean over layers [4, 8, 12, 16] score"
+ },
+ "m2.mean.mem_2.top1": {
+  "value": 0.22649699282927238,
+  "text": "23%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m2.mean.mem_2.top1_control": {
+  "value": 0.10679420982192322,
+  "text": "11%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m2.mean.mem_2.ratio": {
+  "value": 2.120873343292213,
+  "text": "2.1",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m2.mean.mem_2.coverage": {
+  "value": 0.6368598937988281,
+  "text": "64%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m2.mean.mem_2.near_left_out": {
+  "value": 0.1882603963216146,
+  "text": "19%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 2, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m2.mean.mem_8.score": {
+  "value": 0.06151493319032214,
+  "text": "0.062",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8, mean over layers [4, 8, 12, 16] score"
+ },
+ "m2.mean.mem_8.top1": {
+  "value": 0.1429818610241412,
+  "text": "14%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m2.mean.mem_8.top1_control": {
+  "value": 0.08044515374875835,
+  "text": "8%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m2.mean.mem_8.ratio": {
+  "value": 1.777383153131808,
+  "text": "1.8",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m2.mean.mem_8.coverage": {
+  "value": 0.6313565572102865,
+  "text": "63%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m2.mean.mem_8.near_left_out": {
+  "value": 0.29231516520182294,
+  "text": "29%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 8, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m2.mean.mem_64.score": {
+  "value": 0.01924506071441212,
+  "text": "0.019",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64, mean over layers [4, 8, 12, 16] score"
+ },
+ "m2.mean.mem_64.top1": {
+  "value": 0.0708160991992785,
+  "text": "7%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m2.mean.mem_64.top1_control": {
+  "value": 0.051504810240148156,
+  "text": "5%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m2.mean.mem_64.ratio": {
+  "value": 1.3749414640902247,
+  "text": "1.4",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m2.mean.mem_64.coverage": {
+  "value": 0.5322443644205729,
+  "text": "53%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m2.mean.mem_64.near_left_out": {
+  "value": 0.5390357971191406,
+  "text": "54%",
+  "source": "analysis/prediction/olmo.json cosine C none memory 64, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m2.mean.mem_whole.score": {
+  "value": 0.007501171245066454,
+  "text": "0.008",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole, mean over layers [4, 8, 12, 16] score"
+ },
+ "m2.mean.mem_whole.top1": {
+  "value": 0.057821264527466776,
+  "text": "6%",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole, mean over layers [4, 8, 12, 16] top1_neighbour"
+ },
+ "m2.mean.mem_whole.top1_control": {
+  "value": 0.04777246872860505,
+  "text": "5%",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole, mean over layers [4, 8, 12, 16] top1_control"
+ },
+ "m2.mean.mem_whole.ratio": {
+  "value": 1.210347006681795,
+  "text": "1.2",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole, mean over layers [4, 8, 12, 16] top1_neighbour / top1_control"
+ },
+ "m2.mean.mem_whole.coverage": {
+  "value": 0.3710517883300781,
+  "text": "37%",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole, mean over layers [4, 8, 12, 16] coverage"
+ },
+ "m2.mean.mem_whole.near_left_out": {
+  "value": 0.9324442545572916,
+  "text": "93%",
+  "source": "analysis/prediction/olmo.json cosine C none memory whole, mean over layers [4, 8, 12, 16] strata near/*: pairs in uncovered strata over all pairs"
+ },
+ "m2.near_covered": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/prediction/olmo.json cosine C none: covered near strata"
+ },
+ "m2.near_strata": {
+  "value": 40,
+  "text": "40",
+  "source": "analysis/prediction/olmo.json cosine C none: near strata"
+ },
+ "m2.all_eligible": {
+  "value": 73,
+  "text": "73",
+  "source": "analysis/prediction/olmo.json eligible, every setting"
+ },
+ "m2.all_settings": {
+  "value": 240,
+  "text": "240",
+  "source": "analysis/prediction/olmo.json settings"
+ },
+ "m2.eligible_count": {
+  "value": 9,
+  "text": "9",
+  "source": "analysis/prediction/olmo.json eligible, cosine, lead layer"
+ },
+ "m2.settings_count": {
+  "value": 30,
+  "text": "30",
+  "source": "analysis/prediction/olmo.json settings, cosine, lead layer"
+ }
+}

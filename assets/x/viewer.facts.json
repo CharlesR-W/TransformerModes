@@ -1,0 +1,48 @@
+{
+ "burn_in": {
+  "value": 255,
+  "text": "255",
+  "source": "site/manifest.json candidate_pools.corpus: first analysed position - 1"
+ },
+ "first_position": {
+  "value": 256,
+  "text": "256",
+  "source": "site/manifest.json candidate_pools.corpus"
+ },
+ "texts": {
+  "value": 32,
+  "text": "32",
+  "source": "site/manifest.json texts (kind pool)"
+ },
+ "stitched": {
+  "value": 4,
+  "text": "4",
+  "source": "site/manifest.json texts (kind stitched)"
+ },
+ "pool_tokens": {
+  "value": 57344,
+  "text": "57,344",
+  "source": "site/manifest.json candidate_pools.corpus"
+ },
+ "text_tokens": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "site/manifest.json texts[].positions"
+ },
+ "models": {
+  "value": "Pythia-1b and OLMo-1B",
+  "text": "Pythia-1b and OLMo-1B",
+  "source": "site/manifest.json models, model_metadata"
+ },
+ "arch": {
+  "value": "16 blocks, width 2,048",
+  "text": "16 blocks, width 2,048",
+  "source": "SPEC.md section 2 (typed from the spec; the viewer data do not record architecture)",
+  "tier": "S"
+ },
+ "shown": {
+  "value": 8,
+  "text": "8",
+  "source": "site/manifest.json viewer_k"
+ }
+}

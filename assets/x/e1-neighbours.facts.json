@@ -1,0 +1,1937 @@
+{
+ "m1.layers": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/geometry/pythia/cosine_C.json inputs site*"
+ },
+ "m1.layermean.mem_none.near": {
+  "value": 0.12934327125549316,
+  "text": "13%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_none.own": {
+  "value": 0.6345410346984863,
+  "text": "63%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_2.near": {
+  "value": 0.15860513278416227,
+  "text": "16%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_2.own": {
+  "value": 0.6991722924368722,
+  "text": "70%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_8.near": {
+  "value": 0.2402874742235456,
+  "text": "24%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_8.own": {
+  "value": 0.8371448176247732,
+  "text": "84%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_64.near": {
+  "value": 0.46804847036089214,
+  "text": "47%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_64.own": {
+  "value": 0.973825182233538,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_whole.near": {
+  "value": 0.9221065385001045,
+  "text": "92%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m1.layermean.mem_whole.own": {
+  "value": 0.9902649266379219,
+  "text": "99%",
+  "source": "analysis/geometry/pythia/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layers": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/geometry/olmo/cosine_C.json inputs site*"
+ },
+ "m2.layermean.mem_none.near": {
+  "value": 0.1398135253361293,
+  "text": "14%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_none.own": {
+  "value": 0.6169207777295794,
+  "text": "62%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_2.near": {
+  "value": 0.18012465749468123,
+  "text": "18%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_2.own": {
+  "value": 0.7012295041765485,
+  "text": "70%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_8.near": {
+  "value": 0.280200685773577,
+  "text": "28%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_8.own": {
+  "value": 0.8519291877746582,
+  "text": "85%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_64.near": {
+  "value": 0.5242121560232981,
+  "text": "52%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_64.own": {
+  "value": 0.9780238015311105,
+  "text": "98%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_whole.near": {
+  "value": 0.9238012518201555,
+  "text": "92%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[2], mask none, mean over inputs site*"
+ },
+ "m2.layermean.mem_whole.own": {
+  "value": 0.9970742974962506,
+  "text": "100%",
+  "source": "analysis/geometry/olmo/cosine_C.json origin[1]+origin[2], mask none, mean over inputs site*"
+ },
+ "random.mem_none.near": {
+  "value": 0.013874053955078125,
+  "text": "1%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[2], mask none"
+ },
+ "random.mem_none.other": {
+  "value": 0.8739986419677734,
+  "text": "87%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[0], mask none"
+ },
+ "random.mem_none.own": {
+  "value": 0.12600135803222656,
+  "text": "13%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, 1 − origin[0], mask none"
+ },
+ "random.mem_2.near": {
+  "value": 0.02837671552385603,
+  "text": "3%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[2], mask none"
+ },
+ "random.mem_2.other": {
+  "value": 0.7548680986676898,
+  "text": "75%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[0], mask none"
+ },
+ "random.mem_2.own": {
+  "value": 0.24513190133231022,
+  "text": "25%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, 1 − origin[0], mask none"
+ },
+ "random.mem_8.near": {
+  "value": 0.04180690220424107,
+  "text": "4%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[2], mask none"
+ },
+ "random.mem_8.other": {
+  "value": 0.6623753138950893,
+  "text": "66%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[0], mask none"
+ },
+ "random.mem_8.own": {
+  "value": 0.3376246861049107,
+  "text": "34%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, 1 − origin[0], mask none"
+ },
+ "random.mem_64.near": {
+  "value": 0.08839225769042969,
+  "text": "9%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[2], mask none"
+ },
+ "random.mem_64.other": {
+  "value": 0.45716966901506695,
+  "text": "46%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[0], mask none"
+ },
+ "random.mem_64.own": {
+  "value": 0.542830330984933,
+  "text": "54%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, 1 − origin[0], mask none"
+ },
+ "random.mem_whole.near": {
+  "value": 0.341270991734096,
+  "text": "34%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[2], mask none"
+ },
+ "random.mem_whole.other": {
+  "value": 0.2262371608189174,
+  "text": "23%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, origin[0], mask none"
+ },
+ "random.mem_whole.own": {
+  "value": 0.7737628391810826,
+  "text": "77%",
+  "source": "analysis/geometry/pythia/cosine_C.json input random, 1 − origin[0], mask none"
+ },
+ "emb1.mem_none.near": {
+  "value": 0.021335056849888394,
+  "text": "2%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb1.mem_none.other": {
+  "value": 0.8095951080322266,
+  "text": "81%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb1.mem_2.near": {
+  "value": 0.03289249965122768,
+  "text": "3%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb1.mem_2.other": {
+  "value": 0.716505595615932,
+  "text": "72%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb1.mem_8.near": {
+  "value": 0.04569952828543527,
+  "text": "5%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb1.mem_8.other": {
+  "value": 0.6290413992745536,
+  "text": "63%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb1.mem_64.near": {
+  "value": 0.09419441223144531,
+  "text": "9%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb1.mem_64.other": {
+  "value": 0.4289327348981585,
+  "text": "43%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb1.mem_whole.near": {
+  "value": 0.41797774178641184,
+  "text": "42%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb1.mem_whole.other": {
+  "value": 0.18883514404296875,
+  "text": "19%",
+  "source": "analysis/geometry/pythia/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb2.mem_none.near": {
+  "value": 0.01645796639578683,
+  "text": "2%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb2.mem_none.other": {
+  "value": 0.8535821097237724,
+  "text": "85%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb2.mem_2.near": {
+  "value": 0.029125213623046875,
+  "text": "3%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb2.mem_2.other": {
+  "value": 0.7473455156598773,
+  "text": "75%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb2.mem_8.near": {
+  "value": 0.03576169695172991,
+  "text": "4%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb2.mem_8.other": {
+  "value": 0.6947710854666573,
+  "text": "69%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb2.mem_64.near": {
+  "value": 0.06281689235142299,
+  "text": "6%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb2.mem_64.other": {
+  "value": 0.5931124005998883,
+  "text": "59%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "emb2.mem_whole.near": {
+  "value": 0.23741613115583146,
+  "text": "24%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[2], mask none"
+ },
+ "emb2.mem_whole.other": {
+  "value": 0.5089876992361886,
+  "text": "51%",
+  "source": "analysis/geometry/olmo/cosine_C.json input embedding, origin[0], mask none"
+ },
+ "synthetic.groups": {
+  "value": "compared by angle, one average removed",
+  "text": "compared by angle, one average removed",
+  "source": "analysis/synthetic/_done.json groups"
+ },
+ "synthetic.runs": {
+  "value": 25,
+  "text": "25",
+  "source": "analysis/geometry/synthetic_*"
+ },
+ "m1.censored": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/pythia_timescales.json censored_count.C"
+ },
+ "m2.censored": {
+  "value": 0,
+  "text": "0",
+  "source": "analysis/olmo_timescales.json censored_count.C"
+ },
+ "m1.name": {
+  "value": "Pythia-1b",
+  "text": "Pythia-1b",
+  "source": "site/manifest.json model_metadata"
+ },
+ "m1.layer": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/geometry: the lead layer or the nearest computed"
+ },
+ "m1.c.mem_none.other": {
+  "value": 0.4145295279366629,
+  "text": "41%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] origin"
+ },
+ "m1.c.mem_none.own": {
+  "value": 0.585470472063337,
+  "text": "59%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] origin [1]+[2]"
+ },
+ "m1.c.mem_none.near": {
+  "value": 0.1300078800746373,
+  "text": "13%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] origin"
+ },
+ "m1.c.mem_none.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] chance_origin"
+ },
+ "m1.c.mem_none.gap": {
+  "value": 337.56866148049954,
+  "text": "338",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] position_gap"
+ },
+ "m1.c.mem_none.screen_other": {
+  "value": 0.6723073998068669,
+  "text": "67%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] screen_mass[0]"
+ },
+ "m1.c.mem_none.adv": {
+  "value": 0.22014317045716297,
+  "text": "22%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m1.c.mem_none.local": {
+  "value": 1.0,
+  "text": "100%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] overlap_expected[0]"
+ },
+ "m1.c.mem_none.other_p5": {
+  "value": 0.35933329718453544,
+  "text": "36%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] origin bootstrap p5"
+ },
+ "m1.c.mem_none.other_p95": {
+  "value": 0.46932687759399416,
+  "text": "47%",
+  "source": "analysis/geometry/pythia/cosine_C.json[75] origin bootstrap p95"
+ },
+ "m1.cw.mem_none.other": {
+  "value": 0.4806088038853237,
+  "text": "48%",
+  "source": "analysis/geometry/pythia/cosine_C.json[76] origin"
+ },
+ "m1.cw.mem_none.own": {
+  "value": 0.5193911961146763,
+  "text": "52%",
+  "source": "analysis/geometry/pythia/cosine_C.json[76] origin [1]+[2]"
+ },
+ "m1.cw.mem_none.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_C.json[76] origin"
+ },
+ "m1.cw.mem_none.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[76] chance_origin"
+ },
+ "m1.cw.mem_none.gap": {
+  "value": 503.66058983586413,
+  "text": "504",
+  "source": "analysis/geometry/pythia/cosine_C.json[76] position_gap"
+ },
+ "m1.cw.mem_none.screen_other": {
+  "value": 0.74219014546949,
+  "text": "74%",
+  "source": "analysis/geometry/pythia/cosine_C.json[76] screen_mass[0]"
+ },
+ "m1.cw.mem_none.removed": {
+  "value": 0.14182424153645595,
+  "text": "14%",
+  "source": "analysis/geometry/pythia/cosine_C.json[76] screen_removed"
+ },
+ "m1.o.mem_none.other": {
+  "value": 0.4826984405517578,
+  "text": "48%",
+  "source": "analysis/geometry/pythia/cosine_O.json[75] origin"
+ },
+ "m1.o.mem_none.own": {
+  "value": 0.5173015594482422,
+  "text": "52%",
+  "source": "analysis/geometry/pythia/cosine_O.json[75] origin [1]+[2]"
+ },
+ "m1.o.mem_none.near": {
+  "value": 0.11773599897112165,
+  "text": "12%",
+  "source": "analysis/geometry/pythia/cosine_O.json[75] origin"
+ },
+ "m1.o.mem_none.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[75] chance_origin"
+ },
+ "m1.o.mem_none.gap": {
+  "value": 328.64168977726615,
+  "text": "329",
+  "source": "analysis/geometry/pythia/cosine_O.json[75] position_gap"
+ },
+ "m1.o.mem_none.screen_other": {
+  "value": 0.7221803562170342,
+  "text": "72%",
+  "source": "analysis/geometry/pythia/cosine_O.json[75] screen_mass[0]"
+ },
+ "m1.ow.mem_none.other": {
+  "value": 0.5567152840750558,
+  "text": "56%",
+  "source": "analysis/geometry/pythia/cosine_O.json[76] origin"
+ },
+ "m1.ow.mem_none.own": {
+  "value": 0.4432847159249442,
+  "text": "44%",
+  "source": "analysis/geometry/pythia/cosine_O.json[76] origin [1]+[2]"
+ },
+ "m1.ow.mem_none.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_O.json[76] origin"
+ },
+ "m1.ow.mem_none.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[76] chance_origin"
+ },
+ "m1.ow.mem_none.gap": {
+  "value": 500.18372468498825,
+  "text": "500",
+  "source": "analysis/geometry/pythia/cosine_O.json[76] position_gap"
+ },
+ "m1.ow.mem_none.screen_other": {
+  "value": 0.7906146912012691,
+  "text": "79%",
+  "source": "analysis/geometry/pythia/cosine_O.json[76] screen_mass[0]"
+ },
+ "m1.ow.mem_none.removed": {
+  "value": 0.12544697937827537,
+  "text": "13%",
+  "source": "analysis/geometry/pythia/cosine_O.json[76] screen_removed"
+ },
+ "m1.stitch.mem_none": {
+  "value": 0.18596352744730868,
+  "text": "19%",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m1.stitch_pp.mem_none": {
+  "value": 18.59635274473087,
+  "text": "18.6",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m1.c.mem_2.other": {
+  "value": 0.3416535513741629,
+  "text": "34%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] origin"
+ },
+ "m1.c.mem_2.own": {
+  "value": 0.658346448625837,
+  "text": "66%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] origin [1]+[2]"
+ },
+ "m1.c.mem_2.near": {
+  "value": 0.16494287763323104,
+  "text": "16%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] origin"
+ },
+ "m1.c.mem_2.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] chance_origin"
+ },
+ "m1.c.mem_2.gap": {
+  "value": 314.39369419642856,
+  "text": "314",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] position_gap"
+ },
+ "m1.c.mem_2.screen_other": {
+  "value": 0.6592549197916049,
+  "text": "66%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] screen_mass[0]"
+ },
+ "m1.c.mem_2.adv": {
+  "value": 0.29533874420892625,
+  "text": "30%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m1.c.mem_2.local": {
+  "value": 0.6521396636962891,
+  "text": "65%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] overlap_expected[0]"
+ },
+ "m1.c.mem_2.other_p5": {
+  "value": 0.28961808340890066,
+  "text": "29%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] origin bootstrap p5"
+ },
+ "m1.c.mem_2.other_p95": {
+  "value": 0.394015325818743,
+  "text": "39%",
+  "source": "analysis/geometry/pythia/cosine_C.json[78] origin bootstrap p95"
+ },
+ "m1.cw.mem_2.other": {
+  "value": 0.4192573002406529,
+  "text": "42%",
+  "source": "analysis/geometry/pythia/cosine_C.json[79] origin"
+ },
+ "m1.cw.mem_2.own": {
+  "value": 0.5807426997593471,
+  "text": "58%",
+  "source": "analysis/geometry/pythia/cosine_C.json[79] origin [1]+[2]"
+ },
+ "m1.cw.mem_2.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_C.json[79] origin"
+ },
+ "m1.cw.mem_2.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[79] chance_origin"
+ },
+ "m1.cw.mem_2.gap": {
+  "value": 489.73126565209014,
+  "text": "490",
+  "source": "analysis/geometry/pythia/cosine_C.json[79] position_gap"
+ },
+ "m1.cw.mem_2.screen_other": {
+  "value": 0.7300562028044884,
+  "text": "73%",
+  "source": "analysis/geometry/pythia/cosine_C.json[79] screen_mass[0]"
+ },
+ "m1.cw.mem_2.removed": {
+  "value": 0.15955550974844193,
+  "text": "16%",
+  "source": "analysis/geometry/pythia/cosine_C.json[79] screen_removed"
+ },
+ "m1.o.mem_2.other": {
+  "value": 0.4253591809953962,
+  "text": "43%",
+  "source": "analysis/geometry/pythia/cosine_O.json[78] origin"
+ },
+ "m1.o.mem_2.own": {
+  "value": 0.5746408190046038,
+  "text": "57%",
+  "source": "analysis/geometry/pythia/cosine_O.json[78] origin [1]+[2]"
+ },
+ "m1.o.mem_2.near": {
+  "value": 0.14866420200892858,
+  "text": "15%",
+  "source": "analysis/geometry/pythia/cosine_O.json[78] origin"
+ },
+ "m1.o.mem_2.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[78] chance_origin"
+ },
+ "m1.o.mem_2.gap": {
+  "value": 302.2736515354969,
+  "text": "302",
+  "source": "analysis/geometry/pythia/cosine_O.json[78] position_gap"
+ },
+ "m1.o.mem_2.screen_other": {
+  "value": 0.7234338077165475,
+  "text": "72%",
+  "source": "analysis/geometry/pythia/cosine_O.json[78] screen_mass[0]"
+ },
+ "m1.ow.mem_2.other": {
+  "value": 0.5158296312604632,
+  "text": "52%",
+  "source": "analysis/geometry/pythia/cosine_O.json[79] origin"
+ },
+ "m1.ow.mem_2.own": {
+  "value": 0.48417036873953684,
+  "text": "48%",
+  "source": "analysis/geometry/pythia/cosine_O.json[79] origin [1]+[2]"
+ },
+ "m1.ow.mem_2.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_O.json[79] origin"
+ },
+ "m1.ow.mem_2.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[79] chance_origin"
+ },
+ "m1.ow.mem_2.gap": {
+  "value": 486.53158217318975,
+  "text": "487",
+  "source": "analysis/geometry/pythia/cosine_O.json[79] position_gap"
+ },
+ "m1.ow.mem_2.screen_other": {
+  "value": 0.7951675539972034,
+  "text": "80%",
+  "source": "analysis/geometry/pythia/cosine_O.json[79] screen_mass[0]"
+ },
+ "m1.ow.mem_2.removed": {
+  "value": 0.1375234704077507,
+  "text": "14%",
+  "source": "analysis/geometry/pythia/cosine_O.json[79] screen_removed"
+ },
+ "m1.stitch.mem_2": {
+  "value": 0.19182947481018414,
+  "text": "19%",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m1.stitch_pp.mem_2": {
+  "value": 19.182947481018413,
+  "text": "19.2",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m1.c.mem_8.other": {
+  "value": 0.1810507093157087,
+  "text": "18%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] origin"
+ },
+ "m1.c.mem_8.own": {
+  "value": 0.8189492906842912,
+  "text": "82%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] origin [1]+[2]"
+ },
+ "m1.c.mem_8.near": {
+  "value": 0.2597051348005022,
+  "text": "26%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] origin"
+ },
+ "m1.c.mem_8.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] chance_origin"
+ },
+ "m1.c.mem_8.gap": {
+  "value": 263.70668247767856,
+  "text": "264",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] position_gap"
+ },
+ "m1.c.mem_8.screen_other": {
+  "value": 0.6307669453167966,
+  "text": "63%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] screen_mass[0]"
+ },
+ "m1.c.mem_8.adv": {
+  "value": 0.2947198322841099,
+  "text": "29%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m1.c.mem_8.local": {
+  "value": 0.31989806038992746,
+  "text": "32%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] overlap_expected[0]"
+ },
+ "m1.c.mem_8.other_p5": {
+  "value": 0.14315263203212192,
+  "text": "14%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] origin bootstrap p5"
+ },
+ "m1.c.mem_8.other_p95": {
+  "value": 0.22034341267177035,
+  "text": "22%",
+  "source": "analysis/geometry/pythia/cosine_C.json[81] origin bootstrap p95"
+ },
+ "m1.cw.mem_8.other": {
+  "value": 0.2698244367327009,
+  "text": "27%",
+  "source": "analysis/geometry/pythia/cosine_C.json[82] origin"
+ },
+ "m1.cw.mem_8.own": {
+  "value": 0.7301755632672992,
+  "text": "73%",
+  "source": "analysis/geometry/pythia/cosine_C.json[82] origin [1]+[2]"
+ },
+ "m1.cw.mem_8.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_C.json[82] origin"
+ },
+ "m1.cw.mem_8.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[82] chance_origin"
+ },
+ "m1.cw.mem_8.gap": {
+  "value": 459.8194650947192,
+  "text": "460",
+  "source": "analysis/geometry/pythia/cosine_C.json[82] position_gap"
+ },
+ "m1.cw.mem_8.screen_other": {
+  "value": 0.6595235820467062,
+  "text": "66%",
+  "source": "analysis/geometry/pythia/cosine_C.json[82] screen_mass[0]"
+ },
+ "m1.cw.mem_8.removed": {
+  "value": 0.20645269406023986,
+  "text": "21%",
+  "source": "analysis/geometry/pythia/cosine_C.json[82] screen_removed"
+ },
+ "m1.o.mem_8.other": {
+  "value": 0.29896463666643414,
+  "text": "30%",
+  "source": "analysis/geometry/pythia/cosine_O.json[81] origin"
+ },
+ "m1.o.mem_8.own": {
+  "value": 0.7010353633335659,
+  "text": "70%",
+  "source": "analysis/geometry/pythia/cosine_O.json[81] origin [1]+[2]"
+ },
+ "m1.o.mem_8.near": {
+  "value": 0.2333845411028181,
+  "text": "23%",
+  "source": "analysis/geometry/pythia/cosine_O.json[81] origin"
+ },
+ "m1.o.mem_8.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[81] chance_origin"
+ },
+ "m1.o.mem_8.gap": {
+  "value": 243.11153738839286,
+  "text": "243",
+  "source": "analysis/geometry/pythia/cosine_O.json[81] position_gap"
+ },
+ "m1.o.mem_8.screen_other": {
+  "value": 0.7199628654941457,
+  "text": "72%",
+  "source": "analysis/geometry/pythia/cosine_O.json[81] screen_mass[0]"
+ },
+ "m1.ow.mem_8.other": {
+  "value": 0.424785886492048,
+  "text": "42%",
+  "source": "analysis/geometry/pythia/cosine_O.json[82] origin"
+ },
+ "m1.ow.mem_8.own": {
+  "value": 0.575214113507952,
+  "text": "58%",
+  "source": "analysis/geometry/pythia/cosine_O.json[82] origin [1]+[2]"
+ },
+ "m1.ow.mem_8.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_O.json[82] origin"
+ },
+ "m1.ow.mem_8.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[82] chance_origin"
+ },
+ "m1.ow.mem_8.gap": {
+  "value": 453.7336896618087,
+  "text": "454",
+  "source": "analysis/geometry/pythia/cosine_O.json[82] position_gap"
+ },
+ "m1.ow.mem_8.screen_other": {
+  "value": 0.7808806380461455,
+  "text": "78%",
+  "source": "analysis/geometry/pythia/cosine_O.json[82] screen_mass[0]"
+ },
+ "m1.ow.mem_8.removed": {
+  "value": 0.17565358868153527,
+  "text": "18%",
+  "source": "analysis/geometry/pythia/cosine_O.json[82] screen_removed"
+ },
+ "m1.stitch.mem_8": {
+  "value": 0.16740747346091206,
+  "text": "17%",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m1.stitch_pp.mem_8": {
+  "value": 16.740747346091204,
+  "text": "16.7",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m1.c.mem_64.other": {
+  "value": 0.024025235857282366,
+  "text": "2%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] origin"
+ },
+ "m1.c.mem_64.own": {
+  "value": 0.9759747641427177,
+  "text": "98%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] origin [1]+[2]"
+ },
+ "m1.c.mem_64.near": {
+  "value": 0.5081274850027901,
+  "text": "51%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] origin"
+ },
+ "m1.c.mem_64.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] chance_origin"
+ },
+ "m1.c.mem_64.gap": {
+  "value": 139.41160365513392,
+  "text": "139",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] position_gap"
+ },
+ "m1.c.mem_64.screen_other": {
+  "value": 0.6068049099582757,
+  "text": "61%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] screen_mass[0]"
+ },
+ "m1.c.mem_64.adv": {
+  "value": 0.29316929408482145,
+  "text": "29%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m1.c.mem_64.local": {
+  "value": 0.15212631225585938,
+  "text": "15%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] overlap_expected[0]"
+ },
+ "m1.c.mem_64.other_p5": {
+  "value": 0.01363288334437779,
+  "text": "1%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] origin bootstrap p5"
+ },
+ "m1.c.mem_64.other_p95": {
+  "value": 0.034634971618652324,
+  "text": "3%",
+  "source": "analysis/geometry/pythia/cosine_C.json[84] origin bootstrap p95"
+ },
+ "m1.cw.mem_64.other": {
+  "value": 0.07550539289202009,
+  "text": "8%",
+  "source": "analysis/geometry/pythia/cosine_C.json[85] origin"
+ },
+ "m1.cw.mem_64.own": {
+  "value": 0.9244946071079799,
+  "text": "92%",
+  "source": "analysis/geometry/pythia/cosine_C.json[85] origin [1]+[2]"
+ },
+ "m1.cw.mem_64.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_C.json[85] origin"
+ },
+ "m1.cw.mem_64.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[85] chance_origin"
+ },
+ "m1.cw.mem_64.gap": {
+  "value": 383.3998185022949,
+  "text": "383",
+  "source": "analysis/geometry/pythia/cosine_C.json[85] position_gap"
+ },
+ "m1.cw.mem_64.screen_other": {
+  "value": 0.4072363891294301,
+  "text": "41%",
+  "source": "analysis/geometry/pythia/cosine_C.json[85] screen_mass[0]"
+ },
+ "m1.cw.mem_64.removed": {
+  "value": 0.2500064959327815,
+  "text": "25%",
+  "source": "analysis/geometry/pythia/cosine_C.json[85] screen_removed"
+ },
+ "m1.o.mem_64.other": {
+  "value": 0.11928013392857142,
+  "text": "12%",
+  "source": "analysis/geometry/pythia/cosine_O.json[84] origin"
+ },
+ "m1.o.mem_64.own": {
+  "value": 0.8807198660714286,
+  "text": "88%",
+  "source": "analysis/geometry/pythia/cosine_O.json[84] origin [1]+[2]"
+ },
+ "m1.o.mem_64.near": {
+  "value": 0.480187007359096,
+  "text": "48%",
+  "source": "analysis/geometry/pythia/cosine_O.json[84] origin"
+ },
+ "m1.o.mem_64.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[84] chance_origin"
+ },
+ "m1.o.mem_64.gap": {
+  "value": 126.32952008928571,
+  "text": "126",
+  "source": "analysis/geometry/pythia/cosine_O.json[84] position_gap"
+ },
+ "m1.o.mem_64.screen_other": {
+  "value": 0.7285204334508455,
+  "text": "73%",
+  "source": "analysis/geometry/pythia/cosine_O.json[84] screen_mass[0]"
+ },
+ "m1.ow.mem_64.other": {
+  "value": 0.32021522521972656,
+  "text": "32%",
+  "source": "analysis/geometry/pythia/cosine_O.json[85] origin"
+ },
+ "m1.ow.mem_64.own": {
+  "value": 0.6797847747802734,
+  "text": "68%",
+  "source": "analysis/geometry/pythia/cosine_O.json[85] origin [1]+[2]"
+ },
+ "m1.ow.mem_64.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_O.json[85] origin"
+ },
+ "m1.ow.mem_64.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[85] chance_origin"
+ },
+ "m1.ow.mem_64.gap": {
+  "value": 368.71233176018177,
+  "text": "369",
+  "source": "analysis/geometry/pythia/cosine_O.json[85] position_gap"
+ },
+ "m1.ow.mem_64.screen_other": {
+  "value": 0.7202190996760183,
+  "text": "72%",
+  "source": "analysis/geometry/pythia/cosine_O.json[85] screen_mass[0]"
+ },
+ "m1.ow.mem_64.removed": {
+  "value": 0.20798834185253792,
+  "text": "21%",
+  "source": "analysis/geometry/pythia/cosine_O.json[85] screen_removed"
+ },
+ "m1.stitch.mem_64": {
+  "value": 0.04839122082725537,
+  "text": "5%",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m1.stitch_pp.mem_64": {
+  "value": 4.839122082725536,
+  "text": "4.8",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m1.c.mem_whole.other": {
+  "value": 0.003651210239955357,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] origin"
+ },
+ "m1.c.mem_whole.own": {
+  "value": 0.9963487897600446,
+  "text": "100%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] origin [1]+[2]"
+ },
+ "m1.c.mem_whole.near": {
+  "value": 0.9279501778738839,
+  "text": "93%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] origin"
+ },
+ "m1.c.mem_whole.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] chance_origin"
+ },
+ "m1.c.mem_whole.gap": {
+  "value": 21.294564383370535,
+  "text": "21",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] position_gap"
+ },
+ "m1.c.mem_whole.screen_other": {
+  "value": 0.617701905506948,
+  "text": "62%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] screen_mass[0]"
+ },
+ "m1.c.mem_whole.adv": {
+  "value": 0.3727760314941406,
+  "text": "37%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m1.c.mem_whole.local": {
+  "value": 0.09819602966308594,
+  "text": "10%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] overlap_expected[0]"
+ },
+ "m1.c.mem_whole.other_p5": {
+  "value": 0.0012044089181082588,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] origin bootstrap p5"
+ },
+ "m1.c.mem_whole.other_p95": {
+  "value": 0.006738921574183872,
+  "text": "1%",
+  "source": "analysis/geometry/pythia/cosine_C.json[87] origin bootstrap p95"
+ },
+ "m1.cw.mem_whole.other": {
+  "value": 0.0648702893938337,
+  "text": "6%",
+  "source": "analysis/geometry/pythia/cosine_C.json[88] origin"
+ },
+ "m1.cw.mem_whole.own": {
+  "value": 0.9351297106061663,
+  "text": "94%",
+  "source": "analysis/geometry/pythia/cosine_C.json[88] origin [1]+[2]"
+ },
+ "m1.cw.mem_whole.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_C.json[88] origin"
+ },
+ "m1.cw.mem_whole.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_C.json[88] chance_origin"
+ },
+ "m1.cw.mem_whole.gap": {
+  "value": 103.0477368791828,
+  "text": "103",
+  "source": "analysis/geometry/pythia/cosine_C.json[88] position_gap"
+ },
+ "m1.cw.mem_whole.screen_other": {
+  "value": 0.05953443488984816,
+  "text": "6%",
+  "source": "analysis/geometry/pythia/cosine_C.json[88] screen_mass[0]"
+ },
+ "m1.cw.mem_whole.removed": {
+  "value": 0.27840041780429303,
+  "text": "28%",
+  "source": "analysis/geometry/pythia/cosine_C.json[88] screen_removed"
+ },
+ "m1.o.mem_whole.other": {
+  "value": 0.011365618024553572,
+  "text": "1%",
+  "source": "analysis/geometry/pythia/cosine_O.json[87] origin"
+ },
+ "m1.o.mem_whole.own": {
+  "value": 0.9886343819754465,
+  "text": "99%",
+  "source": "analysis/geometry/pythia/cosine_O.json[87] origin [1]+[2]"
+ },
+ "m1.o.mem_whole.near": {
+  "value": 0.8861261095319476,
+  "text": "89%",
+  "source": "analysis/geometry/pythia/cosine_O.json[87] origin"
+ },
+ "m1.o.mem_whole.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[87] chance_origin"
+ },
+ "m1.o.mem_whole.gap": {
+  "value": 41.32196044921875,
+  "text": "41",
+  "source": "analysis/geometry/pythia/cosine_O.json[87] position_gap"
+ },
+ "m1.o.mem_whole.screen_other": {
+  "value": 0.751222739202793,
+  "text": "75%",
+  "source": "analysis/geometry/pythia/cosine_O.json[87] screen_mass[0]"
+ },
+ "m1.ow.mem_whole.other": {
+  "value": 0.28325326102120535,
+  "text": "28%",
+  "source": "analysis/geometry/pythia/cosine_O.json[88] origin"
+ },
+ "m1.ow.mem_whole.own": {
+  "value": 0.7167467389787946,
+  "text": "72%",
+  "source": "analysis/geometry/pythia/cosine_O.json[88] origin [1]+[2]"
+ },
+ "m1.ow.mem_whole.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/pythia/cosine_O.json[88] origin"
+ },
+ "m1.ow.mem_whole.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/pythia/cosine_O.json[88] chance_origin"
+ },
+ "m1.ow.mem_whole.gap": {
+  "value": 153.14614263108297,
+  "text": "153",
+  "source": "analysis/geometry/pythia/cosine_O.json[88] position_gap"
+ },
+ "m1.ow.mem_whole.screen_other": {
+  "value": 0.5047319733280569,
+  "text": "50%",
+  "source": "analysis/geometry/pythia/cosine_O.json[88] screen_mass[0]"
+ },
+ "m1.ow.mem_whole.removed": {
+  "value": 0.22418423526269077,
+  "text": "22%",
+  "source": "analysis/geometry/pythia/cosine_O.json[88] screen_removed"
+ },
+ "m1.stitch.mem_whole": {
+  "value": -0.0010582848283801289,
+  "text": "0%",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m1.stitch_pp.mem_whole": {
+  "value": -0.10582848283801288,
+  "text": "-0.1",
+  "source": "analysis/geometry/pythia_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m2.name": {
+  "value": "OLMo-1B",
+  "text": "OLMo-1B",
+  "source": "site/manifest.json model_metadata"
+ },
+ "m2.layer": {
+  "value": 8,
+  "text": "8",
+  "source": "analysis/geometry: the lead layer or the nearest computed"
+ },
+ "m2.c.mem_none.other": {
+  "value": 0.37741524832589285,
+  "text": "38%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] origin"
+ },
+ "m2.c.mem_none.own": {
+  "value": 0.6225847516741071,
+  "text": "62%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] origin [1]+[2]"
+ },
+ "m2.c.mem_none.near": {
+  "value": 0.15786198207310267,
+  "text": "16%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] origin"
+ },
+ "m2.c.mem_none.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] chance_origin"
+ },
+ "m2.c.mem_none.gap": {
+  "value": 307.4731898341154,
+  "text": "307",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] position_gap"
+ },
+ "m2.c.mem_none.screen_other": {
+  "value": 0.6735939121637551,
+  "text": "67%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] screen_mass[0]"
+ },
+ "m2.c.mem_none.adv": {
+  "value": 0.15031324995388415,
+  "text": "15%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m2.c.mem_none.local": {
+  "value": 1.0,
+  "text": "100%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] overlap_expected[0]"
+ },
+ "m2.c.mem_none.other_p5": {
+  "value": 0.32736907686506,
+  "text": "33%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] origin bootstrap p5"
+ },
+ "m2.c.mem_none.other_p95": {
+  "value": 0.42651496614728657,
+  "text": "43%",
+  "source": "analysis/geometry/olmo/cosine_C.json[75] origin bootstrap p95"
+ },
+ "m2.cw.mem_none.other": {
+  "value": 0.45999363490513395,
+  "text": "46%",
+  "source": "analysis/geometry/olmo/cosine_C.json[76] origin"
+ },
+ "m2.cw.mem_none.own": {
+  "value": 0.5400063650948661,
+  "text": "54%",
+  "source": "analysis/geometry/olmo/cosine_C.json[76] origin [1]+[2]"
+ },
+ "m2.cw.mem_none.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_C.json[76] origin"
+ },
+ "m2.cw.mem_none.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[76] chance_origin"
+ },
+ "m2.cw.mem_none.gap": {
+  "value": 493.3358957277843,
+  "text": "493",
+  "source": "analysis/geometry/olmo/cosine_C.json[76] position_gap"
+ },
+ "m2.cw.mem_none.screen_other": {
+  "value": 0.7453033115254312,
+  "text": "75%",
+  "source": "analysis/geometry/olmo/cosine_C.json[76] screen_mass[0]"
+ },
+ "m2.cw.mem_none.removed": {
+  "value": 0.15815710891946286,
+  "text": "16%",
+  "source": "analysis/geometry/olmo/cosine_C.json[76] screen_removed"
+ },
+ "m2.o.mem_none.other": {
+  "value": 0.45015198843819754,
+  "text": "45%",
+  "source": "analysis/geometry/olmo/cosine_O.json[75] origin"
+ },
+ "m2.o.mem_none.own": {
+  "value": 0.5498480115618025,
+  "text": "55%",
+  "source": "analysis/geometry/olmo/cosine_O.json[75] origin [1]+[2]"
+ },
+ "m2.o.mem_none.near": {
+  "value": 0.14327621459960938,
+  "text": "14%",
+  "source": "analysis/geometry/olmo/cosine_O.json[75] origin"
+ },
+ "m2.o.mem_none.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[75] chance_origin"
+ },
+ "m2.o.mem_none.gap": {
+  "value": 296.9586669457673,
+  "text": "297",
+  "source": "analysis/geometry/olmo/cosine_O.json[75] position_gap"
+ },
+ "m2.o.mem_none.screen_other": {
+  "value": 0.7181621822773084,
+  "text": "72%",
+  "source": "analysis/geometry/olmo/cosine_O.json[75] screen_mass[0]"
+ },
+ "m2.ow.mem_none.other": {
+  "value": 0.5415600367954799,
+  "text": "54%",
+  "source": "analysis/geometry/olmo/cosine_O.json[76] origin"
+ },
+ "m2.ow.mem_none.own": {
+  "value": 0.4584399632045201,
+  "text": "46%",
+  "source": "analysis/geometry/olmo/cosine_O.json[76] origin [1]+[2]"
+ },
+ "m2.ow.mem_none.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_O.json[76] origin"
+ },
+ "m2.ow.mem_none.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[76] chance_origin"
+ },
+ "m2.ow.mem_none.gap": {
+  "value": 491.57882088792996,
+  "text": "492",
+  "source": "analysis/geometry/olmo/cosine_O.json[76] position_gap"
+ },
+ "m2.ow.mem_none.screen_other": {
+  "value": 0.7923401256390574,
+  "text": "79%",
+  "source": "analysis/geometry/olmo/cosine_O.json[76] screen_mass[0]"
+ },
+ "m2.ow.mem_none.removed": {
+  "value": 0.14286915031830064,
+  "text": "14%",
+  "source": "analysis/geometry/olmo/cosine_O.json[76] screen_removed"
+ },
+ "m2.stitch.mem_none": {
+  "value": 0.21319107059705772,
+  "text": "21%",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m2.stitch_pp.mem_none": {
+  "value": 21.31910705970577,
+  "text": "21.3",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m2.c.mem_2.other": {
+  "value": 0.2867047446114676,
+  "text": "29%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] origin"
+ },
+ "m2.c.mem_2.own": {
+  "value": 0.7132952553885323,
+  "text": "71%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] origin [1]+[2]"
+ },
+ "m2.c.mem_2.near": {
+  "value": 0.20386178152901785,
+  "text": "20%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] origin"
+ },
+ "m2.c.mem_2.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] chance_origin"
+ },
+ "m2.c.mem_2.gap": {
+  "value": 283.08265904017856,
+  "text": "283",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] position_gap"
+ },
+ "m2.c.mem_2.screen_other": {
+  "value": 0.6659352331181277,
+  "text": "67%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] screen_mass[0]"
+ },
+ "m2.c.mem_2.adv": {
+  "value": 0.2287659418015253,
+  "text": "23%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m2.c.mem_2.local": {
+  "value": 0.6653368813650948,
+  "text": "67%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] overlap_expected[0]"
+ },
+ "m2.c.mem_2.other_p5": {
+  "value": 0.24410559790475028,
+  "text": "24%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] origin bootstrap p5"
+ },
+ "m2.c.mem_2.other_p95": {
+  "value": 0.32908645357404437,
+  "text": "33%",
+  "source": "analysis/geometry/olmo/cosine_C.json[78] origin bootstrap p95"
+ },
+ "m2.cw.mem_2.other": {
+  "value": 0.3800863538469587,
+  "text": "38%",
+  "source": "analysis/geometry/olmo/cosine_C.json[79] origin"
+ },
+ "m2.cw.mem_2.own": {
+  "value": 0.6199136461530413,
+  "text": "62%",
+  "source": "analysis/geometry/olmo/cosine_C.json[79] origin [1]+[2]"
+ },
+ "m2.cw.mem_2.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_C.json[79] origin"
+ },
+ "m2.cw.mem_2.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[79] chance_origin"
+ },
+ "m2.cw.mem_2.gap": {
+  "value": 478.2626244945826,
+  "text": "478",
+  "source": "analysis/geometry/olmo/cosine_C.json[79] position_gap"
+ },
+ "m2.cw.mem_2.screen_other": {
+  "value": 0.7285312746820376,
+  "text": "73%",
+  "source": "analysis/geometry/olmo/cosine_C.json[79] screen_mass[0]"
+ },
+ "m2.cw.mem_2.removed": {
+  "value": 0.17213813088370308,
+  "text": "17%",
+  "source": "analysis/geometry/olmo/cosine_C.json[79] screen_removed"
+ },
+ "m2.o.mem_2.other": {
+  "value": 0.3797405787876674,
+  "text": "38%",
+  "source": "analysis/geometry/olmo/cosine_O.json[78] origin"
+ },
+ "m2.o.mem_2.own": {
+  "value": 0.6202594212123326,
+  "text": "62%",
+  "source": "analysis/geometry/olmo/cosine_O.json[78] origin [1]+[2]"
+ },
+ "m2.o.mem_2.near": {
+  "value": 0.18343380519321986,
+  "text": "18%",
+  "source": "analysis/geometry/olmo/cosine_O.json[78] origin"
+ },
+ "m2.o.mem_2.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[78] chance_origin"
+ },
+ "m2.o.mem_2.gap": {
+  "value": 269.9029279436384,
+  "text": "270",
+  "source": "analysis/geometry/olmo/cosine_O.json[78] position_gap"
+ },
+ "m2.o.mem_2.screen_other": {
+  "value": 0.72115723044629,
+  "text": "72%",
+  "source": "analysis/geometry/olmo/cosine_O.json[78] screen_mass[0]"
+ },
+ "m2.ow.mem_2.other": {
+  "value": 0.4920733315604074,
+  "text": "49%",
+  "source": "analysis/geometry/olmo/cosine_O.json[79] origin"
+ },
+ "m2.ow.mem_2.own": {
+  "value": 0.5079266684395927,
+  "text": "51%",
+  "source": "analysis/geometry/olmo/cosine_O.json[79] origin [1]+[2]"
+ },
+ "m2.ow.mem_2.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_O.json[79] origin"
+ },
+ "m2.ow.mem_2.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[79] chance_origin"
+ },
+ "m2.ow.mem_2.gap": {
+  "value": 476.07960394999475,
+  "text": "476",
+  "source": "analysis/geometry/olmo/cosine_O.json[79] position_gap"
+ },
+ "m2.ow.mem_2.screen_other": {
+  "value": 0.793260273687368,
+  "text": "79%",
+  "source": "analysis/geometry/olmo/cosine_O.json[79] screen_mass[0]"
+ },
+ "m2.ow.mem_2.removed": {
+  "value": 0.15247269356440865,
+  "text": "15%",
+  "source": "analysis/geometry/olmo/cosine_O.json[79] screen_removed"
+ },
+ "m2.stitch.mem_2": {
+  "value": 0.21847457517737515,
+  "text": "22%",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m2.stitch_pp.mem_2": {
+  "value": 21.847457517737514,
+  "text": "21.8",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m2.c.mem_8.other": {
+  "value": 0.12349264962332589,
+  "text": "12%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] origin"
+ },
+ "m2.c.mem_8.own": {
+  "value": 0.876507350376674,
+  "text": "88%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] origin [1]+[2]"
+ },
+ "m2.c.mem_8.near": {
+  "value": 0.3154196058000837,
+  "text": "32%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] origin"
+ },
+ "m2.c.mem_8.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] chance_origin"
+ },
+ "m2.c.mem_8.gap": {
+  "value": 228.34916469029017,
+  "text": "228",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] position_gap"
+ },
+ "m2.c.mem_8.screen_other": {
+  "value": 0.655769011291547,
+  "text": "66%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] screen_mass[0]"
+ },
+ "m2.c.mem_8.adv": {
+  "value": 0.23047447204589844,
+  "text": "23%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m2.c.mem_8.local": {
+  "value": 0.33703041076660156,
+  "text": "34%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] overlap_expected[0]"
+ },
+ "m2.c.mem_8.other_p5": {
+  "value": 0.0973165512084961,
+  "text": "10%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] origin bootstrap p5"
+ },
+ "m2.c.mem_8.other_p95": {
+  "value": 0.1452430725097656,
+  "text": "15%",
+  "source": "analysis/geometry/olmo/cosine_C.json[81] origin bootstrap p95"
+ },
+ "m2.cw.mem_8.other": {
+  "value": 0.21405764988490514,
+  "text": "21%",
+  "source": "analysis/geometry/olmo/cosine_C.json[82] origin"
+ },
+ "m2.cw.mem_8.own": {
+  "value": 0.7859423501150948,
+  "text": "79%",
+  "source": "analysis/geometry/olmo/cosine_C.json[82] origin [1]+[2]"
+ },
+ "m2.cw.mem_8.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_C.json[82] origin"
+ },
+ "m2.cw.mem_8.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[82] chance_origin"
+ },
+ "m2.cw.mem_8.gap": {
+  "value": 443.99657450452656,
+  "text": "444",
+  "source": "analysis/geometry/olmo/cosine_C.json[82] position_gap"
+ },
+ "m2.cw.mem_8.screen_other": {
+  "value": 0.6537046333440677,
+  "text": "65%",
+  "source": "analysis/geometry/olmo/cosine_C.json[82] screen_mass[0]"
+ },
+ "m2.cw.mem_8.removed": {
+  "value": 0.2055237550285457,
+  "text": "21%",
+  "source": "analysis/geometry/olmo/cosine_C.json[82] screen_removed"
+ },
+ "m2.o.mem_8.other": {
+  "value": 0.23540142604282924,
+  "text": "24%",
+  "source": "analysis/geometry/olmo/cosine_O.json[81] origin"
+ },
+ "m2.o.mem_8.own": {
+  "value": 0.7645985739571708,
+  "text": "76%",
+  "source": "analysis/geometry/olmo/cosine_O.json[81] origin [1]+[2]"
+ },
+ "m2.o.mem_8.near": {
+  "value": 0.2867497035435268,
+  "text": "29%",
+  "source": "analysis/geometry/olmo/cosine_O.json[81] origin"
+ },
+ "m2.o.mem_8.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[81] chance_origin"
+ },
+ "m2.o.mem_8.gap": {
+  "value": 213.12353515625,
+  "text": "213",
+  "source": "analysis/geometry/olmo/cosine_O.json[81] position_gap"
+ },
+ "m2.o.mem_8.screen_other": {
+  "value": 0.7267276665473013,
+  "text": "73%",
+  "source": "analysis/geometry/olmo/cosine_O.json[81] screen_mass[0]"
+ },
+ "m2.ow.mem_8.other": {
+  "value": 0.387061527797154,
+  "text": "39%",
+  "source": "analysis/geometry/olmo/cosine_O.json[82] origin"
+ },
+ "m2.ow.mem_8.own": {
+  "value": 0.612938472202846,
+  "text": "61%",
+  "source": "analysis/geometry/olmo/cosine_O.json[82] origin [1]+[2]"
+ },
+ "m2.ow.mem_8.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_O.json[82] origin"
+ },
+ "m2.ow.mem_8.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[82] chance_origin"
+ },
+ "m2.ow.mem_8.gap": {
+  "value": 439.9649247074873,
+  "text": "440",
+  "source": "analysis/geometry/olmo/cosine_O.json[82] position_gap"
+ },
+ "m2.ow.mem_8.screen_other": {
+  "value": 0.7754240204727973,
+  "text": "78%",
+  "source": "analysis/geometry/olmo/cosine_O.json[82] screen_mass[0]"
+ },
+ "m2.ow.mem_8.removed": {
+  "value": 0.18003677407607432,
+  "text": "18%",
+  "source": "analysis/geometry/olmo/cosine_O.json[82] screen_removed"
+ },
+ "m2.stitch.mem_8": {
+  "value": 0.17751006184902032,
+  "text": "18%",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m2.stitch_pp.mem_8": {
+  "value": 17.75100618490203,
+  "text": "17.8",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m2.c.mem_64.other": {
+  "value": 0.01134354727608817,
+  "text": "1%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] origin"
+ },
+ "m2.c.mem_64.own": {
+  "value": 0.9886564527239119,
+  "text": "99%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] origin [1]+[2]"
+ },
+ "m2.c.mem_64.near": {
+  "value": 0.5716683523995536,
+  "text": "57%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] origin"
+ },
+ "m2.c.mem_64.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] chance_origin"
+ },
+ "m2.c.mem_64.gap": {
+  "value": 112.58640834263393,
+  "text": "113",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] position_gap"
+ },
+ "m2.c.mem_64.screen_other": {
+  "value": 0.6467377242712248,
+  "text": "65%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] screen_mass[0]"
+ },
+ "m2.c.mem_64.adv": {
+  "value": 0.2527345929827009,
+  "text": "25%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m2.c.mem_64.local": {
+  "value": 0.17249243600027903,
+  "text": "17%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] overlap_expected[0]"
+ },
+ "m2.c.mem_64.other_p5": {
+  "value": 0.006737886156354632,
+  "text": "1%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] origin bootstrap p5"
+ },
+ "m2.c.mem_64.other_p95": {
+  "value": 0.01709879466465541,
+  "text": "2%",
+  "source": "analysis/geometry/olmo/cosine_C.json[84] origin bootstrap p95"
+ },
+ "m2.cw.mem_64.other": {
+  "value": 0.047061920166015625,
+  "text": "5%",
+  "source": "analysis/geometry/olmo/cosine_C.json[85] origin"
+ },
+ "m2.cw.mem_64.own": {
+  "value": 0.9529380798339844,
+  "text": "95%",
+  "source": "analysis/geometry/olmo/cosine_C.json[85] origin [1]+[2]"
+ },
+ "m2.cw.mem_64.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_C.json[85] origin"
+ },
+ "m2.cw.mem_64.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[85] chance_origin"
+ },
+ "m2.cw.mem_64.gap": {
+  "value": 358.30406078071786,
+  "text": "358",
+  "source": "analysis/geometry/olmo/cosine_C.json[85] position_gap"
+ },
+ "m2.cw.mem_64.screen_other": {
+  "value": 0.3964127826657774,
+  "text": "40%",
+  "source": "analysis/geometry/olmo/cosine_C.json[85] screen_mass[0]"
+ },
+ "m2.cw.mem_64.removed": {
+  "value": 0.2412147197674559,
+  "text": "24%",
+  "source": "analysis/geometry/olmo/cosine_C.json[85] screen_removed"
+ },
+ "m2.o.mem_64.other": {
+  "value": 0.060611452375139506,
+  "text": "6%",
+  "source": "analysis/geometry/olmo/cosine_O.json[84] origin"
+ },
+ "m2.o.mem_64.own": {
+  "value": 0.9393885476248605,
+  "text": "94%",
+  "source": "analysis/geometry/olmo/cosine_O.json[84] origin [1]+[2]"
+ },
+ "m2.o.mem_64.near": {
+  "value": 0.5548310961042132,
+  "text": "55%",
+  "source": "analysis/geometry/olmo/cosine_O.json[84] origin"
+ },
+ "m2.o.mem_64.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[84] chance_origin"
+ },
+ "m2.o.mem_64.gap": {
+  "value": 107.68468366350446,
+  "text": "108",
+  "source": "analysis/geometry/olmo/cosine_O.json[84] position_gap"
+ },
+ "m2.o.mem_64.screen_other": {
+  "value": 0.7404796748293785,
+  "text": "74%",
+  "source": "analysis/geometry/olmo/cosine_O.json[84] screen_mass[0]"
+ },
+ "m2.ow.mem_64.other": {
+  "value": 0.26973915100097656,
+  "text": "27%",
+  "source": "analysis/geometry/olmo/cosine_O.json[85] origin"
+ },
+ "m2.ow.mem_64.own": {
+  "value": 0.7302608489990234,
+  "text": "73%",
+  "source": "analysis/geometry/olmo/cosine_O.json[85] origin [1]+[2]"
+ },
+ "m2.ow.mem_64.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_O.json[85] origin"
+ },
+ "m2.ow.mem_64.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[85] chance_origin"
+ },
+ "m2.ow.mem_64.gap": {
+  "value": 351.949650471863,
+  "text": "352",
+  "source": "analysis/geometry/olmo/cosine_O.json[85] position_gap"
+ },
+ "m2.ow.mem_64.screen_other": {
+  "value": 0.7141516147708338,
+  "text": "71%",
+  "source": "analysis/geometry/olmo/cosine_O.json[85] screen_mass[0]"
+ },
+ "m2.ow.mem_64.removed": {
+  "value": 0.20852102568451314,
+  "text": "21%",
+  "source": "analysis/geometry/olmo/cosine_O.json[85] screen_removed"
+ },
+ "m2.stitch.mem_64": {
+  "value": 0.04648496671484691,
+  "text": "5%",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m2.stitch_pp.mem_64": {
+  "value": 4.648496671484692,
+  "text": "4.6",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "m2.c.mem_whole.other": {
+  "value": 0.0025125231061662945,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] origin"
+ },
+ "m2.c.mem_whole.own": {
+  "value": 0.9974874768938337,
+  "text": "100%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] origin [1]+[2]"
+ },
+ "m2.c.mem_whole.near": {
+  "value": 0.9318430764334542,
+  "text": "93%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] origin"
+ },
+ "m2.c.mem_whole.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] chance_origin"
+ },
+ "m2.c.mem_whole.gap": {
+  "value": 20.766584123883927,
+  "text": "21",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] position_gap"
+ },
+ "m2.c.mem_whole.screen_other": {
+  "value": 0.6654304235039689,
+  "text": "67%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] screen_mass[0]"
+ },
+ "m2.c.mem_whole.adv": {
+  "value": 0.303302492414202,
+  "text": "30%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] max(overlap_expected[1], overlap_expected[2])"
+ },
+ "m2.c.mem_whole.local": {
+  "value": 0.12090982709612165,
+  "text": "12%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] overlap_expected[0]"
+ },
+ "m2.c.mem_whole.other_p5": {
+  "value": 0.0005954742431640626,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] origin bootstrap p5"
+ },
+ "m2.c.mem_whole.other_p95": {
+  "value": 0.005005564008440289,
+  "text": "1%",
+  "source": "analysis/geometry/olmo/cosine_C.json[87] origin bootstrap p95"
+ },
+ "m2.cw.mem_whole.other": {
+  "value": 0.03397205897739956,
+  "text": "3%",
+  "source": "analysis/geometry/olmo/cosine_C.json[88] origin"
+ },
+ "m2.cw.mem_whole.own": {
+  "value": 0.9660279410226005,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[88] origin [1]+[2]"
+ },
+ "m2.cw.mem_whole.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_C.json[88] origin"
+ },
+ "m2.cw.mem_whole.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_C.json[88] chance_origin"
+ },
+ "m2.cw.mem_whole.gap": {
+  "value": 102.68927075634393,
+  "text": "103",
+  "source": "analysis/geometry/olmo/cosine_C.json[88] position_gap"
+ },
+ "m2.cw.mem_whole.screen_other": {
+  "value": 0.04963621384016886,
+  "text": "5%",
+  "source": "analysis/geometry/olmo/cosine_C.json[88] screen_mass[0]"
+ },
+ "m2.cw.mem_whole.removed": {
+  "value": 0.2521227995861273,
+  "text": "25%",
+  "source": "analysis/geometry/olmo/cosine_C.json[88] screen_removed"
+ },
+ "m2.o.mem_whole.other": {
+  "value": 0.008363451276506697,
+  "text": "1%",
+  "source": "analysis/geometry/olmo/cosine_O.json[87] origin"
+ },
+ "m2.o.mem_whole.own": {
+  "value": 0.9916365487234933,
+  "text": "99%",
+  "source": "analysis/geometry/olmo/cosine_O.json[87] origin [1]+[2]"
+ },
+ "m2.o.mem_whole.near": {
+  "value": 0.9079077584402901,
+  "text": "91%",
+  "source": "analysis/geometry/olmo/cosine_O.json[87] origin"
+ },
+ "m2.o.mem_whole.chance_other": {
+  "value": 0.9687668939539263,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[87] chance_origin"
+ },
+ "m2.o.mem_whole.gap": {
+  "value": 27.213579450334823,
+  "text": "27",
+  "source": "analysis/geometry/olmo/cosine_O.json[87] position_gap"
+ },
+ "m2.o.mem_whole.screen_other": {
+  "value": 0.7625174718339232,
+  "text": "76%",
+  "source": "analysis/geometry/olmo/cosine_O.json[87] screen_mass[0]"
+ },
+ "m2.ow.mem_whole.other": {
+  "value": 0.19691004071916854,
+  "text": "20%",
+  "source": "analysis/geometry/olmo/cosine_O.json[88] origin"
+ },
+ "m2.ow.mem_whole.own": {
+  "value": 0.8030899592808315,
+  "text": "80%",
+  "source": "analysis/geometry/olmo/cosine_O.json[88] origin [1]+[2]"
+ },
+ "m2.ow.mem_whole.near": {
+  "value": 0.0,
+  "text": "0%",
+  "source": "analysis/geometry/olmo/cosine_O.json[88] origin"
+ },
+ "m2.ow.mem_whole.chance_other": {
+  "value": 0.9708948306938497,
+  "text": "97%",
+  "source": "analysis/geometry/olmo/cosine_O.json[88] chance_origin"
+ },
+ "m2.ow.mem_whole.gap": {
+  "value": 120.94223504907153,
+  "text": "121",
+  "source": "analysis/geometry/olmo/cosine_O.json[88] position_gap"
+ },
+ "m2.ow.mem_whole.screen_other": {
+  "value": 0.4721553547157914,
+  "text": "47%",
+  "source": "analysis/geometry/olmo/cosine_O.json[88] screen_mass[0]"
+ },
+ "m2.ow.mem_whole.removed": {
+  "value": 0.21354518103309145,
+  "text": "21%",
+  "source": "analysis/geometry/olmo/cosine_O.json[88] screen_removed"
+ },
+ "m2.stitch.mem_whole": {
+  "value": -0.0008635040226747888,
+  "text": "0%",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts"
+ },
+ "m2.stitch_pp.mem_whole": {
+  "value": -0.08635040226747888,
+  "text": "-0.1",
+  "source": "analysis/geometry/olmo_stitchNN/cosine_C.json stitch_beyond, mean over the stitched texts, in percentage points"
+ },
+ "stitched_texts": {
+  "value": 4,
+  "text": "4",
+  "source": "site/manifest.json texts (kind stitched)"
+ },
+ "models": {
+  "value": 2,
+  "text": "2",
+  "source": "site/manifest.json models"
+ }
+}

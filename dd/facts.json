@@ -1,0 +1,438 @@
+{
+ "layers": {
+  "value": 17,
+  "text": "17",
+  "source": "units/*/*/tstar/modes.npy shape[0]"
+ },
+ "last_layer": {
+  "value": 16,
+  "text": "16",
+  "source": "layers - 1"
+ },
+ "blocks": {
+  "value": 16,
+  "text": "16",
+  "source": "layers - 1 (layer 0 is the embedding output)"
+ },
+ "modes_kept": {
+  "value": 64,
+  "text": "64",
+  "source": "units/*/*/tstar/modes.npy shape[2]"
+ },
+ "modes_shown": {
+  "value": 16,
+  "text": "16",
+  "source": "exp1/pack_depth.py SITE_MODES (SPEC_DEPTH.md section 8)"
+ },
+ "context": {
+  "value": 8,
+  "text": "8",
+  "source": "exp1/pack_depth.py CONTEXT (SPEC_DEPTH.md section 8)"
+ },
+ "quant_steps": {
+  "value": 127,
+  "text": "127",
+  "source": "exp1/pack_depth.py QUANT_STEPS (SPEC_DEPTH.md section 8)"
+ },
+ "axis_pct": {
+  "value": 99.0,
+  "text": "99%",
+  "source": "exp1/pack_depth.py AXIS_QUANTILE (read by site/js/depth.js from meta.json)"
+ },
+ "text_colours": {
+  "value": 8,
+  "text": "8",
+  "source": "exp1/pack_depth.py TEXT_COLOURS (site/css/depth.css)"
+ },
+ "knn": {
+  "value": 15,
+  "text": "15",
+  "source": "exp1/depth_dm.py radius_kernel default k"
+ },
+ "tie_pct": {
+  "value": 1.0,
+  "text": "1%",
+  "source": "exp1/depth.py bands()"
+ },
+ "condition": {
+  "value": 100000000.0,
+  "text": "10⁸",
+  "source": "exp1/depth.py extension_config()"
+ },
+ "texts": {
+  "value": 32,
+  "text": "32",
+  "source": "manifest.json contexts (kind natural)"
+ },
+ "random_sequences": {
+  "value": 5,
+  "text": "5",
+  "source": "manifest.json contexts (kind random)"
+ },
+ "shuffled_sequences": {
+  "value": 4,
+  "text": "4",
+  "source": "manifest.json contexts (kind shuffled)"
+ },
+ "text_tokens": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "manifest.json paths (tokens per text)"
+ },
+ "first_random": {
+  "value": "r0",
+  "text": "r0",
+  "source": "manifest.json contexts"
+ },
+ "last_random": {
+  "value": "r4",
+  "text": "r4",
+  "source": "manifest.json contexts"
+ },
+ "first_shuffled": {
+  "value": "s0",
+  "text": "s0",
+  "source": "manifest.json contexts"
+ },
+ "last_shuffled": {
+  "value": "s3",
+  "text": "s3",
+  "source": "manifest.json contexts"
+ },
+ "rand_contexts": {
+  "value": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "text": "r0 to r3",
+  "source": "manifest.json sets.rand"
+ },
+ "unseen_random": {
+  "value": [
+   "r4"
+  ],
+  "text": "r4",
+  "source": "manifest.json contexts minus sets.rand"
+ },
+ "shuffled_sources": {
+  "value": [
+   0,
+   1,
+   2,
+   4
+  ],
+  "text": "0, 1, 2 and 4",
+  "source": "manifest.json contexts[s*].source_context"
+ },
+ "panel.natural": {
+  "value": 1024,
+  "text": "1,024",
+  "source": "manifest.json panels.natural"
+ },
+ "panel.random": {
+  "value": 768,
+  "text": "768",
+  "source": "manifest.json panels.random"
+ },
+ "panel.shuffled": {
+  "value": 1024,
+  "text": "1,024",
+  "source": "manifest.json panels.shuffled"
+ },
+ "panel.natural_per_text": {
+  "value": 32,
+  "text": "32",
+  "source": "manifest.json panels.natural"
+ },
+ "set.doc00.n": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "manifest.json sets.doc00"
+ },
+ "set.doc00.texts": {
+  "value": 1,
+  "text": "1",
+  "source": "manifest.json sets.doc00"
+ },
+ "set.doc01.n": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "manifest.json sets.doc01"
+ },
+ "set.doc01.texts": {
+  "value": 1,
+  "text": "1",
+  "source": "manifest.json sets.doc01"
+ },
+ "set.doc02.n": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "manifest.json sets.doc02"
+ },
+ "set.doc02.texts": {
+  "value": 1,
+  "text": "1",
+  "source": "manifest.json sets.doc02"
+ },
+ "set.doc04.n": {
+  "value": 2047,
+  "text": "2,047",
+  "source": "manifest.json sets.doc04"
+ },
+ "set.doc04.texts": {
+  "value": 1,
+  "text": "1",
+  "source": "manifest.json sets.doc04"
+ },
+ "set.pairA.n": {
+  "value": 2048,
+  "text": "2,048",
+  "source": "manifest.json sets.pairA"
+ },
+ "set.pairA.texts": {
+  "value": 2,
+  "text": "2",
+  "source": "manifest.json sets.pairA"
+ },
+ "set.pairB.n": {
+  "value": 2048,
+  "text": "2,048",
+  "source": "manifest.json sets.pairB"
+ },
+ "set.pairB.texts": {
+  "value": 2,
+  "text": "2",
+  "source": "manifest.json sets.pairB"
+ },
+ "set.d04.n": {
+  "value": 2048,
+  "text": "2,048",
+  "source": "manifest.json sets.d04"
+ },
+ "set.d04.texts": {
+  "value": 4,
+  "text": "4",
+  "source": "manifest.json sets.d04"
+ },
+ "set.d08.n": {
+  "value": 2048,
+  "text": "2,048",
+  "source": "manifest.json sets.d08"
+ },
+ "set.d08.texts": {
+  "value": 8,
+  "text": "8",
+  "source": "manifest.json sets.d08"
+ },
+ "set.d16.n": {
+  "value": 2048,
+  "text": "2,048",
+  "source": "manifest.json sets.d16"
+ },
+ "set.d16.texts": {
+  "value": 16,
+  "text": "16",
+  "source": "manifest.json sets.d16"
+ },
+ "set.d32.n": {
+  "value": 2048,
+  "text": "2,048",
+  "source": "manifest.json sets.d32"
+ },
+ "set.d32.texts": {
+  "value": 32,
+  "text": "32",
+  "source": "manifest.json sets.d32"
+ },
+ "set.rand.n": {
+  "value": 2048,
+  "text": "2,048",
+  "source": "manifest.json sets.rand"
+ },
+ "set.rand.texts": {
+  "value": 4,
+  "text": "4",
+  "source": "manifest.json sets.rand"
+ },
+ "paths": {
+  "value": [
+   "c00",
+   "c01",
+   "c02",
+   "c04",
+   "s0",
+   "s1",
+   "s2",
+   "s3"
+  ],
+  "text": "c00, c01, c02, c04, s0, s1, s2, s3",
+  "source": "manifest.json paths"
+ },
+ "path_count": {
+  "value": 8,
+  "text": "8",
+  "source": "manifest.json paths"
+ },
+ "units_expected": {
+  "value": 22,
+  "text": "22",
+  "source": "exp1/pack_depth.py MODELS x SETS"
+ },
+ "units_packed": {
+  "value": 22,
+  "text": "22",
+  "source": "this pack"
+ },
+ "site_megabytes": {
+  "value": 97.84894,
+  "text": "97.8 MB",
+  "source": "bytes written by this pack"
+ },
+ "cap_megabytes": {
+  "value": 150.0,
+  "text": "150 MB",
+  "source": "exp1/pack_depth.py CAP_BYTES (SPEC_DEPTH.md section 8)"
+ },
+ "model.pythia": {
+  "value": "Pythia-1b",
+  "text": "Pythia-1b",
+  "source": "probe.json models (display name)"
+ },
+ "model.olmo": {
+  "value": "OLMo-1B",
+  "text": "OLMo-1B",
+  "source": "probe.json models (display name)"
+ },
+ "tstar.pythia.doc00": {
+  "value": 18.089152789712866,
+  "text": "18.1",
+  "source": "units/pythia/doc00/unit.json tstar"
+ },
+ "tstar.pythia.doc01": {
+  "value": 12.390562968098783,
+  "text": "12.4",
+  "source": "units/pythia/doc01/unit.json tstar"
+ },
+ "tstar.pythia.doc02": {
+  "value": 4.3315955955189045,
+  "text": "4.33",
+  "source": "units/pythia/doc02/unit.json tstar"
+ },
+ "tstar.pythia.doc04": {
+  "value": 17.7941734165811,
+  "text": "17.8",
+  "source": "units/pythia/doc04/unit.json tstar"
+ },
+ "tstar.pythia.pairA": {
+  "value": 10.58150020463354,
+  "text": "10.6",
+  "source": "units/pythia/pairA/unit.json tstar"
+ },
+ "tstar.pythia.pairB": {
+  "value": 5.906490856149708,
+  "text": "5.91",
+  "source": "units/pythia/pairB/unit.json tstar"
+ },
+ "tstar.pythia.d04": {
+  "value": 13.901431993843316,
+  "text": "13.9",
+  "source": "units/pythia/d04/unit.json tstar"
+ },
+ "tstar.pythia.d08": {
+  "value": 12.73359874497982,
+  "text": "12.7",
+  "source": "units/pythia/d08/unit.json tstar"
+ },
+ "tstar.pythia.d16": {
+  "value": 14.867321414966934,
+  "text": "14.9",
+  "source": "units/pythia/d16/unit.json tstar"
+ },
+ "tstar.pythia.d32": {
+  "value": 20.70162982277664,
+  "text": "20.7",
+  "source": "units/pythia/d32/unit.json tstar"
+ },
+ "tstar.pythia.rand": {
+  "value": 15.85822823502755,
+  "text": "15.9",
+  "source": "units/pythia/rand/unit.json tstar"
+ },
+ "tstar.olmo.doc00": {
+  "value": 16.208091970807615,
+  "text": "16.2",
+  "source": "units/olmo/doc00/unit.json tstar"
+ },
+ "tstar.olmo.doc01": {
+  "value": 17.304104482699046,
+  "text": "17.3",
+  "source": "units/olmo/doc01/unit.json tstar"
+ },
+ "tstar.olmo.doc02": {
+  "value": 3.1749374169562654,
+  "text": "3.17",
+  "source": "units/olmo/doc02/unit.json tstar"
+ },
+ "tstar.olmo.doc04": {
+  "value": 18.50751360802371,
+  "text": "18.5",
+  "source": "units/olmo/doc04/unit.json tstar"
+ },
+ "tstar.olmo.pairA": {
+  "value": 14.424841914325985,
+  "text": "14.4",
+  "source": "units/olmo/pairA/unit.json tstar"
+ },
+ "tstar.olmo.pairB": {
+  "value": 2.218914068752031,
+  "text": "2.22",
+  "source": "units/olmo/pairB/unit.json tstar"
+ },
+ "tstar.olmo.d04": {
+  "value": 15.39435908473052,
+  "text": "15.4",
+  "source": "units/olmo/d04/unit.json tstar"
+ },
+ "tstar.olmo.d08": {
+  "value": 23.125521409786643,
+  "text": "23.1",
+  "source": "units/olmo/d08/unit.json tstar"
+ },
+ "tstar.olmo.d16": {
+  "value": 21.80346447353687,
+  "text": "21.8",
+  "source": "units/olmo/d16/unit.json tstar"
+ },
+ "tstar.olmo.d32": {
+  "value": 21.602543252919716,
+  "text": "21.6",
+  "source": "units/olmo/d32/unit.json tstar"
+ },
+ "tstar.olmo.rand": {
+  "value": 7.707241766545686,
+  "text": "7.71",
+  "source": "units/olmo/rand/unit.json tstar"
+ },
+ "aggregate.cross": {
+  "value": true,
+  "text": "computed",
+  "source": "cross.json present"
+ },
+ "aggregate.permutations": {
+  "value": true,
+  "text": "computed",
+  "source": "permutations.json present"
+ },
+ "aggregate.gaussian": {
+  "value": true,
+  "text": "computed",
+  "source": "gaussian.json present"
+ },
+ "aggregate.refit_agreement": {
+  "value": true,
+  "text": "computed",
+  "source": "refit_agreement.json present"
+ }
+}

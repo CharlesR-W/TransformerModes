@@ -1,0 +1,220 @@
+{
+ "audit.passed": {
+  "value": "passed",
+  "text": "passed",
+  "source": "audit_a/report.json passed"
+ },
+ "audit.checks": {
+  "value": 1242,
+  "text": "1,242",
+  "source": "audit_a/report.json checks"
+ },
+ "audit.failed": {
+  "value": 0,
+  "text": "0",
+  "source": "audit_a/report.json checks[].passed"
+ },
+ "audit.compared": {
+  "value": 59697885,
+  "text": "59,697,885",
+  "source": "audit_a/report.json checks[].compared"
+ },
+ "audit.rows": {
+  "value": 32,
+  "text": "32",
+  "source": "audit_a/report.json rows"
+ },
+ "audit.seconds": {
+  "value": 895,
+  "text": "895",
+  "source": "audit_a/report.json seconds"
+ },
+ "audit.spec_parameters": {
+  "value": "the spec's parameters",
+  "text": "the spec's parameters",
+  "source": "audit_a/report.json spec_parameters"
+ },
+ "audit.models": {
+  "value": "Pythia-1b, OLMo-1B",
+  "text": "Pythia-1b, OLMo-1B",
+  "source": "audit_a/report.json models"
+ },
+ "audit.groups": {
+  "value": 4,
+  "text": "4",
+  "source": "audit_a/report.json groups"
+ },
+ "audit.absent": {
+  "value": 0,
+  "text": "0",
+  "source": "audit_a/report.json absent"
+ },
+ "audit.inventory_digest": {
+  "value": "96e648df4ac02a6302eaedd4f124b152c29ce9d256eb7c538d0097d2719aae88",
+  "text": "96e648df4ac02a6302eaedd4f124b152c29ce9d256eb7c538d0097d2719aae88",
+  "source": "audit_a/report.json inventory.digest"
+ },
+ "audit.inventory_count": {
+  "value": 4423,
+  "text": "4,423",
+  "source": "audit_a/report.json inventory.count"
+ },
+ "ledger.spent": {
+  "value": 10.305015706048255,
+  "text": "10.31",
+  "source": "ledger/attempts/*/*.json, sum of charges"
+ },
+ "ledger.attempts": {
+  "value": 31,
+  "text": "31",
+  "source": "ledger/attempts/*/*.json"
+ },
+ "ledger.failed": {
+  "value": 14,
+  "text": "14",
+  "source": "ledger/attempts/*/*.json status"
+ },
+ "ledger.cap_initial": {
+  "value": 8,
+  "text": "8",
+  "source": "SPEC.md section 11 (the Stage A hard cap at approval)",
+  "tier": "S"
+ },
+ "ledger.cap_pilot": {
+  "value": 11,
+  "text": "11",
+  "source": "README.md Stage A run log: raised by the owner after the timing pilot",
+  "tier": "S"
+ },
+ "ledger.cap": {
+  "value": 13,
+  "text": "13",
+  "source": "README.md Stage A run log: raised by the owner for the readout re-run after the fix",
+  "tier": "S"
+ },
+ "ledger.census.attempts": {
+  "value": 4,
+  "text": "4",
+  "source": "ledger/attempts/*/census-*.json"
+ },
+ "ledger.census.unfinished": {
+  "value": 2,
+  "text": "2",
+  "source": "ledger/attempts/*/census-*.json status"
+ },
+ "ledger.readout.attempts": {
+  "value": 4,
+  "text": "4",
+  "source": "ledger/attempts/*/readout*.json"
+ },
+ "ledger.readout.unfinished": {
+  "value": 2,
+  "text": "2",
+  "source": "ledger/attempts/*/readout*.json status"
+ },
+ "ledger.audit.attempts": {
+  "value": 3,
+  "text": "3",
+  "source": "ledger/attempts/*/audit-a*.json"
+ },
+ "ledger.audit.unfinished": {
+  "value": 2,
+  "text": "2",
+  "source": "ledger/attempts/*/audit-a*.json status"
+ },
+ "ledger.extract.attempts": {
+  "value": 3,
+  "text": "3",
+  "source": "ledger/attempts/*/U1-*.json"
+ },
+ "ledger.extract.unfinished": {
+  "value": 1,
+  "text": "1",
+  "source": "ledger/attempts/*/U1-*.json status"
+ },
+ "run.pass_seconds": {
+  "value": 63.031528584333344,
+  "text": "63",
+  "source": "analysis/stage_a_plan.json gpu_seconds_per_group / 10 inputs per group (8 layers, 2 text-only inputs)"
+ },
+ "viewer.mb": {
+  "value": 281.850961,
+  "text": "282",
+  "source": "site/manifest.json asset_bytes"
+ },
+ "viewer.files": {
+  "value": 4272,
+  "text": "4,272",
+  "source": "site/manifest.json files"
+ },
+ "probe.documents": {
+  "value": 180378,
+  "text": "180,378",
+  "source": "analysis/probe_summary.json counts.total.documents"
+ },
+ "probe.walked": {
+  "value": 64,
+  "text": "64",
+  "source": "analysis/probe_summary.json counts.total.walked"
+ },
+ "probe.eligible": {
+  "value": 23350,
+  "text": "23,350",
+  "source": "analysis/probe_summary.json counts.total.eligible"
+ },
+ "probe.texts": {
+  "value": 32,
+  "text": "32",
+  "source": "site/manifest.json texts"
+ },
+ "probe.subsets": {
+  "value": 10,
+  "text": "10",
+  "source": "analysis/probe_summary.json contexts[].subset"
+ },
+ "probe.description": {
+  "value": "a capped sample of the beginnings of long, mostly ASCII Pile test documents",
+  "text": "a capped sample of the beginnings of long, mostly ASCII Pile test documents",
+  "source": "site/manifest.json description"
+ },
+ "probe.sha": {
+  "value": "e6beef6cf07ad0a0",
+  "text": "e6beef6cf07ad0a0",
+  "source": "analysis/probe_summary.json probe_sha256"
+ },
+ "pilot.gap.mem_none": {
+  "value": "168–204",
+  "text": "168–204",
+  "source": "exp1/local_pilot.json rows (corpus mean, all tokens, memory none): median_gap_same_text, min–max over layers"
+ },
+ "pilot.gap.mem_8": {
+  "value": "110–159",
+  "text": "110–159",
+  "source": "exp1/local_pilot.json rows (corpus mean, all tokens, memory 8): median_gap_same_text, min–max over layers"
+ },
+ "pilot.gap.mem_64": {
+  "value": "26–60",
+  "text": "26–60",
+  "source": "exp1/local_pilot.json rows (corpus mean, all tokens, memory 64): median_gap_same_text, min–max over layers"
+ },
+ "pilot.gap.mem_whole": {
+  "value": "16–17",
+  "text": "16–17",
+  "source": "exp1/local_pilot.json rows (corpus mean, all tokens, memory whole): median_gap_same_text, min–max over layers"
+ },
+ "pilot.model": {
+  "value": "pythia-160m",
+  "text": "pythia-160m",
+  "source": "exp1/local_pilot.json model"
+ },
+ "pilot.tokens": {
+  "value": 1023,
+  "text": "1,023",
+  "source": "exp1/local_pilot.json T"
+ },
+ "pilot.burn": {
+  "value": 128,
+  "text": "128",
+  "source": "exp1/local_pilot.json burn"
+ }
+}

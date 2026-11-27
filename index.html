@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TransformerModes</title>
+<meta name="description" content="Memory kernels on two language models: for every token, where are its 64 nearest neighbours under each memory length? A text viewer, the experiments and the method.">
+<link rel="preload" href="vendor/fonts/inter-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<link rel="stylesheet" href="css/tokens.css?v=8f14246563">
+<link rel="stylesheet" href="css/site.css?v=8f14246563">
+<link rel="stylesheet" href="css/viewer.css?v=8f14246563">
+<link rel="stylesheet" href="css/experiments.css?v=8f14246563">
+<link rel="stylesheet" href="css/depth.css?v=8f14246563">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='5' width='4' height='6' rx='1' fill='%2392b9eb'/%3E%3Crect x='6' y='5' width='4' height='6' rx='1' fill='%23f69b7a'/%3E%3Crect x='11' y='5' width='4' height='6' rx='1' fill='%23d3d2cc'/%3E%3C/svg%3E">
+</head>
+<body data-tab="experiments">
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="banner" role="note">
+  <span class="banner-tag">Exploratory</span>
+  <span class="banner-models"><b>Pythia-1b and OLMo-1B</b>, run once on the beginnings of 32 long Pile documents</span>
+  <span class="banner-arch" aria-label="16 blocks, width 2,048; layers 2 to 16 even are measured, 4, 8, 12 and 16 are in the viewer">
+    <svg width="118" height="14" viewBox="0 0 118 14" aria-hidden="true"><g class="blk"><rect x="0" y="3" width="6" height="8" rx="1"/><rect x="7" y="3" width="6" height="8" rx="1"/><rect x="14" y="3" width="6" height="8" rx="1"/><rect x="21" y="3" width="6" height="8" rx="1"/><rect x="28" y="3" width="6" height="8" rx="1"/><rect x="35" y="3" width="6" height="8" rx="1"/><rect x="42" y="3" width="6" height="8" rx="1"/><rect x="49" y="3" width="6" height="8" rx="1"/><rect x="56" y="3" width="6" height="8" rx="1"/><rect x="63" y="3" width="6" height="8" rx="1"/><rect x="70" y="3" width="6" height="8" rx="1"/><rect x="77" y="3" width="6" height="8" rx="1"/><rect x="84" y="3" width="6" height="8" rx="1"/><rect x="91" y="3" width="6" height="8" rx="1"/><rect x="98" y="3" width="6" height="8" rx="1"/><rect x="105" y="3" width="6" height="8" rx="1"/></g><g class="site"><circle cx="10" cy="12.5" r="1.3"/><circle cx="38" cy="12.5" r="1.3"/><circle cx="66" cy="12.5" r="1.3"/><circle cx="94" cy="12.5" r="1.3"/></g><g class="vsite"><rect x="21" y="3" width="6" height="8" rx="1"/><rect x="49" y="3" width="6" height="8" rx="1"/><rect x="77" y="3" width="6" height="8" rx="1"/><rect x="105" y="3" width="6" height="8" rx="1"/></g></svg>
+    16 blocks, width 2,048 · <span class="banner-key"><i class="vsite-key"></i>layers 4, 8, 12, 16 in the viewer</span></span>
+  <a href="https://github.com/CharlesR-W/TransformerModes">Repository</a>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <div class="tabs-inner">
+    <a class="tabs-home" href="#viewer" title="TransformerModes">TransformerModes</a>
+    <div class="tablist" role="tablist">
+      <a role="tab" href="#viewer" data-tab="viewer">Viewer</a>
+      <a role="tab" href="#depth" data-tab="depth"><span class="tab-long">Depth embedding</span><span class="tab-short">Depth</span></a>
+      <a role="tab" href="#experiments" data-tab="experiments">Experiments</a>
+      <a role="tab" href="#method" data-tab="method">Method</a>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <section class="tab-panel" id="tab-viewer" data-tab="viewer" hidden>
+    <div class="vw-page">
+      <p class="vw-new">New here? <a href="#experiments">Start with what was measured →</a></p>
+      <header class="vw-head">
+        <h1>Where are a token's most similar tokens?</h1>
+        <p>Each token (a word or piece of a word) in a text is coloured by where its 64 most similar tokens sit: in another text, in the same text more than 64 tokens away, or in the same text within 64 tokens. Similarity compares two tokens' current states and, with memory, their recent pasts; a memory knob sets how far back the comparison looks. Click any token to inspect its neighbours as text and check the colour yourself.</p>
+      </header>
+      <details class="primer" id="primer" open>
+        <summary><span>Primer: the controls above the text, and how to check what you see</span><span class="primer-hint">quick guide · click to fold</span></summary>
+        <div class="primer-grid">
+          <section class="pc" id="primer-texts">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="cells"><rect x="2" y="12" width="9" height="14"/><rect x="13" y="12" width="9" height="14"/><rect x="24" y="12" width="9" height="14"/><rect x="35" y="12" width="9" height="14"/></g><g class="cells on"><rect x="46" y="12" width="9" height="14"/><rect x="57" y="12" width="9" height="14"/><rect x="68" y="12" width="9" height="14"/><rect x="79" y="12" width="9" height="14"/><rect x="90" y="12" width="9" height="14"/><rect x="101" y="12" width="9" height="14"/><rect x="112" y="12" width="9" height="14"/><rect x="123" y="12" width="9" height="14"/><rect x="134" y="12" width="9" height="14"/><rect x="145" y="12" width="9" height="14"/><rect x="156" y="12" width="9" height="14"/></g><path class="arrow" d="M168 19h26m-5-4l5 4-5 4"/><text x="2" y="38">history</text><text x="46" y="38">analysed</text><text x="160" y="9">position</text></svg>
+            <h3>Text and position</h3>
+            <p>32 texts—the first 2,047 tokens of each document—plus 4 spliced texts. The first 255 tokens of each text are shown in grey: they are part of later tokens' histories, but are never selected as queries or neighbours.</p>
+          </section>
+          <section class="pc" id="primer-models">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="blocks"><rect x="2" y="8" width="10" height="18"/><rect x="14" y="8" width="10" height="18"/><rect x="26" y="8" width="10" height="18" class="on"/><rect x="38" y="8" width="10" height="18"/><rect x="50" y="8" width="10" height="18"/><rect x="62" y="8" width="10" height="18"/><rect x="74" y="8" width="10" height="18" class="on"/><rect x="86" y="8" width="10" height="18"/><rect x="98" y="8" width="10" height="18"/><rect x="110" y="8" width="10" height="18"/><rect x="122" y="8" width="10" height="18" class="on"/><rect x="134" y="8" width="10" height="18"/><rect x="146" y="8" width="10" height="18"/><rect x="158" y="8" width="10" height="18"/><rect x="170" y="8" width="10" height="18" class="on"/><rect x="182" y="8" width="10" height="18"/></g><text x="2" y="38">block 1</text><text x="150" y="38">block 16</text></svg>
+            <h3 id="primer-layer">Model and layer</h3>
+            <p>Two models (16 blocks, width 2,048 each) read the exact same tokens. <b>Layer</b> chooses which block's output state is compared: after block 4, 8, 12, or 16 (layer 16 is taken before the final normalisation).</p>
+          </section>
+          <section class="pc pc-wide" id="primer-memory">
+            <svg class="pc-fig" viewBox="0 0 260 74" aria-hidden="true"><g class="wt"><rect x="200" y="4" width="16" height="14" style="opacity:1"/><rect x="182" y="4" width="16" height="14" style="opacity:.6"/><rect x="164" y="4" width="16" height="14" style="opacity:.36"/><rect x="146" y="4" width="16" height="14" style="opacity:.22"/><rect x="128" y="4" width="16" height="14" style="opacity:.13"/><rect x="110" y="4" width="16" height="14" style="opacity:.08"/></g><text x="222" y="15">weight</text><g class="row"><rect x="56" y="24" width="16" height="14"/><rect x="74" y="24" width="16" height="14"/><rect x="92" y="24" width="16" height="14"/><rect x="110" y="24" width="16" height="14"/><rect x="128" y="24" width="16" height="14"/><rect x="146" y="24" width="16" height="14"/><rect x="164" y="24" width="16" height="14"/><rect x="182" y="24" width="16" height="14"/><rect x="200" y="24" width="16" height="14" class="cur"/></g><g class="row"><rect x="110" y="48" width="16" height="14"/><rect x="128" y="48" width="16" height="14"/><rect x="146" y="48" width="16" height="14"/><rect x="164" y="48" width="16" height="14"/><rect x="182" y="48" width="16" height="14"/><rect x="200" y="48" width="16" height="14" class="cur"/></g><g class="link"><path d="M208 38v10M190 38v10M172 38v10M154 38v10M136 38v10M118 38v10"/></g><text x="2" y="35">token t</text><text x="2" y="59">token t′</text><text x="204" y="72">lag 0</text><text x="112" y="72">← lags 1, 2, …</text></svg>
+            <h3>Memory: comparing two pasts end to end</h3>
+            <p>Two tokens are compared by lining up their histories at the right end and comparing them step by step going back, with older steps counting less. <b>Memory</b> sets how far back the comparison looks: none (current token only), about 2, about 8, about 64 tokens, or the whole past equally weighted. Each token's state first has one average removed and is scaled to length 1, so comparison is by angle (cosine). Because each step pairs matching lags rather than averaging each past, two neighbouring tokens are not similar just because their pasts overlap. Two effects follow: a match carries over to the next token along the text, so neighbours appear in runs; and at the whole past, unequal history lengths push tokens toward similar positions even in random text.</p>
+          </section>
+          <section class="pc" id="primer-accounting">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="cells on"><rect x="2" y="10" width="9" height="14"/><rect x="13" y="10" width="9" height="14"/><rect x="24" y="10" width="9" height="14"/><rect x="167" y="10" width="9" height="14"/><rect x="178" y="10" width="9" height="14"/><rect x="189" y="10" width="9" height="14"/></g><g class="cells hatch"><rect x="35" y="10" width="9" height="14"/><rect x="46" y="10" width="9" height="14"/><rect x="57" y="10" width="9" height="14"/><rect x="68" y="10" width="9" height="14"/><rect x="79" y="10" width="9" height="14"/><rect x="101" y="10" width="9" height="14"/><rect x="112" y="10" width="9" height="14"/><rect x="123" y="10" width="9" height="14"/><rect x="134" y="10" width="9" height="14"/><rect x="145" y="10" width="9" height="14"/><rect x="156" y="10" width="9" height="14"/></g><rect class="cur" x="90" y="10" width="9" height="14"/><path class="brace" d="M35 28v4h130v-4"/><text x="58" y="39">barred: 64 each side</text></svg>
+            <h3>Settings: what is subtracted, what is barred</h3>
+            <p><b>One average removed</b> subtracts the average hidden state across all texts (one average per model and layer). <b>Each text's own average removed</b> (offered with nearby tokens barred) subtracts that document's whole average—including later tokens; it can also remove topic-related differences. <b>Nearby tokens barred</b> forbids neighbours within 64 tokens in the same text, so orange vanishes by rule rather than as a finding.</p>
+          </section>
+          <section class="pc" id="primer-origin">
+            <div class="pc-fig pc-swatches" aria-hidden="true"><span><i class="tsw other"></i>another text</span><span><i class="tsw far"></i>same text, far</span><span><i class="tsw near"></i>within 64</span></div>
+            <h3>Neighbours and where they sit</h3>
+            <p>Each token's neighbours are the 64 most similar among all 57,344 analysed tokens (or only its own tokens for a spliced text). Colour blends the three locations by their shares; the card lists the closest (8 shown; 64 counted).</p>
+          </section>
+          <section class="pc" id="primer-ties">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><path class="axis" d="M4 24h192"/><g class="dots"><circle cx="18" cy="24" r="3"/><circle cx="40" cy="24" r="3"/><circle cx="57" cy="24" r="3"/><circle cx="80" cy="24" r="3"/><circle cx="101" cy="24" r="3"/></g><g class="dots tie"><circle cx="130" cy="24" r="3"/><circle cx="130" cy="16" r="3"/><circle cx="130" cy="8" r="3"/></g><path class="cut" d="M138 4v32"/><text x="4" y="38">nearer</text><text x="104" y="38">64th place</text></svg>
+            <h3>Ties</h3>
+            <p>If several tokens tie at the 64th distance, the list fills remaining slots in text-and-position order and marks them ≈. Model states almost never tie; ties matter mainly for the text-only controls in the experiments. Comparisons between neighbour lists treat tied places fairly rather than using that order.</p>
+          </section>
+          <section class="pc" id="primer-check">
+            <div class="pc-fig pc-check" aria-hidden="true"><span class="ck-tok">the</span><span class="ck-arrow">→</span><span class="ck-list"><i></i><i></i><i></i></span></div>
+            <h3>How to check a claim</h3>
+            <p>Click any non-grey token. The card shows its counts and its 8 nearest neighbours as text, with their similarity and the model's next-token predictions. Each row shows a token (the selected one, or a neighbour) and its 23 predecessors, lined up at the end. Use <b>go →</b> (same text) or <b>open →</b> (other text) to inspect a neighbour. Full results live in Experiments; the audit is in Method.</p>
+          </section>
+        </div>
+      </details>
+      <div id="vw" class="vw" data-state="loading"><p class="vw-loading">Loading the viewer…</p></div>
+    </div>
+
+
+  </section>
+  <section class="tab-panel" id="tab-depth" data-tab="depth" hidden>
+    <div class="dp" id="dp" data-state="loading">
+      <header class="dp-head">
+        <h1>Tokens moving through the layers, in one shared space</h1>
+        <p>Each dot is one token of one text. Its position is two of its coordinates in an embedding built from all
+        17 layers of a model at once, so every layer is drawn in the same space and the same token is the
+        same dot at every layer. Depth plays the role of time: move the layer slider, or press <b>Play</b>, and watch the
+        tokens move from the input (layer 0) to the last block (layer 16).</p>
+      </header>
+      <details class="primer dp-primer" id="dp-primer" open>
+        <summary><span>Primer: what a dot is, what the axes and controls mean</span><span class="primer-hint">every index and selector in a sentence · click to fold</span></summary>
+        <div class="primer-grid">
+          <section class="pc" id="dp-p-dot">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-path"><path d="M14 28C50 30 62 10 96 14S150 30 186 12"/></g><g class="dp-pf-dots"><circle cx="14" cy="28" r="3.2" style="opacity:.3"/><circle cx="96" cy="14" r="3.2" style="opacity:.6"/><circle cx="186" cy="12" r="3.6"/></g><text x="2" y="39">layer 0</text><text x="150" y="39">layer 16</text></svg>
+            <h3>A dot is a token</h3>
+            <p>One dot is one <b>token</b>: one position in one text (a word or a piece of a word, as the model splits
+            text). Hover over a dot (tap on a phone) to read the token with the 8 tokens before and
+            after it and the text it comes from. A token keeps its dot at every layer, so the slider moves dots, it
+            never swaps them.</p>
+          </section>
+          <section class="pc" id="dp-p-layer">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="blocks"><rect x="2" y="8" width="9" height="18" class="on"/><rect x="13" y="8" width="9" height="18"/><rect x="24" y="8" width="9" height="18"/><rect x="35" y="8" width="9" height="18"/><rect x="46" y="8" width="9" height="18"/><rect x="57" y="8" width="9" height="18"/><rect x="68" y="8" width="9" height="18"/><rect x="79" y="8" width="9" height="18"/><rect x="90" y="8" width="9" height="18"/><rect x="101" y="8" width="9" height="18"/><rect x="112" y="8" width="9" height="18"/><rect x="123" y="8" width="9" height="18"/><rect x="134" y="8" width="9" height="18"/><rect x="145" y="8" width="9" height="18"/><rect x="156" y="8" width="9" height="18"/><rect x="167" y="8" width="9" height="18"/><rect x="178" y="8" width="9" height="18"/></g><text x="2" y="38">layer 0: input</text><text x="140" y="38">block 16</text></svg>
+            <h3>Layer: the slider and Play</h3>
+            <p>Each model reads a token through 17 <b>layers</b>, numbered 0 to 16:
+            layer 0 is the token's input vector and layer <i>l</i> the output of block <i>l</i> of 16. The
+            slider picks the layer; ← and → step one layer; <b>Play</b> runs from 0 to 16. Between two
+            layers dots are drawn part of the way along a straight line, for the eye only: nothing was computed in
+            between. The bars above the slider show how much of the two plotted modes sits at each layer.</p>
+          </section>
+          <section class="pc pc-wide" id="dp-p-modes">
+            <svg class="pc-fig" viewBox="0 0 260 40" aria-hidden="true"><path class="axis" d="M8 34h96M8 34V4"/><text x="76" y="30">mode x</text><text x="12" y="10">mode y</text><g class="dp-pf-dots"><circle cx="30" cy="22" r="2.2"/><circle cx="42" cy="16" r="2.2"/><circle cx="60" cy="24" r="2.2"/><circle cx="78" cy="12" r="2.2"/><circle cx="88" cy="20" r="2.2"/></g><g class="dp-pf-stack"><rect x="130" y="6" width="120" height="6"/><rect x="130" y="15" width="120" height="6"/><rect x="130" y="24" width="120" height="6"/></g><text x="130" y="39">modes 1, 2, …</text></svg>
+            <h3>The two axes are two modes</h3>
+            <p>The embedding gives every token 64 coordinates at every layer, called
+            <b>modes</b> and numbered <i>k</i> = 1, 2, …; this page carries the first 16. A mode is
+            one pattern over all (token, layer) pairs at once, computed from which tokens lie close to which: at each
+            layer two tokens are linked if either is among the other's 15 nearest by the angle between their
+            activation vectors, ties included (so a token can have far more than 15 links), and each
+            token is tied to itself at the next layer. Mode 1 is the smoothest pattern (it changes least between linked tokens and
+            between neighbouring layers), and each later mode is a little less smooth.
+            Because a mode spans every layer, its value at layer 5 and at layer 6 are the same coordinate, which is what
+            lets a dot move continuously. Choose the two plotted modes under <b>Axes</b>. The sign of a mode is
+            arbitrary (flipping it mirrors the plot). Each axis is scaled to its own mode and kept the same at every
+            layer; a few far-out tokens are drawn on the frame's edge and counted (see <b>Axis limits</b>).</p>
+          </section>
+          <section class="pc" id="dp-p-set">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-doc"><rect x="4" y="6" width="40" height="26"/><rect x="52" y="6" width="40" height="26"/><rect x="100" y="6" width="40" height="26"/></g><g class="dp-pf-dots"><circle cx="14" cy="14" r="2"/><circle cx="30" cy="24" r="2"/><circle cx="62" cy="20" r="2"/><circle cx="80" cy="12" r="2"/><circle cx="112" cy="26" r="2"/><circle cx="128" cy="14" r="2"/></g><text x="150" y="22">a sample</text></svg>
+            <h3>Construction set</h3>
+            <p>The tokens an embedding is built from: a fixed sample of positions from one or more texts. The dots are
+            this set's tokens. Each set is built separately for each model, so changing the set changes the space. The
+            texts are the 32 Pile documents of the Viewer, numbered c00 to c31, and 5
+            sequences of random tokens, r0 to r4. The sets:</p>
+            <table class="dp-sets"><thead><tr><th>set</th><th>texts</th><th>count</th><th>each</th><th>tokens</th></tr></thead><tbody><tr><td>doc00</td><td>c00</td><td class="n">1</td><td class="n">2,047</td><td class="n">2,047</td></tr><tr><td>doc01</td><td>c01</td><td class="n">1</td><td class="n">2,047</td><td class="n">2,047</td></tr><tr><td>doc02</td><td>c02</td><td class="n">1</td><td class="n">2,047</td><td class="n">2,047</td></tr><tr><td>doc04</td><td>c04</td><td class="n">1</td><td class="n">2,047</td><td class="n">2,047</td></tr><tr><td>pairA</td><td>c00, c01</td><td class="n">2</td><td class="n">1,024</td><td class="n">2,048</td></tr><tr><td>pairB</td><td>c02, c04</td><td class="n">2</td><td class="n">1,024</td><td class="n">2,048</td></tr><tr><td>d04</td><td>c00–c04</td><td class="n">4</td><td class="n">512</td><td class="n">2,048</td></tr><tr><td>d08</td><td>c00–c07</td><td class="n">8</td><td class="n">256</td><td class="n">2,048</td></tr><tr><td>d16</td><td>c00–c15</td><td class="n">16</td><td class="n">128</td><td class="n">2,048</td></tr><tr><td>d32</td><td>c00–c31</td><td class="n">32</td><td class="n">64</td><td class="n">2,048</td></tr><tr><td>rand</td><td>r0–r3</td><td class="n">4</td><td class="n">512</td><td class="n">2,048</td></tr></tbody></table>
+          </section>
+          <section class="pc" id="dp-p-placed">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-dots"><circle cx="30" cy="20" r="2.4"/><circle cx="44" cy="12" r="2.4"/><circle cx="58" cy="26" r="2.4"/><circle cx="72" cy="16" r="2.4"/></g><g class="dp-pf-ring"><circle cx="120" cy="18" r="4"/><circle cx="146" cy="26" r="4"/></g><path class="arrow" d="M100 18h-14m4-3-4 3 4 3"/><text x="104" y="38">placed tokens</text></svg>
+            <h3>Placed tokens: panels and paths</h3>
+            <p>A token outside the set can still be given coordinates: it is compared with the set's tokens at every
+            layer and placed where its links put it, without changing the embedding. Because the layers are tied, its
+            position at one layer also depends on its other layers. A <b>panel</b> is a fixed sample placed into every set:
+            <i>natural</i> (32 tokens from each of the 32 documents, 1,024
+            in all), <i>random</i> (768 from the random sequences, including r4, which no set uses) and
+            <i>shuffled</i> (1,024 from documents 0, 1, 2 and 4 with their tokens put in random order,
+            s0 to s3). Each panel token is marked as <b>in the set</b> (its
+            coordinates are the set's own), a <b>new position of a text in the set</b>, or <b>a text the set never saw</b>. A
+            <b>path</b> is every token of one text joined in reading order (c00, c01, c02, c04, s0, s1, s2, s3; for d32 and rand only).</p>
+          </section>
+          <section class="pc" id="dp-p-strength">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-chain"><rect x="4" y="10" width="20" height="16"/><rect x="44" y="10" width="20" height="16"/><rect x="84" y="10" width="20" height="16"/><rect x="124" y="10" width="20" height="16"/></g><path class="dp-pf-spring" d="M24 18h20M64 18h20M104 18h20"/><text x="150" y="22">tie between</text><text x="150" y="32">layers</text></svg>
+            <h3>Coupling strength</h3>
+            <p>How strongly each layer is tied to the next. <b>t*</b> is the strength at which the first pattern that
+            varies only along depth (the same for every token) and the first pattern that varies across tokens get the
+            same smoothness score: a crossing point, not a best value. <b>t*/16</b> is a sixteenth of it, a much looser tie under
+            which a mode can change more from layer to layer. t* is found separately for each model and set; its value
+            is in each plot's caption.</p>
+          </section>
+          <section class="pc" id="dp-p-colour">
+            <div class="pc-fig pc-swatches" aria-hidden="true"><span><i class="dp-sw s1"></i>text</span><span><i class="dp-sw dp-sw-ramp"></i>position, frequency</span></div>
+            <h3>Colour</h3>
+            <p>Colour is for reading only; nothing is built from it. <b>Text</b>: the document or random sequence a
+            token comes from (up to 8 at a time; with more, click names in the key to choose which). <b>Position</b>:
+            where in its text the token sits, from position 1 (pale) to 2,047 (deep).
+            <b>Frequency</b>: how many times the token's id (the same word piece) occurs in the construction set, on a
+            log scale. <b>Panel group</b>: in the set, new position, or unseen text (with a panel shown).</p>
+          </section>
+          <section class="pc" id="dp-p-flags">
+            <div class="pc-fig pc-swatches" aria-hidden="true"><span><i class="dp-flag tie">≈</i>near-tied</span><span><i class="dp-flag wh">×</i>withheld</span></div>
+            <h3>Flags on a mode</h3>
+            <p><b>Near-tied</b>: neighbouring modes whose eigenvalues (their smoothness scores) differ by under
+            1% form a band. Within a band only the band as a whole is meaningful, so a single member's
+            axis and its extreme tokens are marked; the 1% line is a display convention, not a proof.
+            <b>Withheld</b>: a mode whose placement equation is too unstable (condition number above
+            10⁸) gives placed tokens no coordinate, so they are not drawn on that axis.</p>
+          </section>
+          <section class="pc pc-wide" id="dp-p-models">
+            <svg class="pc-fig" viewBox="0 0 260 40" aria-hidden="true"><rect class="dp-pf-box" x="4" y="4" width="100" height="32"/><rect class="dp-pf-box" x="150" y="4" width="100" height="32"/><g class="dp-pf-dots"><circle cx="40" cy="20" r="3"/><circle cx="200" cy="14" r="3"/></g><path class="dp-pf-link" d="M44 20C100 30 150 6 196 14"/><text x="112" y="24">same token</text></svg>
+            <h3>Two models side by side</h3>
+            <p>Pythia-1b and OLMo-1B read exactly the same tokens, and each builds its own
+            embedding from its own activations. Their axes are <b>not matched</b>: mode 2 of one need not resemble mode 2
+            of the other, and either may be mirrored. Compare shapes and groupings, not directions. Hovering a token
+            rings the same token in the other plot. How far the two models' spaces agree, as spaces rather than axis by
+            axis, is measured in the charts at the bottom.</p>
+          </section>
+          <section class="pc pc-wide" id="dp-p-index">
+            <div class="pc-fig dp-pf-keys" aria-hidden="true"><code>l</code><code>k</code><code>p</code><code>c07</code><code>r2</code><code>s1</code></div>
+            <h3>Every index on this page</h3>
+            <p><b>l</b>: layer, 0 to 16. <b>k</b>: mode, 1 to 16 here (of
+            64 computed). <b>p</b>: position of a token in its text, 1 to 2,047.
+            <b>c00</b> to <b>c31</b>: the Pile documents. <b>r0</b> to <b>r4</b>: random
+            sequences (ids drawn uniformly from the word pieces the documents use). <b>s0</b> to
+            <b>s3</b>: documents 0, 1, 2 and 4 with their tokens shuffled.
+            <b>Depth weight</b> of a mode at a layer: the share of the mode that sits at that layer (the shares add up to
+            1 over the layers). <b>Eigenvalue</b>: a mode's smoothness score (smaller is smoother).</p>
+          </section>
+        </div>
+      </details>
+
+      <div class="dp-grid">
+        <section class="dp-stage" aria-label="Plot">
+          <div class="dp-transport" id="dp-transport">
+            <button type="button" id="dp-play" class="dp-primary" aria-label="Play through the layers">▶ Play</button>
+            <div class="dp-where">
+              <div class="dp-layerhead" id="dp-layerhead" aria-live="polite">–</div>
+              <div class="dp-layersub" id="dp-layersub"></div>
+            </div>
+            <button type="button" class="dp-jump" id="dp-jump">Options ↓</button>
+            <div class="dp-track">
+              <div class="dp-occ-cap" id="dp-occ-cap"></div>
+              <canvas id="dp-occ" aria-hidden="true"></canvas>
+              <input type="range" id="dp-depth" min="0" max="16" step="0.01" value="0" aria-label="Layer">
+            </div>
+          </div>
+
+          <div class="dp-card dp-main">
+            <div class="dp-key">
+              <div id="dp-what" class="dp-what"></div>
+              <div id="dp-legend" class="dp-legend"></div>
+              <p class="dp-hint"><span class="mouse-only">Hover a dot to read its token in context. Keys: ← → step a layer, Space plays.</span><span class="touch-only">Tap a dot to read its token in context.</span></p>
+            </div>
+            <p class="dp-unmatched" id="dp-unmatched" hidden><b>Axes not matched between the models.</b> Each plot uses its own
+            model's modes; mode numbers and signs do not correspond. Hovering a token rings the same token in the other plot.</p>
+            <div class="dp-plots" id="dp-plots"></div>
+            <div id="dp-status" class="dp-status" role="status">loading…</div>
+          </div>
+
+          <div class="dp-card" id="dp-strip-card">
+            <div class="dp-cardhead">Every layer at a glance <span class="dp-hint">(same axes and colours as above; click one to go to it)</span></div>
+            <div id="dp-strips"></div>
+          </div>
+
+          <div class="dp-card" id="dp-modes-card">
+            <div class="dp-cardhead dp-cardrow"><span>The modes: where each one sits along depth</span>
+              <span class="dp-seg dp-modesel" id="dp-modes-model" role="radiogroup" aria-label="Model for the mode table"></span></div>
+            <p class="dp-hint" id="dp-modes-hint"></p>
+            <div class="dp-tablewrap"><table class="dp-modes" id="dp-modes"></table></div>
+          </div>
+
+          <div class="dp-card" id="dp-ext-card">
+            <div class="dp-cardhead" id="dp-ext-head">Tokens at the extremes of a mode</div>
+            <p class="dp-hint" id="dp-ext-hint"></p>
+            <div class="dp-ext" id="dp-ext"></div>
+          </div>
+
+          <div class="dp-card dp-slot" id="dp-agree-card">
+            <div class="dp-cardhead dp-cardrow"><span>How far the two models' spaces agree <span class="dp-slot-tag">charts slot</span></span>
+              <span class="dp-seg" id="dp-agree-k" role="radiogroup" aria-label="Number of modes compared"></span></div>
+            <p class="dp-hint">Each chart compares whole spaces: the first <i>k</i> modes of one embedding against the first
+            <i>k</i> of another, on the same tokens, as a number from 0 (no shared direction) to 1 (the same space). It
+            ignores how the axes are rotated or mirrored inside the space, so unmatched axes do not matter here. The
+            set and strength are the ones chosen above.</p>
+            <div class="dp-charts" id="dp-agree"></div>
+          </div>
+          <details class="dp-card dp-notes">
+            <summary>Display choices made for this page, and how to check them</summary>
+            <div class="dp-tablewrap"><table class="dp-modes dp-choices">
+              <thead><tr><th>Choice</th><th>Here</th><th>Alternative</th><th>How to check</th></tr></thead>
+              <tbody>
+                <tr><td>Axis limits</td><td>each axis holds 99% of its mode's coordinates over all layers; the few tokens beyond are drawn on the frame's edge as open circles and counted on the plot</td><td>every token inside, one scale for both axes (the plain view); or each layer scaled on its own</td><td>choose under <i>Axis limits</i>; hover shows a clipped token's real coordinates; the depth-weight bars show how much of each mode sits at each layer</td></tr>
+                <tr><td>Scale</td><td>linear: a coordinate's distance from the axis is drawn to scale</td><td>square root, which spreads tokens crowded near zero when a few tokens sit far out</td><td>tick <i>Spread out the crowded centre</i>; hover shows the unchanged coordinates</td></tr>
+                <tr><td>Between layers</td><td>dots drawn on straight lines between neighbouring layers</td><td>jumps from layer to layer</td><td>the slider stops on whole layers with ← and →</td></tr>
+                <tr><td>Modes carried</td><td>the first 16 of 64, to keep the page small</td><td>all 64</td><td>the release data hold all 64</td></tr>
+                <tr><td>Precision</td><td>each coordinate stored as a whole number from −127 to 127 on a square-root scale, with one scale per layer and mode, so small values keep fine steps and large ones coarser steps (at most about 1/127 of the layer's largest value)</td><td>full precision</td><td>the audit re-encodes the release and compares every byte</td></tr>
+                <tr><td>Text colours</td><td>8 at a time; the rest grey</td><td>one colour per text</td><td>click names in the key; hover names every token's text</td></tr>
+                <tr><td>Placed tokens shown</td><td>the set's own tokens turn grey</td><td>both in colour</td><td>choose <i>none</i> under <i>Placed tokens</i></td></tr>
+              </tbody>
+            </table></div>
+          </details>
+          <div id="dp-tip" class="dp-tip" role="status"></div>
+        </section>
+
+        <aside class="dp-ctl" id="dp-controls" aria-label="Depth embedding controls" tabindex="-1">
+          <section class="dp-group">
+            <h2>Embedding</h2>
+            <div class="dp-field">Model
+              <div class="dp-seg" role="radiogroup" aria-label="Model" id="dp-model"></div></div>
+            <label class="dp-field">Construction set<select id="dp-set"></select></label>
+            <p class="dp-hint" id="dp-set-hint"></p>
+            <div class="dp-field">Coupling strength
+              <div class="dp-seg" role="radiogroup" aria-label="Coupling strength" id="dp-strength"></div></div>
+          </section>
+          <section class="dp-group">
+            <h2>Axes</h2>
+            <div class="dp-axes">
+              <label class="dp-field">x: mode<select id="dp-ax"></select></label>
+              <label class="dp-field">y: mode<select id="dp-ay"></select></label>
+            </div>
+            <p class="dp-hint" id="dp-axes-hint"></p>
+            <label class="dp-field">Axis limits<select id="dp-lim"></select></label>
+            <label class="dp-check"><input type="checkbox" id="dp-fix" checked> <span>Same axis limits at every layer <span class="dp-hint">(off: each layer is scaled on its own)</span></span></label>
+            <label class="dp-check"><input type="checkbox" id="dp-sq"> <span>Spread out the crowded centre <span class="dp-hint">(square-root scale: each coordinate drawn at the square root of its distance from the axis, sign kept; order is unchanged, distances are not)</span></span></label>
+          </section>
+          <section class="dp-group">
+            <h2><label for="dp-color">Colour</label></h2>
+            <select id="dp-color">
+              <option value="text">text (document or sequence)</option>
+              <option value="pos">position in the text</option>
+              <option value="freq">frequency of the token in the set</option>
+              <option value="cohort">panel group (with a panel shown)</option>
+            </select>
+            <p class="dp-hint" id="dp-color-hint"></p>
+          </section>
+          <section class="dp-group">
+            <h2><label for="dp-over">Placed tokens</label></h2>
+            <select id="dp-over"></select>
+            <p class="dp-hint" id="dp-over-hint"></p>
+          </section>
+          <button type="button" class="dp-back" id="dp-back">↑ Back to plot</button>
+        </aside>
+      </div>
+    </div>
+  </section>
+  <section class="tab-panel" id="tab-experiments" data-tab="experiments">
+    <header class="page-head xp-head"><h1>Experiments</h1></header>
+    <article class="xp">
+<div class="xp-lede">
+<p class="xp-kicker">TransformerModes · Stage A</p>
+<h1>What do a language model's similar tokens have in common?</h1>
+
+<p>The long-term goal of this project is a map of what a language model does to a text, layer by layer. The plan is to
+connect the positions of tokens (a token is a word or piece of a word) whose internal states are similar, then find the
+main patterns of that graph. Whether such a map is useful depends on what "similar" ends up meaning. We wanted
+similarity to include each token's recent past, a setting we call <strong>memory</strong>. A small pilot suggested a
+catch: memory might simply make every token resemble its neighbours in the same text. The map would then say little
+more than "where am I in which document". Stage A (this site) checks that worry. It measures neighbours, graph weights
+and prediction agreement; it does not build the map. Stage B, the later stage that would build the map, is designed but
+not run. Decisions about the plan were made by the project's owner, Charles R-W.</p>
+
+<p>We ran two 1-billion-parameter language models, Pythia-1b and
+OLMo-1B. Their tokenizers split these texts into identical tokens. Each model read the first
+2,047 tokens of 32 long documents from the Pile test set. The documents
+come from 10 sources, at most four per source. We analysed each token's hidden state after
+every second block (2, 4, …, 16). The main results use the state after block 8 of 16
+("layer 8"). Nothing was trained.</p>
+
+<div class="x-numbers">
+  <div><b>2 models</b><span>Pythia-1b and OLMo-1B, identical tokens on these texts</span><small>16 blocks, width 2,048</small></div>
+  <div><b>32 texts</b><span>the first 2,047 tokens of long Pile test documents</span><small>10 sources · at most 4 per source</small></div>
+  <div><b>57,344 tokens</b><span>analysed, from position 256 on; the first 255 are history only</span><small>each compared with all the others</small></div>
+  <div><b>5 memories</b><span>none, about 2, about 8, about 64 tokens, or the whole past equally weighted</span><small>main results at layer 8</small></div>
+</div>
+
+<h2>How we counted neighbours</h2>
+<ol class="xp-steps">
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: vectors with the average removed, scaled to unit length">
+      <circle class="sk-line" cx="80" cy="46" r="32"/>
+      <path class="sk-ink" d="M80 46l26-19M80 46l-30 11M80 46l9 31"/>
+      <path class="sk-mute sk-dash" d="M80 46l38-28M80 46l-18 7"/>
+      <circle class="sk-dot" cx="80" cy="46" r="2.6"/>
+      <text x="80" y="93" text-anchor="middle">average removed, length 1</text>
+    </svg>
+    <strong>Prepare each token's vector.</strong> At a chosen layer, subtract one average hidden state, taken over all
+    32 texts, so that what every token shares does not swamp the comparison. Then scale each vector
+    to length 1, so loud and quiet tokens count equally (comparison by angle, or cosine).
+  </li>
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: two pasts lined up at their right ends and compared lag by lag">
+      <g class="sk-cells"><rect x="20" y="16" width="16" height="14"/><rect x="40" y="16" width="16" height="14"/><rect x="60" y="16" width="16" height="14"/><rect x="80" y="16" width="16" height="14"/><rect x="100" y="16" width="16" height="14"/><rect class="sk-cur" x="120" y="16" width="16" height="14"/></g>
+      <g class="sk-cells"><rect x="40" y="52" width="16" height="14"/><rect x="60" y="52" width="16" height="14"/><rect x="80" y="52" width="16" height="14"/><rect x="100" y="52" width="16" height="14"/><rect class="sk-cur" x="120" y="52" width="16" height="14"/></g>
+      <g class="sk-link"><path d="M128 30v22" style="opacity:1"/><path d="M108 30v22" style="opacity:.62"/><path d="M88 30v22" style="opacity:.38"/><path d="M68 30v22" style="opacity:.24"/><path d="M48 30v22" style="opacity:.15"/></g>
+      <text x="4" y="27">t</text><text x="4" y="63">t′</text>
+      <text x="128" y="80" text-anchor="middle">now</text>
+      <text x="80" y="93" text-anchor="middle">← older steps count less</text>
+    </svg>
+    <strong>Compare two pasts end to end.</strong> To compare token <em>t</em> with token <em>t′</em>, line up their
+    histories at the right end: <em>t</em> with <em>t′</em>, <em>t</em>−1 with <em>t′</em>−1, and so on going back. Add
+    the step-by-step similarities, with weights that fade by a fixed factor per step. <strong>Memory</strong> sets how
+    fast they fade, that is, how far back the comparison looks: none, about 2, about 8, about 64 tokens, or the whole
+    past equally weighted. Then divide by the size of each weighted past, so the result is the cosine between the two
+    weighted pasts. With no memory, only the two current vectors are compared; each already reflects earlier text,
+    through attention. Because each step pairs matching lags, a token is never compared with its own position, so
+    tokens <em>t</em> and <em>t</em>+1 are not similar just because their pasts overlap.
+  </li>
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: a query token and the ring of its nearest tokens">
+      <g class="sk-pts"><circle cx="18" cy="20" r="2.4"/><circle cx="34" cy="70" r="2.4"/><circle cx="50" cy="14" r="2.4"/><circle cx="140" cy="18" r="2.4"/><circle cx="148" cy="64" r="2.4"/><circle cx="122" cy="80" r="2.4"/><circle cx="24" cy="46" r="2.4"/><circle cx="132" cy="44" r="2.4"/><circle cx="58" cy="78" r="2.4"/><circle cx="110" cy="10" r="2.4"/></g>
+      <g class="sk-pts sk-in"><circle cx="70" cy="38" r="2.6"/><circle cx="92" cy="34" r="2.6"/><circle cx="96" cy="54" r="2.6"/><circle cx="74" cy="58" r="2.6"/><circle cx="64" cy="48" r="2.6"/><circle cx="86" cy="62" r="2.6"/></g>
+      <circle class="sk-ring" cx="80" cy="46" r="23"/>
+      <circle class="sk-q" cx="80" cy="46" r="3.6"/>
+      <text x="80" y="93" text-anchor="middle">the 64 most similar</text>
+    </svg>
+    <strong>Take the 64 most similar tokens.</strong> The first 255 tokens of each text are part of
+    later tokens' histories, but are never selected as queries or neighbours. For each of the 57,344 remaining
+    tokens, find the 64 most similar among all the others: from any text, earlier or later in the passage.
+  </li>
+  <li>
+    <svg class="xp-sketch" viewBox="0 0 160 96" role="img" aria-label="Sketch: the 64 neighbours sorted into three places, as one stacked bar">
+      <rect class="sk-other" x="14" y="30" width="62" height="20"/><rect class="sk-far" x="76" y="30" width="38" height="20"/><rect class="sk-near" x="114" y="30" width="32" height="20"/>
+      <text x="45" y="64" text-anchor="middle">other text</text><text x="95" y="64" text-anchor="middle">far</text><text x="130" y="64" text-anchor="middle">near</text>
+      <path class="sk-mute" d="M78 70v4h66v-4"/><text x="111" y="84" text-anchor="middle">same text</text>
+      <text x="80" y="20" text-anchor="middle">shares of the 64</text>
+    </svg>
+    <strong>Sort the 64 by where they sit.</strong> Each neighbour is in another text, in the same text more than 64
+    tokens away, or in the same text within 64 tokens (before or after). Average those shares over all analysed tokens.
+    If the 64 were drawn at random, 97% would sit in other texts.
+  </li>
+</ol>
+
+<h2>Three findings</h2>
+
+<p class="xp-finding"><strong>Memory pulls neighbours into the same text, and right next door.</strong> Even with no
+memory, most of a token's 64 nearest tokens sit in its own text: 59% in
+Pythia-1b and 62% in OLMo-1B
+at layer 8, where chance would put 97%
+in other texts. Memory moves them right next door: in Pythia-1b the share within 64 tokens goes
+from 13% with no memory to 51% at memory
+64. Now give each token a fixed random vector instead and run the same comparison. At memory 64 those vectors still keep
+54% of neighbours in the same text, because texts reuse their vocabulary. But
+they put only 9% within 64 tokens, against the model's
+51%. At the whole past, random vectors already put
+34% within 64 tokens. <a href="#experiments/x-e1-neighbours">E1: Where are a token's most similar tokens? →</a></p>
+
+<p class="xp-finding"><strong>Neighbours agree on what comes next, until memory grows.</strong> With no memory, a
+token's neighbours share its top next-token prediction about twice as often as stand-ins do:
+22% versus 10% in
+Pythia-1b at layer 8 (OLMo-1B:
+22% versus 11%). A stand-in
+is another occurrence of the neighbour's token in the neighbour's text, picked at random from tokens that are not
+neighbours. If neighbour and query share a text, the stand-in must also be in the same distance band from the query as
+the neighbour. The advantage shrinks as memory grows, to
+nearly nothing for the whole past. One limit: the comparison uses only pairs that found a stand-in, in groups where at
+least half the pairs (and at least 200) found one. That is 48% of all pairs with no memory, and
+6% for the whole past. <a href="#experiments/x-e2-concordance">E2: Do
+similar tokens agree about what comes next? →</a></p>
+
+<p class="xp-finding"><strong>A rule written in advance picked a setup; the owner then redesigned Stage B.</strong> A
+rule written before any results existed was applied to 32 ways of building the
+similarity graph. It had four tests: enough of the graph's link weight goes to other texts; not too much goes to
+nearby tokens; memory changes the neighbours; and the neighbours differ from what the tokens alone give. It picked
+lengths kept (dot), memory 64, one average removed, nothing barred. The "dot" setting measures the distance between histories with vector lengths kept, so
+louder vectors count more. "Barred" tokens are not allowed as neighbours; "nothing barred" means every analysed token
+may be one. After seeing Stage A's findings, the owner set that pick aside. Stage B was redesigned around independent
+text chunks, one per document, compared by angle with nothing barred. The new
+Stage B is designed, not yet run. <a href="#experiments/x-e3-selection">E3: What did this decide for the next stage?
+→</a></p>
+
+<p class="x-links">The release uses the audited Stage A outputs, including the corrected prediction readout. The pilot
+(a separate local run) and the design settings are identified separately in Method. An independent
+audit recomputed the results for 32 sample tokens, one per text, from the raw hidden states
+(1,242 checks, 0 failures). <a href="#method/check">How the numbers
+were checked</a> · <a href="#viewer">Inspect any token in the Viewer</a></p>
+</div>
+
+<div class="xp-lede xp-lede-depth">
+<h2>A second study: tokens through the layers</h2>
+<p>A separate study builds, for fixed samples of these texts, one space that holds all 17 layers of a
+model at once, so that the same token can be followed from the input to the last block. It asks what the main patterns
+of that space look like, how they change with the sample, whether the two models agree, and where tokens of another
+kind (random or shuffled) land. It uses no memory kernel and describes these fixed samples; it is not a test.</p>
+<p class="xp-finding"><strong>The two models give the same tokens similar spaces; much of the overlap survives scrambling which occurrence of each word piece is matched with which.</strong>
+On a set's own tokens, the two models' first 16 patterns overlap 0.62 to
+0.72 (1 = the same space, 0 = nothing shared). Reordering the occurrences within each word
+piece in one model, which leaves some tokens matched, still gives 0.37 to
+0.54 in the document sets; reordering all tokens freely gives at most
+0.005. <a href="#experiments/x-d1-depth">D1: Depth embedding of tokens →</a>
+· <a href="#depth">Depth embedding tab</a></p>
+</div>
+
+<section class="experiment" id="x-e1-neighbours">
+<h2>Where are a token's most similar tokens?</h2>
+<p class="x-scope"><b>Tested:</b> all 57,344 analysed tokens across 32 texts, from position 256 onward, each compared with all others in both models. The first 255 tokens of each text are part of later tokens' histories, but are never selected as queries or neighbours. Lead figure: layer 8 (after block 8 of 16), compared by angle (cosine), with one average removed (one per model and layer, taken over all texts), and nothing barred: every analysed token may be a neighbour. (In the variations, "nearby tokens barred" means tokens within 64 positions in the same text are not allowed as neighbours.) Five <b>memory</b> settings vary how far back the comparison looks, with older positions counting less (none, about 2, about 8, about 64 tokens, or the whole past equally weighted).</p>
+
+<p class="x-answer"><strong>Even with no memory, most of a token's 64 nearest tokens sit in its own text</strong> (59% in Pythia-1b and 62% in OLMo-1B at layer 8, against 97% in other texts by chance). Adding memory pushes them right next door: at memory 64, 51% (Pythia-1b) and 57% (OLMo-1B) sit within 64 tokens, before or after. The same comparison with a fixed random vector per token id gives far fewer nearby neighbours: 9% against 51% (Pythia-1b) at memory 64, though it still keeps 54% in the same text, because documents reuse their own vocabulary. At the whole past, random vectors already reach 34% within 64 tokens.</p>
+
+<figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#lead2" data-height="220">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> where a token's 64 nearest tokens sit, averaged over all 57,344 analysed tokens, one panel per model at layer 8 (compared by angle, one average removed, no tokens barred). Each memory group pairs a wide bar for the model's hidden states with a narrow, lighter bar for fixed random vectors per token id (same comparison formula, no model layers). The random-vector bars are the same in both panels. Segments show neighbours in another text (grey, bottom), in the same text more than 64 tokens away (blue, middle), and in the same text within 64 tokens before or after (orange, top). The horizontal dashed line marks the chance other-text share (97%), expected if 64 neighbours were drawn at random. Resampling the 32 documents 200 times shifts Pythia-1b's other-text share within 36%–47% with no memory and 1%–3% at memory 64 (5th to 95th percentile). Hover a group for the shares to one decimal, the random-vector shares, and the other-text interval.</figcaption>
+</figure>
+
+<div class="x-numbers">
+  <div><b>59% → 98%</b><span>of neighbours in the token's own text, no memory → memory 64</span><small>Pythia-1b · layer 8 · one average removed</small></div>
+  <div><b>51% vs 9%</b><span>within 64 tokens at memory 64: model vs random vectors per token id</span><small>Pythia-1b layer 8 · random vectors have no layers</small></div>
+  <div><b>97%</b><span>of neighbours would sit in other texts if drawn at random</span><small>same for both models and every memory</small></div>
+</div>
+
+<p class="x-viewlink">See it token by token: <a href="#viewer?memory=64&amp;acc=C-none">the viewer at memory 64 (one average removed)</a> · <a href="#viewer?memory=64&amp;acc=C-window">with nearby tokens barred</a>.</p>
+
+<h3>Why the whole past behaves differently</h3>
+<p>When every earlier token counts equally, two histories of different lengths can only be paired up to the shorter one. That length mismatch caps how similar an early token and a late token can ever be, no matter how alike their texts are. Neighbours therefore cluster at similar positions in the text. For each token we took the median distance to its same-text neighbours; at layer 8 in Pythia-1b those medians averaged 21 tokens. At the whole past, 34% of random-vector neighbours and 93% of Pythia-1b neighbours are within 64 tokens. So the comparison itself produces a pull towards similar positions, even without the model's states; the rest of the gap is not explained by this control.</p>
+
+<h3 id="x-e1-neighbours-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Quantity</th><th>Plain description and definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Similarity with memory</td><td>Line up two tokens' pasts at their ends, add step-by-step similarities with fading weight $a$, and take the cosine of the two weighted pasts.<br>$S(t,t') = \sum_{s \ge 0} a^s \langle y_{t-s}, y_{t'-s} \rangle,\ d = 1 - \dfrac{S(t,t')}{\sqrt{S(t,t)\,S(t',t')}}$</td>
+      <td>$y_u$: hidden state at position $u$ after subtracting one average over all texts and scaling to unit length (set to zero before position 1); $a = 1 - 1/m$ for memory $m$ ($a = 0$ for none, $a = 1$ for whole past); $d$: one minus the cosine of the two weighted pasts</td>
+      <td>exp1/census.py: Kernel</td></tr>
+  <tr><td>Where neighbours sit</td><td>For each analysed token, find the share of its 64 nearest tokens in each location bin, then average across tokens.<br>$\pi_b = \dfrac{1}{|Q|}\sum_{i \in Q} \dfrac{|\{j \in N(i) : \text{bin}(i,j) = b\}|}{|N(i)|}$</td>
+      <td>$Q$: all 57,344 analysed tokens; $N(i)$: 64 nearest allowed tokens (ties at 64th place broken by text number, then position); $b$: another text, same text with $|\Delta| &gt; 64$, or same text with $|\Delta| \le 64$; every token counts equally</td>
+      <td>exp1/census.py: geometry_summary</td></tr>
+  </tbody>
+</table>
+</div>
+
+<details class="x-more" id="x-e1-neighbours-figures">
+  <summary>Variations and supporting figures <span class="x-count">(8 notes, 9 figures)</span></summary>
+  <ul class="x-caveats x-vars">
+    <li><b>Each text's own average removed:</b> subtracts each document's average over all its tokens, including later ones, and can also remove topic-related differences along with offsets. With each text's own average removed, Pythia-1b's own-text share goes from 52% (no memory) to 88% (memory 64), against 59% → 98% with one average removed. Because this average includes later tokens, it is a retrospective contrast rather than a correction.</li>
+    <li><b>Nearby tokens barred:</b> forbids same-text neighbours within 64 positions, so the nearby share is zero by rule rather than by discovery. At memory 64 in Pythia-1b, this rule removes, on average, 25% of the graph weight (defined in the table below) of queries from each text's last 512 tokens, and still leaves only 8% of the 64 nearest in other texts.</li>
+    <li><b>Own text barred:</b> forces every neighbour into another text by rule, so it is shown only in the same-token comparison below rather than as a location share.</li>
+    <li><b>Lengths kept (the "dot" setting):</b> ranks neighbours by the distance between the two weighted histories with vector lengths kept, so louder hidden states count more; at the whole past, tokens with the shortest histories end up close to everyone, moving most neighbours into other texts. The preference for short histories also appears with random vectors per token id, so it does not need the model's states.</li>
+    <li><b>Other layers:</b> averaging across all 8 measured layers gives the same pattern—in Pythia-1b, own-text share rises from 63% to 97% at memory 64, with 47% within 64 tokens.</li>
+    <li><b>Spliced texts:</b> two documents cut into alternating segments and analysed alone (with the 32 real texts' average removed). In Pythia-1b (mean of the 4 spliced texts, layer 8), same-source share beyond what position alone predicts drops from 18.6 percentage points with no memory to 4.8 at memory 64 and -0.1 at the whole past (OLMo-1B: -0.1). At the whole past, the average same-source share was within a percentage point of what the neighbours' position gaps predict.</li>
+    <li><b>Synthetic texts:</b> artificial sequences with planted hidden states, slow drift, or pure noise, included as a visual reference rather than a test.</li>
+    <li><b>Overlap with text-only inputs:</b> text-only inputs are vectors that know only which token is where: a fixed random vector per token id, or the model's input embeddings. At memory 64 in Pythia-1b (layer 8), 29% of neighbours are shared with whichever text-only input shares more, while only 15% remain from the model's own no-memory list.</li>
+  </ul>
+  <h4 class="x-subhead">Definitions used by the variations</h4>
+  <div class="x-tablewrap">
+  <table class="x-defs">
+    <thead><tr><th>Quantity</th><th>Plain description and definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+    <tbody>
+  <tr><td>Graph weight</td><td>Spread a total weight of 1 from each late query over all late candidates, giving closer tokens more weight, tuned to be roughly as concentrated as an even split over 64 tokens.<br>$q(j \mid i) \propto e^{-\beta_i (d_{ij} - \min_j d_{ij})},\ \ 1 / \textstyle\sum_j q(j \mid i)^2 = 64$</td>
+      <td>$i$: 2,048 sampled late queries (positions 1,536–2,047); $j$: 16,384 late candidates; $\beta_i$ found by bisection; weight on bin $b$ is $\sum_{j \in b} q(j \mid i)$</td>
+      <td>exp1/census.py: cond_rows</td></tr>
+  <tr><td>Weight removed by barring nearby tokens</td><td>Measure how much graph weight sat within 64 tokens in the same text before those tokens were barred.<br>$\sum_{j:\ \text{same text},\ |\Delta| \le 64} q_{\text{unbarred}}(j \mid i)$</td>
+      <td>$q_{\text{unbarred}}(j \mid i)$: graph weight when no tokens are barred; averaged over the 2,048 sampled late queries</td>
+      <td>exp1/census.py: run_group (screen_removed)</td></tr>
+  <tr><td>Shared with text-only inputs</td><td>Count the expected share of a token's 64 neighbours that also appear in a text-only input's 64 neighbours.<br>$\mathbb{E}|A \cap B| / 64 = \tfrac{1}{64}\sum_j P(j \in A)\,P(j \in B)$</td>
+      <td>$A$, $B$: the two 64-neighbour lists; $P = 1$ strictly inside the top 64 and $t_\text{in}/t_\text{all}$ at a tied cutoff (as if ties were broken at random); text-only inputs: fixed random vectors per token id, and each model's input embeddings</td>
+      <td>exp1/census.py: overlap_values</td></tr>
+  <tr><td>Same-source share beyond position</td><td>In a spliced text, measure how much more often neighbours share the query's source document than their positions alone predict.<br>$\text{same-source share} - \tfrac{1}{|N(i)|}\sum_{j \in N(i)} b(j - i)$</td>
+      <td>each spliced text analysed alone; $b(\Delta)$: fraction of analysed position pairs $\Delta$ tokens apart in that spliced text that fall in the same source document</td>
+      <td>exp1/census.py: position_baseline</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="x-figs">
+  <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#lead" data-height="200">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> all four combinations of which average is removed and whether nearby tokens are barred, at layer 8, compared by angle (each panel's heading names the model and the setting). Bars show where the 64 nearest tokens sit; vertical bars show 5th to 95th percentile of the other-text share across 200 document resamplings. In barred columns, the within-64 share is zero by rule (hatched cap), and the number above each bar ("removed") is the graph weight that barring took away (defined in the table above the figures).</figcaption>
+  </figure>
+  <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#textonly" data-height="180">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> where the 64 nearest tokens sit under the same comparison run on three inputs over the same texts: each model's hidden states (averaged over all 8 measured layers), a fixed random vector per token id (no layers), and each model's input embeddings (layer 0); one average removed, no tokens barred, compared by angle.</figcaption>
+  </figure>
+  <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#screen" data-height="180">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> where the graph weight goes, across the same four settings and two models at layer 8 (compared by angle), averaged over 2,048 sampled late queries against all 16,384 late tokens. Unlike the 64-nearest bars, graph weight spreads thinly across thousands of distant tokens in other texts.</figcaption>
+  </figure>
+  <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#dot" data-height="180">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> the same four-setting grid with lengths kept (the "dot" setting: larger hidden states count more); same layout, layer 8 and document-resampling bars as the angle grid above.</figcaption>
+  </figure>
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#adversary" data-height="220">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> by memory, the expected share of a token's 64 neighbours that are also among the 64 found with a fixed random vector per token id (solid), with the model's input embeddings (dashed), and with the same model at no memory (dotted, grey); tied places count fractionally; one average removed, no tokens barred, layer 8.</figcaption>
+  </figure>
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#timescales" data-height="230">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> reference distance scales per layer (log scale) beside dotted markers at 2, 8, and 64 tokens: the average distance each attention head looks back (weighted by attention, excluding attention to the separator at position 0; dark line: median over heads; band: middle half), and the hidden-state half distance: the first lag at which the mean similarity of two states of one text falls halfway from its lag-one value to the between-text mean (grey solid: one average removed; grey dashed: each text's own average removed). The half distance was measured at even layers only, so odd layers have no point; every even layer reached halfway within 1,024 tokens.</figcaption>
+  </figure>
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#same_token" data-height="230">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> share of a token's 64 neighbours that have the exact same current token, by memory, with no tokens barred (solid), nearby tokens barred (dashed), and own text barred (dotted), beside the chance level (grey); one average removed, layer 8.</figcaption>
+  </figure>
+  <figure class="live" data-live="lines" data-src="assets/x/e1-neighbours.json#stitched" data-height="220">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> for each of the 4 spliced texts (two documents cut into alternating segments of 384–640 tokens, solid, or 48–80 tokens, dashed; dark lines: texts 32–33, one pair of documents; grey lines: texts 34–35, the other pair), the same-source neighbour share minus what position alone predicts, in percentage points, by memory. Each spliced text is analysed alone: its neighbours come only from its own tokens, none of which are barred, and the average removed is that of the 32 real texts; layer 8.</figcaption>
+  </figure>
+  <figure class="live x-wide-fig" data-live="stack" data-src="assets/x/e1-neighbours.json#synthetic" data-height="180">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> the same neighbour count on synthetic texts with a planted hidden state (strong or weak), slow position drift, or pure noise, as a visual reference; compared by angle, one average removed, no tokens barred, last synthetic layer, averaged over seeds (25 runs).</figcaption>
+  </figure>
+  </div>
+</details>
+
+<h3 id="x-e1-neighbours-caveats">Caveats</h3>
+<ul class="x-caveats">
+  <li><b>Shares are averages over tokens, not over pairs.</b> Every analysed token counts once, so every text counts equally. The resampling intervals re-weight the 32 texts but do not recompute anyone's neighbours; they show how much texts differ, not what another corpus would give.</li>
+  <li><b>The sample is beginnings of long, mostly ASCII documents.</b> At most four documents come from any single Pile source, and OLMo-1B's training data are not guaranteed to exclude these texts.</li>
+  <li><b>Values shown as 100% or 0% are rounded.</b> At the whole past, own-text shares are more than 99% and other-text shares are under 1% in both models.</li>
+  <li><b>Text-only inputs have exact ties with no memory.</b> Identical tokens sit at zero distance when memory is none, so ties at the 64th place are filled in text-and-position order (lowest text number first).</li>
+  <li><b>Barring rules fix shares by definition.</b> Barring nearby tokens forces the within-64 share to zero, and barring the token's own text forces the other-text share to one; neither is a finding.</li>
+</ul>
+
+<details class="x-more">
+  <summary>Design choices (made by the analysis, not the owner) <span class="x-count">(5)</span></summary>
+  <div class="x-tablewrap">
+  <table class="x-decisions">
+    <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>Neighbour count</td><td>all analysed tokens, 64 neighbours, every setting</td><td>a sample of tokens</td></tr>
+    <tr><td>2</td><td>Memory grid</td><td>none, 2, 8, 64, whole (2 added between none and 8)</td><td>lengths derived from the models</td></tr>
+    <tr><td>3</td><td>Settings</td><td>one average or own-text average × nothing barred, nearby barred, or own text barred</td><td>a separate average removed at each position; a barred distance that grows with memory</td></tr>
+    <tr><td>4</td><td>Lead layer</td><td>layer 8, halfway through the 16 blocks</td><td>all 8 layers in the main figure</td></tr>
+    <tr><td>5</td><td>Uncertainty</td><td>resampling whole documents (200 draws)</td><td>resampling tokens, which ignores dependence within a text</td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/census.py">Code: census.py</a> · <a href="#method/census">Method: counting neighbours</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+</section>
+
+<section class="experiment" id="x-e2-concordance">
+<h2>Do similar tokens agree about what comes next?</h2>
+<p class="x-scope"><b>Tested:</b> 3,072 fixed query tokens (96 per text: 64 from the last 512 positions and 32 from positions 256–1,535), each paired with its 64 nearest neighbours from <a href="#experiments/x-e1-neighbours">E1</a>. Predictions are each model's own top-20 next-token probabilities (from its output layer), compared for the query, the neighbour, and a matched stand-in (illustrated below). Lead figure: neighbours from layer 8, compared by angle (cosine), one average removed, nothing barred (every analysed token may be a neighbour; layers 4, 8, 12, 16 were all measured). Five <b>memory</b> settings vary how far back the comparison looks with fading weights (none, about 2, about 8, about 64 tokens, or the whole past equally weighted).</p>
+
+<div class="e2-example" role="figure" aria-label="Worked example of how E2 pairs a query, a neighbour, and a stand-in">
+  <div class="e2-ex-badge">Illustration</div>
+
+  <div class="e2-ex-row">
+    <p class="e2-ex-title"><strong>A neighbour in another text</strong></p>
+    <div class="e2-ex-grid">
+      <div class="e2-ex-card">
+        <span class="e2-ex-role">Query (Q)</span>
+        <p class="e2-ex-meta">Text A · position 1,620</p>
+        <p class="e2-ex-snip">… after the court upheld <mark>its</mark></p>
+        <p class="e2-ex-pred">Model predicts next token (top 20): <em>ruling, decision, order, …</em></p>
+      </div>
+      <div class="e2-ex-card">
+        <span class="e2-ex-role">Neighbour (N)</span>
+        <p class="e2-ex-meta"><mark class="e2-fix">Text B</mark> · position 910 · token <mark class="e2-fix">"the"</mark></p>
+        <p class="e2-ex-snip">… while the panel reviewed <mark>the</mark></p>
+        <p class="e2-ex-pred">Compare Q's top-20 predictions with N's top-20 predictions.</p>
+      </div>
+      <div class="e2-ex-card">
+        <span class="e2-ex-role">Stand-in (S)</span>
+        <p class="e2-ex-meta"><mark class="e2-fix">Text B</mark> · random other <mark class="e2-fix">"the"</mark> in the analysed range (not in Q's 64 neighbours)</p>
+        <p class="e2-ex-snip">… in the second chapter of <mark>the</mark></p>
+        <p class="e2-ex-pred">Compare Q's top-20 predictions with S's top-20 predictions.</p>
+      </div>
+    </div>
+    <p class="e2-ex-fixed"><b>Held fixed between N and S:</b> the neighbour's text (Text B) and the neighbour's current token ("the").</p>
+  </div>
+
+  <p class="e2-ex-variant"><b>Same-text variant:</b> if the neighbour were in the query's own text, say 300 tokens away, the stand-in would have to be another "the" in that text that is also 65–512 tokens from the query. The distance bands are 1–8, 9–64, 65–512 and over 512 tokens.</p>
+
+  <p class="e2-ex-cap"><b>Illustration, not data.</b> A <b>stand-in</b> is matched to the <b>neighbour</b>, not to the query: same text and token as the neighbour, picked at random from tokens that are not among the query's 64 neighbours. We compare the predictions at Q and N with those at Q and S. Nothing is compared with the actual next token.</p>
+</div>
+
+<p class="x-answer"><strong>At layer 8 with no memory, a token's neighbours match its top next-token prediction about twice as often as stand-ins do</strong> (22% versus 10% in Pythia-1b; 22% versus 11% in OLMo-1B). As memory grows, that edge fades to nearly nothing: by the whole past, neighbours and stand-ins agree almost equally (5% versus 5% in Pythia-1b; 6% versus 5% in OLMo-1B). The comparison uses only pairs that found a stand-in, in groups where at least half the pairs (and at least 200) found one: 48% of all pairs in Pythia-1b (48% in OLMo-1B) with no memory, falling at the whole past to 6% in Pythia-1b and 6% in OLMo-1B.</p>
+
+<figure class="live x-wide-fig" data-live="agreement" data-src="assets/x/e2-concordance.json#lead2" data-height="280">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> one panel per model (layer 8, compared by angle, one average removed, no tokens barred): how often a neighbour matches the query's single most likely next token (solid) versus its stand-in (dashed), averaged equally across groups that had enough stand-ins. Each model's panel has a strip beneath it on the same memory axis: share of all neighbour pairs used in the result, matched to a stand-in but in a left-out group, or left with no stand-in; under each memory, short labels name the groups used.</figcaption>
+</figure>
+
+<div class="x-numbers">
+  <div><b>0.121 → 0.003</b><span>prediction advantage (defined below), no memory → whole past</span><small>Pythia-1b · layer 8 · one average removed</small></div>
+  <div><b>0.105 → 0.007</b><span>the same decline in the second model</span><small>OLMo-1B · layer 8 · one average removed</small></div>
+  <div><b>0 of 40</b><span>nearby groups that had enough stand-ins to enter the score</span><small>Pythia-1b · 2 nearby groups × 4 layers × 5 memories</small></div>
+</div>
+
+<h3>The pre-registered prediction advantage</h3>
+<p>Rather than looking only at the single top token, the measure fixed before the run (pre-registered) compares the two top-20 next-token lists, with their probabilities. For each pair, we sum the shared probability mass across tokens appearing in both top-20 lists and subtract the stand-in's shared mass. We average those differences within each group over its matched pairs, then give each group with enough stand-ins equal weight. At layer 8 with one average removed and no tokens barred, this <b>prediction advantage</b> falls from 0.121 with no memory to 0.003 for the whole past in Pythia-1b, and from 0.105 to 0.007 in OLMo-1B. The chart below shows this advantage across settings at layer 8, with uncertainty bars from 200 resamplings of the 32 texts.</p>
+
+<figure class="live x-wide-fig" data-live="points" data-src="assets/x/e2-concordance.json#lead" data-height="240">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> prediction advantage by memory at layer 8 (compared by angle), one panel per model. Colour: one average removed (green) or each text's own average removed (violet). Shape: no tokens barred (circle) or nearby tokens barred (diamond). Vertical bars: 5th to 95th percentile over 200 document resamplings. Hollow: the setting fails the completeness rule <a href="#experiments/x-e3-selection">E3</a> uses (a group without enough stand-ins, or fewer than half of all pairs with one). It does not mean the value is invalid. All one-average, nothing-barred points are hollow, because their nearby and rare-token groups lack stand-ins. That is fine for this page: the completeness rule mattered only for picking an optional extra example in E3. Missing points were not computed.</figcaption>
+</figure>
+
+<h3>Is the decline just a change in which groups enter the score?</h3>
+<p><strong>No.</strong> Pairs are split into six groups by where the neighbour sits and whether its token is frequent (the neighbour's token occurs at least 20 times among the 57,344 analysed tokens) or rare (fewer than 20). Groups where fewer than half the pairs (or fewer than 200 pairs) find a stand-in are left out. Nearby groups never cleared that bar (0 of 40: two nearby groups at each of 4 layers and 5 memories), and rare-token groups often fell short too. At layer 8 in Pythia-1b with no memory, 13% of pairs found a stand-in in a left-out group and 38% found no stand-in at all. At memory 64, 15% found a stand-in but belonged to a group left out, and 46% found no stand-in.</p>
+
+<p>Pooling layers 4, 8, 12, 16, the advantage within each group on its own falls steadily with memory in both models, using all pairs that found a stand-in (including left-out groups). The decline persists within every group, though the pairs in a group are not the same pairs at every memory:</p>
+
+<div class="x-tablewrap">
+<table class="x-decisions x-groups">
+  <thead><tr><th>Neighbour group</th><th>Pythia-1b (no memory → memory 64 → whole past)</th><th>OLMo-1B (no memory → memory 64 → whole past)</th></tr></thead>
+  <tbody>
+  <tr><td>Other texts, frequent token</td><td>0.088 → 0.016 → -0.001</td><td>0.082 → 0.014 → -0.001</td></tr>
+  <tr><td>Other texts, rare token</td><td>0.051 → 0.009 → -0.001</td><td>0.053 → 0.009 → -0.007</td></tr>
+  <tr><td>Same text, far (&gt; 64 away), frequent token</td><td>0.169 → 0.026 → 0.005</td><td>0.165 → 0.028 → 0.007</td></tr>
+  <tr><td>Same text, far (&gt; 64 away), rare token</td><td>0.121 → 0.012 → 0.004</td><td>0.127 → 0.015 → 0.008</td></tr>
+  <tr><td>Same text, nearby (within 64), frequent token</td><td>0.124 → 0.013 → 0.004</td><td>0.115 → 0.012 → 0.004</td></tr>
+  <tr><td>Same text, nearby (within 64), rare token</td><td>0.082 → 0.004 → 0.002</td><td>0.073 → 0.005 → 0.001</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Even so, matched nearby pairs are a selected subset—tokens that repeat close by in the same text. Which groups are counted changes the exact size of the headline number, not its direction.</p>
+
+<h3>What this does not show</h3>
+<ul class="x-caveats">
+  <li><b>Nothing causal.</b> Whether the model uses these similarities was not tested.</li>
+  <li><b>What the stand-in does not control.</b> It matches text, token, and distance band only; anything else a neighbour shares with the query, such as its recent past, counts toward the advantage by design.</li>
+  <li><b>Not that long-memory neighbours are "wrong."</b> One plausible reading, not tested here: memory picks neighbours whose pasts resemble the query's (at memory 64 only 15% of a token's 64 neighbours are the same as with no memory; <a href="#experiments/x-e1-neighbours">E1</a>, layer 8), while the next-token prediction depends mostly on the current state.</li>
+  <li><b>The no-memory headline excludes rare-token and nearby groups.</b> They did not have enough stand-ins.</li>
+</ul>
+
+<h3 id="x-e2-concordance-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Quantity</th><th>Plain description and definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Prediction overlap</td><td>Add up the probability mass both positions place on the same next tokens, using each position's top 20 predictions.<br>$o(i,j) = \sum_{v \in T_i \cap T_j} \min\big(p_i(v),\, p_j(v)\big)$</td>
+      <td>$T_i$: the model's 20 most likely next tokens after position $i$; $p_i(v)$: full-softmax probability of token $v$ (not renormalised over the top 20)</td>
+      <td>exp1/readout.py: contributions</td></tr>
+  <tr><td>Stand-in</td><td>Pick another analysed position (positions 256–2,047) at random from the neighbour's own text with the same token as the neighbour and, if in the query's text, in the same distance band.<br>$j' \sim \text{uniform}(\text{same text, same token, same band})$</td>
+      <td>$i$: query; $j$: neighbour; $j'$: stand-in; distance bands (same text only): 1–8, 9–64, 65–512, over 512 tokens; $j'$ is never $i$, $j$, or another neighbour of $i$; seed keyed on model, setting, $i$, and $j$ for exact replay</td>
+      <td>exp1/readout.py: Matcher, keyed_seed</td></tr>
+  <tr><td>Pair advantage</td><td>Subtract the stand-in's prediction overlap from the real neighbour's overlap.<br>$a(i,j) = o(i,j) - o(i,j')$</td>
+      <td>pairs with no available stand-in are unmatched, with the reason recorded (token occurs once in text, empty distance band, or every candidate is already a neighbour)</td>
+      <td>exp1/readout.py: contributions</td></tr>
+  <tr><td>Prediction advantage</td><td>Split pairs into six groups by neighbour location and token frequency, average within each group over its matched pairs, then average those group means equally over groups with enough stand-ins.<br>$S = \dfrac{1}{|G|}\sum_{g \in G} \dfrac{\sum_{(i,j) \in g} a(i,j)}{n_g}$</td>
+      <td>groups: 3 locations × frequent (the neighbour's token occurs at least 20 times among the 57,344 analysed tokens) vs rare (fewer than 20); $G$: groups where at least half of the pairs, and at least 200 pairs, found a stand-in; $n_g$: matched pair count (tie-weighted) in group $g$</td>
+      <td>exp1/readout.py: summarize</td></tr>
+  <tr><td>Top-1 agreement</td><td>Compute how often the query's top predicted next token matches the neighbour's (or stand-in's), averaged equally over the same groups $G$.<br>$R = \dfrac{1}{|G|}\sum_{g \in G} r_g$</td>
+      <td>$r_g$: fraction of matched pairs in group $g$ whose most likely next token matches</td>
+      <td>exp1/readout.py: summarize</td></tr>
+  </tbody>
+</table>
+</div>
+
+<details class="x-more" id="x-e2-concordance-figures">
+  <summary>Variations, four-layer means, and shares with a stand-in <span class="x-count">(3)</span></summary>
+  <ul class="x-caveats x-vars">
+    <li><b>Four-layer means (layers 4, 8, 12, 16):</b> project summaries often quote averages over all four measured layers rather than layer 8 alone. In Pythia-1b with no memory, top-1 agreement is 23% versus 10% (2.3 times as often), and prediction advantage drops from 0.133 to 0.004. In OLMo-1B, top-1 agreement is 25% versus 11% (2.2 times), and prediction advantage drops from 0.131 to 0.008.</li>
+    <li><b>Other settings and layers:</b> subtracting each text's own average or barring nearby tokens shifts the exact advantage (shown in the points figure above), but every angle-based setting at every measured layer (layers 4, 8, 12, 16) falls with memory; with lengths kept (the "dot" setting) a few settings tick up slightly at the whole past.</li>
+  </ul>
+  <div class="x-figs">
+  <figure class="live x-wide-fig" data-live="heatmap" data-src="assets/x/e2-concordance.json#coverage">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> for each pair group (rows: neighbour location and whether its token is frequent or rare) and memory (columns), the share of neighbour pairs that found a stand-in; layer 8, compared by angle, one average removed, no tokens barred. A group enters the headline average only when at least half of its pairs, and at least 200 pairs, find a stand-in, which is why the nearby rows are left out. Blank cells had no pairs.</figcaption>
+  </figure>
+  </div>
+</details>
+
+<h3 id="x-e2-concordance-caveats">Caveats</h3>
+<ul class="x-caveats">
+  <li><span class="x-tag">audit</span><b>The first run failed the independent check and was fixed.</b> A 32-bit integer overflow in <code>exp1/readout.py</code> zeroed out prediction overlaps for texts 24–31 and the end of text 23. After switching to 64-bit keys and re-running, the check passed (1,242 checks, 0 failures). The fix changed only the prediction advantages, which rose. Top-1 rates, the share of pairs with a stand-in, and the <a href="#experiments/x-e3-selection">E3</a> pick did not change. See <a href="#method/check">How the numbers were checked</a>.</li>
+  <li><b>Two-thirds of the query sample sits near the end of each text.</b> Sixty-four of each text's 96 queries come from the last 512 positions, so results are not uniform across positions.</li>
+  <li><b>Only the top 20 predictions are compared.</b> Any shared probability below the 20th most likely token is invisible.</li>
+  <li><b>Document resampling does not redraw neighbours or stand-ins.</b> Uncertainty bars show variation across the 32 texts, not across a fresh set of documents.</li>
+</ul>
+
+<details class="x-more">
+  <summary>Design choices (made by the analysis, not the owner) <span class="x-count">(3)</span></summary>
+  <div class="x-tablewrap">
+  <table class="x-decisions">
+    <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>Query sample</td><td>3,072 fixed queries across four layers</td><td>all 57,344 analysed tokens</td></tr>
+    <tr><td>2</td><td>Group weighting</td><td>equal weights across groups with enough stand-ins</td><td>weighting by pair count, which frequent tokens would dominate</td></tr>
+    <tr><td>3</td><td>Role</td><td>descriptive only; never used to pick the main Stage B setup</td><td>selecting Stage B by prediction agreement</td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/readout.py">Code: readout.py</a> · <a href="#method/census">Method: counting and the prediction readout</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+</section>
+
+<section class="experiment" id="x-e3-selection">
+<h2>What did this decide for the next stage?</h2>
+<p class="x-scope"><b>Tested:</b> 32 candidate ways to build a memory-based similarity graph: memories 2, 8, 64, or the whole past; compared by angle (cosine) or by the distance between histories with vector lengths kept (the "dot" setting, where louder vectors count more); one average removed or each text's own average removed; nothing barred, or nearby tokens barred (tokens within 64 positions in the same text not allowed as neighbours). Evaluated on both models at all 8 measured layers. The tests use <b>late queries</b>: 2,048 tokens sampled from the last 512 positions of each text. They are compared with all 16,384 <b>late candidates</b>, the tokens in those last 512 positions of the 32 texts. This is the pool the old Stage B graph would have used. The selection rule was written before any results existed.</p>
+
+<p class="x-answer"><strong>The rule written in advance picked lengths kept (dot), memory 64, one average removed, nothing barred. The project owner set that pick aside and redesigned Stage B instead.</strong> Out of 32 candidates, 20 passed in both models, clearing all four tests together on at least 5 of the 8 measured layers in each.</p>
+
+<h3>The four tests</h3>
+<p>The tests look at the graph the old Stage B would have built. In that graph each late query spreads a total <b>graph weight</b> of 1 over all late candidates, more to the more similar ones. The spread is tuned to be about as concentrated as an even split over 64 tokens. At each layer a candidate passes if: (1) at least a quarter of the graph weight goes to other texts; (2) not too much goes to nearby tokens (at most 25% within 64 positions, or, when nearby tokens are barred, barring removes at most half); (3) memory changes the neighbours (at most half of the 64 nearest are the same as with no memory); and (4) at most half of the 64 nearest match those from either text-only input. Text-only inputs are vectors that know only which token is where: a fixed random vector per token id, or the model's input embeddings.</p>
+
+<h3>How the rule decided</h3>
+<p>The rule preferred candidates with no extra fixes (one average removed and nothing barred), then angle over lengths kept. No angle-based candidate passed without extra fixes. With angle comparison, memory 2 stayed too close to no memory; memory 8 passed on only 4 of Pythia-1b's 8 layers; and longer memories put too much graph weight within 64 tokens. With lengths kept, two candidates passed without extra fixes, at memories 8 and 64. Memory 64 won because its neighbours overlapped less with the text-only inputs. Its worst overlap (the largest with either text-only input, at any layer, in either model) was 25%, against 35% for memory 8.</p>
+<p>Even that pick barely cleared the bar. It passed in Pythia-1b on exactly 5 of 8 layers, the minimum (and 7 in OLMo-1B). Its closest call was layer 10, where 24.95% of its graph weight sat within 64 tokens, against a limit of 25%. Below, <b>M</b> is the rule's pick, <b>L</b> is the same lengths-kept setup with no memory, and <b>R</b> is the angle-based reference with no memory.</p>
+<p>No second construction was added: there was no eligible passing alternative. The rule allowed one optional extra example, chosen by E2's prediction advantage. To be eligible, a passing alternative needed E2's completeness rule to hold at all 4 E2 layers in both models (every non-empty group with enough stand-ins, and at least half of all pairs with one). None did. Had any been eligible, the one with the best advantage would have been added only if its resampling 5th percentile was above zero.</p>
+
+<h3>Why graph weight and the 64 nearest disagree</h3>
+<p>Graph weight does not go only to the 64 nearest tokens. In high-dimensional space, thousands of tokens are only moderately similar and sit at nearly equal distances. Each gets a sliver of weight, and together those slivers can outweigh the few close ones: about half or more of the weight ends up in other texts.</p>
+<p>Averaged across all 8 measured layers for the rule's pick (M), 60% of graph weight in Pythia-1b lands in other texts (64% in OLMo-1B). On those exact same late queries and late candidates, only 36% of the 64 nearest tokens sit in other texts. For the same pick (lengths kept) over all 57,344 analysed tokens instead of the late pool, the share is 30%. Under angle comparison at the whole past, the split is even sharper: 50% of graph weight in Pythia-1b sits in other texts, versus 0.6% of the 64 nearest on the same queries.</p>
+
+<figure class="live x-wide-fig" data-live="paired" data-src="assets/x/e3-selection.json#paired" data-height="230">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> paired comparison on the exact same late queries and late candidates, averaged over all 8 measured layers, one panel per model. Each row compares the share of the 64 nearest tokens in other texts (hollow grey circle) with the share of graph weight in other texts (dark square). The first five rows compare by angle at the five memories (one average removed, no tokens barred); the bottom row, set apart, is the rule's pick (M: lengths kept, memory 64).</figcaption>
+</figure>
+
+<div class="x-numbers">
+  <div><b>20 of 32</b><span>candidates passed all four tests in both models</span><small>at least 5 of 8 layers each</small></div>
+  <div class="x-num-text"><b>lengths kept (dot), memory 64, one average removed, nothing barred</b><span>picked by the rule written in advance (M)</span><small>set aside; Stage B redesigned</small></div>
+  <div><b>60% vs 36%</b><span>other-text share on the same late queries: graph weight vs 64 nearest</span><small>Pythia-1b · picked setup (M) · 8-layer mean</small></div>
+  <div><b>0.014 vs 0.111</b><span>prediction advantage (E2), for comparison: M vs L (lengths kept, no memory)</span><small>Pythia-1b · 4-layer mean</small></div>
+</div>
+
+<h3>What happens next: a redesigned Stage B</h3>
+<p>After seeing Stage A's results, the project owner chose not to run Stage B on the rule's pick. The owner judged barring nearby tokens and removing each text's own average to be fixes for how the texts were sampled. The pick itself used neither fix; the owner changed what counts as a data point, from many positions per document to one independent chunk per document. He also asked for a construction that uses the model's prediction. For comparison, on E2's prediction advantage across the 4 E2 layers, the pick (M) scores 0.014 versus 0.111 for the same lengths-kept setup with no memory (L) in Pythia-1b, and 0.013 versus 0.094 in OLMo-1B.</p>
+<p>Stage B has been redesigned around independent text chunks—each the 64 tokens ending at a random cut in a different Pile test document—so nearby tokens from the same document cannot take over the graph. The new design removes one global average, compares by angle (cosine) with no tokens barred (deferring the lengths-kept setting), tests three summaries of each chunk (the state at the cut, the recent past at memory 8, and the average over the last 64 states), and builds the model's next-token prediction at the cut into the graph itself. This design is written and reviewed, not yet run, and neither the rule's pick nor the all-texts graph will be computed. <a href="https://github.com/CharlesR-W/TransformerModes/blob/main/SPEC_B.md">Read the Stage B design (SPEC_B.md) →</a></p>
+
+<h3 id="x-e3-selection-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Test</th><th>Plain description and rule</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Test 1: enough weight in other texts</td><td>At least a quarter of the average graph weight must sit on tokens from other texts.<br>$\overline{\sum_{j \in \text{other texts}} q(j \mid i)} \ge 0.25$</td>
+      <td>$q(j \mid i)$: graph weight from late query $i$ to late candidate $j$, averaged over the sampled late queries</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Test 2: not mostly nearby</td><td>Without barring nearby tokens, at most 25% of graph weight may sit within 64 tokens; when barring them, the bar may remove at most half of the unbarred weight.<br>unbarred: $\overline{w_\text{near}} \le 0.25$ · barred: $\overline{w_\text{removed}} \le 0.5$</td>
+      <td>$w_\text{near}$: a query's graph weight on same-text tokens within 64 positions; $w_\text{removed}$: the unbarred graph weight removed by barring nearby tokens</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Test 3: memory changes the neighbours</td><td>At most half of the 64 nearest late tokens may stay the same as with no memory.<br>$\overline{\max|A \cap A_\text{none}|} / 64 \le 0.5$</td>
+      <td>$A$: candidate's 64 nearest late tokens; $A_\text{none}$: same setup with no memory; uses the largest overlap any tie-breaking allows</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Test 4: not text alone</td><td>At most half of the 64 nearest late tokens may match either text-only input (random vectors per token, or input embeddings).<br>$\overline{\max|A \cap A_\text{text}|} / 64 \le 0.5$</td>
+      <td>$A_\text{text}$: 64 nearest late tokens from each text-only input under the same memory and settings; largest overlap ties allow</td>
+      <td>exp1/select_b.py: screen_site</td></tr>
+  <tr><td>Passing and ranking</td><td>Pass all four tests at the same layer on at least 5 of 8 layers in both models.</td>
+      <td>ordered by: fewest fixes (one average removed and nothing barred, then nearby barred, then each text's own average, then each text's own average with nearby barred); then angle before lengths kept; then smaller worst text-only overlap; then shorter memory</td>
+      <td>exp1/select_b.py: select</td></tr>
+  </tbody>
+</table>
+</div>
+
+<details class="x-more" id="x-e3-selection-table">
+  <summary>Full candidate tables and layer-8 graph-weight bars <span class="x-count">(3)</span></summary>
+  <figure class="live" data-live="stack" data-src="assets/x/e3-selection.json#lead" data-height="210">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> layer-8 graph weight on other texts (grey), same text more than 64 tokens away (blue), and within 64 tokens (orange), averaged over the sampled late queries, one panel per model. Shown for the angle-based reference with no memory (R), the rule's pick (M: memory 64, lengths kept, one average removed, nothing barred), and the same lengths-kept setup with no memory (L). Hover any bar for the 64-nearest shares on the same queries.</figcaption>
+  </figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/e3-selection.json#table">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> every candidate construction (one row each); per model, the layers passing all four tests together and, underneath, the layers clearing each test on its own. Rows dropped by the spending cap are greyed out. Hover a row for its source file.</figcaption>
+  </figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/e3-selection.json#sites">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> every stored value compared against the four thresholds, by candidate, model, and layer, showing expected overlap beside the largest overlap ties allow. Hover a row for its entry in <code>analysis/stage_b_selection.json</code>.</figcaption>
+  </figure>
+</details>
+
+<h3 id="x-e3-selection-caveats">Caveats</h3>
+<ul class="x-caveats">
+  <li><b>Passing limits graph weight, not the 64 nearest.</b> At the pick's closest call (layer 10, Pythia-1b) 24.95% of its graph weight was within 64 tokens, yet 52% of its 64 nearest late tokens were. Test 4 only bounds overlap with two text-only inputs. The rule tests geometry only: it does not use prediction agreement (E2) or later-stage patterns.</li>
+  <li><b>Test 1 never excluded the 4 angle-based candidates with one average removed and nothing barred.</b> Because graph weight spreads thinly across many moderately similar tokens, Test 1 held at every layer in both models for 4 of those 4 candidates.</li>
+  <li><b>Thresholds were fixed in advance.</b> The limits in the table above were set before any runs, and the rule does not separate candidates far past a limit from ones right on it. The pick itself sat on a boundary: it passed in Pythia-1b on exactly 5 of 8 layers, the minimum, with 24.95% of its layer-10 graph weight within 64 tokens against the 25% limit.</li>
+  <li><b>No candidate was skipped for budget reasons</b> (0 dropped in this run).</li>
+</ul>
+
+<p class="x-links"><a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/select_b.py">Code: select_b.py</a> · <a href="#method/census">Method: census</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+</section>
+
+
+<section class="experiment" id="x-d1-depth" data-group="Depth embedding">
+<h2>Depth embedding of tokens</h2>
+<p class="x-scope"><b>Tested:</b> Pythia-1b and OLMo-1B, all 17 layers of each (layer 0 is the input; layer <i>l</i> is the output of block <i>l</i> of 16, one processing step of the model). The texts are the 32 Pile documents of the Viewer (the Pile is a public collection of text), named c00 to c31. 11 <b>construction sets</b>, each a fixed sample of 2,048 tokens (2,047 for a single text), built once per model: doc00, doc01, doc02 and doc04 (all of one document each), pairA (c00 and c01), pairB (c02 and c04), d04 (c00, c01, c02 and c04), d08 (c00 to c07), d16 (c00 to c15), d32 (c00 to c31) and rand (r0 to r3: sequences of random tokens whose word pieces were drawn uniformly, with replacement, from those that occur in the 32 texts; r4 is a further such sequence that no set uses). Three <b>panels</b>, fixed lists of token positions, are shown in every embedding: natural text (1,024 positions), random tokens (768) and shuffled texts (1,024; documents 0, 1, 2 and 4 with their tokens put in random order, s0 to s3). Main numbers: the first 16 modes, coupling strength t*.</p>
+
+<p><b>What an embedding is here.</b> A token is one word or piece of a word at one place in one text; the same <b>word piece</b> (for example " the") occurs as many tokens. At every layer the model computes a vector for each token (its activation). Two tokens of a set are <b>linked</b> at a layer if either one is among the other's 15 most similar tokens by angle, counting every token tied at the 15th place, so a frequent word piece can have hundreds of links at the input layer; all other pairs keep a tiny background weight. The links are then balanced so that every token's links add up to the same total, and each token is tied to itself at the next layer. A <b>mode</b> is one number for every token at every layer that averages zero over the tokens at each layer and changes as little as possible along the links and from layer to layer. Mode 1 is the smoothest such pattern, mode 2 the next, and so on (technically: eigenvectors of one Laplacian operator over all layers). The first few modes give every token a few coordinates at every layer, in one space shared by all layers. The <b>coupling strength</b> sets how tightly neighbouring layers are tied. Its main value, <b>t*</b>, is the strength at which the smoothest pattern that varies only with depth and the smoothest one that varies across tokens are equally smooth: a crossing point, not a best value. Nothing is trained. A token outside the set can be <b>placed</b>: at each layer it is linked to the set's tokens by the same rule, and its coordinates are solved over all layers together with the embedding held fixed, so its position at one layer also depends on its vectors at the other layers. Panel positions that are already in a set keep their own coordinates. The <a href="#depth">Depth embedding tab</a> draws these spaces token by token.</p>
+
+<p><b>How two spaces are compared.</b> Most numbers below are an <b>overlap</b> between two embeddings on the same token positions: after subtracting each layer's average, do the first 16 coordinates in one embedding vary along the same directions, across those tokens, as the first 16 in the other? The overlap is 1 when they span the same space, however the axes are rotated, mirrored or scaled inside it, and 0 when they share no direction. Mode 3 of one embedding is never matched with mode 3 of another, and a high overlap does not mean equal distances or the same nearest neighbours. "All layers together" means the layers' rows are stacked into one comparison, not that 17 per-layer scores are averaged. <b>These results describe these fixed samples; how much fresh samples would vary was not measured, and no number here is a test of a hypothesis.</b></p>
+
+<h3 id="x-d1-depth-q1">1 · What do the leading modes look like?</h3>
+<p class="x-answer"><strong>A mode changes little from one layer to the next, yet in most sets its first and last layers show no consistent alignment; and each mode rests on a minority of the tokens.</strong> For the median mode, the average cosine between its values at neighbouring layers is 0.88 to 0.99 (depending on set and model). The median signed cosine between its values at layer 0 and at layer 16 lies between -0.15 and 0.12 in every embedding except OLMo-1B&#x27;s rand (0.51). Signs differ from mode to mode: ignoring the sign, the median size of that cosine is 0.08 to 0.71, so single modes can still line up or reverse. The median mode's token support, an effective share (10% means as concentrated as equal weight on 10% of the tokens), is 4% to 32%. In sets that mix texts, the median mode's document share is about 0.044 or less in the pairs, against 0.45 (Pythia-1b) and 0.29 (OLMo-1B) in d32, and 0.003 to 0.005 between rand's sequences.</p>
+
+<figure class="live x-wide-fig" data-live="dots" data-src="assets/x/d1-depth.json#q1">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each construction set (rows; the number of texts it samples) and model (colour), the median over modes 1 to 16 of three measures, with a line across the middle half of those modes; coupling strength t*. Left, token support: the effective share of the set's tokens a mode is spread over (100% = evenly over all of them). Middle: the signed cosine between a mode's values at layer 0 and at layer 16 (1 = the same pattern, 0 = no linear alignment, −1 = reversed). Right, document share: the part of a mode that is a difference between the texts' averages (not defined for a set of one text; for rand, between its sequences). 30 of the 352 modes summarised here, in 13 of the 22 embeddings, belong to a near-tied group (see the caveats), whose members' individual values depend on an arbitrary choice of axes within the group; they are included.</figcaption>
+</figure>
+<p class="x-read"><b>Read it as:</b> neighbouring layers carry similar patterns; by the last layer most sets show no consistent alignment with the first; and in d32 far more of each mode separates texts than in the pairs.</p>
+
+<div class="x-numbers">
+  <div><b>0.88–0.99</b><span>average cosine between neighbouring layers, median mode</span><small>t* · range over sets and models</small></div>
+  <div><b>0.55–0.91</b><span>the same with the looser tie between layers</span><small>t*/16</small></div>
+  <div><b>-0.15 to 0.12</b><span>median signed cosine between a mode's layer 0 and layer 16</span><small>t* · all but OLMo-1B&#x27;s rand</small></div>
+</div>
+
+<details class="x-more">
+  <summary>Where along depth each mode sits <span class="x-count">(1 figure)</span></summary>
+  <figure class="live x-wide-fig" data-live="heatmap" data-src="assets/x/d1-depth.json#q1_depth">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> depth weight of modes 1 to 16 (rows) at each layer (columns) in d32 at t*, one panel per model: the share of the mode's total square that sits at that layer (each row adds up to 1). Colour from 0 to the largest share in the panel. ≈ marks a mode in a near-tied group; such modes are only meaningful together.</figcaption>
+  </figure>
+  <p class="x-read"><b>Read it as:</b> every mode's weight is spread over several layers; the largest share any mode has at one layer is 20.3%.</p>
+</details>
+
+<h3 id="x-d1-depth-q2">2 · Do the same tokens get the same space in a different set?</h3>
+<p class="x-answer"><strong>Only partly: neighbouring sets give the same tokens noticeably different spaces.</strong> The same 992 tokens (the natural panel without its c00 positions, so never part of any of these sets) are placed into each set of the ladder doc00 → pairA → d04 → d08 → d16 → d32, and into rand. In Pythia-1b the overlap from one set to the next is 0.13, 0.47, 0.25, 0.55 and 0.59 along the ladder, and 0.23 from d32 to rand; in OLMo-1B the steps along the ladder range from 0.24 to 0.64, and d32 to rand is 0.21. Their size changes as well: the tokens' root-mean-square radius, relative to each set's own tokens (first 8 modes), runs from 0.46 to 0.97 along the ladder in Pythia-1b and from 0.67 to 1.05 in OLMo-1B, and is about the same in d32 and rand (0.97 and 0.98; 0.96 and 0.97) although those two spaces overlap little. (Flagged radius: OLMo-1B d08.) The ladder describes these particular samples, not a clean effect of the number of texts: the sets differ in which texts they contain and in how many tokens each text gives (2,047 from the one text of doc00, 1,024 each in pairA, down to 64 each in d32).</p>
+
+<figure class="live" data-live="dots" data-src="assets/x/d1-depth.json#q2">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each step of the ladder (rows), the overlap between the two sets' first 16 modes in the same model (colour), on the same 992 placed tokens, all layers together; coupling strength t*. An open marker means the cutoff at 16 modes is flagged in one of the two sets (mode 16 and the next mode are near-tied), so the value may be sensitive to small changes: 1 of 12 steps (Pythia-1b doc00 → pairA).</figcaption>
+</figure>
+<p class="x-read"><b>Read it as:</b> no step keeps the same space; the move from documents to random tokens is among the two largest changes in both models.</p>
+
+<h3 id="x-d1-depth-q3">3 · Do the two models agree on the same tokens?</h3>
+<p class="x-answer"><strong>Yes, to a fair degree, and much of the overlap survives when the occurrences of each word piece are scrambled.</strong> On each set's own tokens, the two models' first 16 modes overlap 0.62 to 0.72 (10 sets; left out: doc00, whose cutoff at 16 modes is flagged in one model). Now, in one model, randomly reorder the tokens of each word piece among themselves, so that each token is matched with a random occurrence of the same word piece. A word piece that occurs once cannot move, and a reordering leaves some tokens in place by chance: on average 25% to 52% of the tokens in the document sets stay matched to their own occurrence. The overlap is then 0.37 to 0.54 in the document sets, 0.11 to 0.26 lower than with the true matching. Reordering all tokens freely leaves at most 0.005 (mean of 20 reorderings). In rand the word-piece reordering leaves 0.622 against 0.623, but there 90% of the tokens stay matched on average, so this reference says little.</p>
+
+<figure class="live x-wide-fig" data-live="dots" data-src="assets/x/d1-depth.json#q3">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for each construction set (rows), the overlap of the two models' first 16 modes on the set's own tokens, all layers together, coupling strength t* (dark dot). Diamond: the same after one model's tokens are reordered within each word piece (mean of 20 reorderings; line: their range). Square: after all tokens are reordered freely (mean of 20). A reordering moves a token's values at every layer together; no new text is fed to the models. An open dot means the cutoff at 16 modes is flagged (doc00).</figcaption>
+</figure>
+<p class="x-read"><b>Read it as:</b> the models' spaces line up well on the same tokens; scrambling occurrences within each word piece lowers the overlap only partly, while leaving some tokens matched; scrambling everything removes it.</p>
+
+<div class="x-numbers">
+  <div><b>0.62–0.72</b><span>overlap between the models on a set's own tokens</span><small>first 16 modes · t*</small></div>
+  <div><b>0.37–0.54</b><span>after reordering occurrences within each word piece</span><small>document sets · mean of 20</small></div>
+  <div><b>0.005</b><span>at most, after reordering all tokens freely</span><small>mean of 20 · set's own tokens</small></div>
+</div>
+
+<details class="x-more">
+  <summary>Each layer embedded on its own <span class="x-count">(1 figure)</span></summary>
+  <p>The same comparison with no ties between layers: each layer gets its own embedding from its own links, and the two models are compared layer by layer. In every set the overlap drops from layer 0, the input (0.59 to 0.73), to layer 1 (0.13 to 0.53) and recovers later; in 10 of the 11 sets, all but d32, some later layer exceeds layer 0. In d32 it is 0.12 to 0.14 at layers 1 to 3 and 0.50 to 0.68 from layer 4 on. The dashed lines come from one pair of random dictionaries: two independent random vectors for each word piece, put through the same per-layer construction. They overlap 0.51 to 0.65 in the document sets (0.61 in d32), because the repeats of a word piece become identical points, but only 0.043 in rand, where few word pieces repeat. Yet in rand the models overlap 0.59 at layer 0, where each model's vector depends only on the word piece, and 0.50 to 0.73 from layer 4 on. So this reference reflects repeated word pieces, not which word pieces resemble which. These layer-by-layer curves are not checked for near-tied modes.</p>
+  <figure class="live" data-live="lines" data-src="assets/x/d1-depth.json#q3_layers" data-height="260">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> overlap of the two models' first 16 modes when each layer is embedded on its own, by layer, on each set's own tokens: d32 (dark), rand (orange), the other sets (grey). Dashed lines: the overlap of one pair of random dictionaries (two independent random vectors per word piece) through the same per-layer construction, for d32 and for rand; such vectors are the same at every layer, so each reference is one number.</figcaption>
+  </figure>
+  <p class="x-read"><b>Read it as:</b> in every set the agreement dips right after the input and recovers later; in d32 it then stays near the random-dictionary level.</p>
+</details>
+
+<h3 id="x-d1-depth-q4">4 · Where do tokens of another kind land?</h3>
+<p class="x-answer"><strong>Tokens of a different kind sit at a smaller radius or with a shifted mean, compared with unseen tokens of the set's own kind, and the two models agree less about them.</strong> Placed into d32, random tokens have a root-mean-square radius of 0.41 (Pythia-1b) and 0.83 (OLMo-1B) of the set's own, and their mean is shifted from the set's centre by 0.27 and 0.57 of the set's radius. For new positions of d32's own texts, the reference, the radius is 0.96 and 0.95 and the shift only 0.02 and 0.03. Shuffled texts also have a smaller radius (0.52 and 0.73). Placed into rand, document tokens keep about the usual radius (0.98 and 0.96) but their mean is shifted by 0.53 and 0.30, against 0.05 and 0.06 for new positions of rand's own sequences. A usual radius does not mean a close match: at layer 8, the median cosine between a placed document token and its most similar token of rand is 0.56 and 0.21, against 0.74 and 0.68 for new positions of rand's sequences (each model's cosines are on its own scale).</p>
+
+<figure class="live x-wide-fig" data-live="dots" data-src="assets/x/d1-depth.json#q4">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> for groups of placed panel tokens (rows) in two embeddings, two measures over the first 8 modes, coupling strength t*; colour: model. (The agreement figures use 16 modes; these size measures exist for 8 and 64.) Left, radius: the root-mean-square distance of the group's coordinates from the set's centre, all layers pooled, divided by the same for the set's own tokens (1 = the same; below 1 = closer to the centre). It does not measure how scattered the group is about its own mean. Right, shift of the mean: at each layer, the distance from the set's centre to the group's mean, divided by the set's root-mean-square radius at that layer; then the root mean square of these over layers (0 = no shift; the shift need not point the same way at every layer). The set's own tokens average exactly to the centre at every layer. Reference rows ("ref."): tokens of the set's own kind that it does not contain (other positions of the texts or sequences it was built from).</figcaption>
+</figure>
+<p class="x-read"><b>Read it as:</b> tokens of the set's own kind sit like the set; random tokens sit closer to the centre and with a shifted mean in a document embedding; document tokens keep a usual radius but a shifted mean in a random-token embedding.</p>
+
+<p>The two models also agree less on placed tokens of another kind. In d32 their overlap is 0.648 on the set's own tokens and 0.643 on new positions of its texts, but 0.383 on shuffled texts and 0.245 on random tokens (whose word-piece reference, 0.244, says little: only 9% of them can be reordered). The same 992 natural-panel tokens (outside c00) agree less across the models inside rand (0.47) than inside d32 (0.64), and inside rand barely more than their word-piece reference (0.45).</p>
+
+<details class="x-more">
+  <summary>Agreement between the models on each group <span class="x-count">(1 figure)</span></summary>
+  <figure class="live x-wide-fig" data-live="dots" data-src="assets/x/d1-depth.json#q4_agree">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> the overlap of the two models' first 16 modes on each group of tokens (rows) in d32 and in rand, all layers together, coupling strength t* (dark dot), beside the same after reordering occurrences within each word piece inside the group (diamond: mean of 20; line: range) and after reordering freely (square). An open diamond marks a group in which under 10% of tokens can be reordered, so the word-piece reference says little (3 groups). "ref.": the reference group of the set's own kind.</figcaption>
+  </figure>
+  <p class="x-read"><b>Read it as:</b> in d32 the models agree most on tokens of the set's own kind; in rand every group sits at or just above its word-piece reference.</p>
+</details>
+
+<h3 id="x-d1-depth-check">A check on placement</h3>
+<p>Placing a token does not rebuild the embedding. To see how much that matters, the natural-panel tokens of d08's own texts were added to d08 and the embedding was solved again at its own t*. This check uses a different score from the overlap above: after one rotation or reflection fitted over all layers on the 2,048 tokens both solutions contain, it is one minus the squared difference between the two sets of coordinates divided by the refit coordinates' total square (1 = identical; sizes count; it can be negative). For the first 16 modes the placed tokens score 0.98 (Pythia-1b) and 0.84 (OLMo-1B), about as well as the tokens both contain (0.97 and 0.86). The refit also moved the links, the balancing and t*, so this is agreement with a second solution, not an exact known answer. (At 8 and 64 modes the placed scores are 0.96 and 0.89 in Pythia-1b, 0.96 and 0.96 in OLMo-1B; 3 of these 4 cutoffs are flagged: Pythia-1b at 64, OLMo-1B at 8, OLMo-1B at 64.)</p>
+
+<h3 id="x-d1-depth-what">What was computed</h3>
+<div class="x-tablewrap">
+<table class="x-defs">
+  <thead><tr><th>Quantity</th><th>Plain description and definition</th><th>Symbols and choices</th><th>Code</th></tr></thead>
+  <tbody>
+  <tr><td>Links at one layer</td><td>Two tokens are linked if either is within the other's 15th-nearest distance by angle; other pairs keep a tiny weight; the weights are then balanced so every token's add up to the same total.<br>$d_{ij} = 1 - \cos(x_i, x_j)$, linked if $d_{ij} \le r_i$ or $d_{ij} \le r_j$</td>
+      <td>$i$, $j$: two token positions of the set; $x_i$: token $i$'s activation vector at that layer, compared by angle only (no average removed); $r_i$: its 15th smallest distance to the others; every tie at that distance is kept</td>
+      <td>exp1/depth_dm.py</td></tr>
+  <tr><td>Modes</td><td>The smoothest patterns over (layer, token) of the links at every layer plus a tie from each token to itself at the next layer, each averaging zero over the tokens at every layer.<br>$L_t = \operatorname{blockdiag}\!\big((I - M_l)/c_l\big) + t\,(D_\text{path} \otimes I_N)$, lowest eigenvectors</td>
+      <td>$l$: layer, 0 to 16; $M_l$: the balanced links at layer $l$, with half of each token's weight kept on itself; $c_l$: one scale per layer; $D_\text{path}$: the chain of layers; $t$: coupling strength, t* or t*/16; $N$: tokens in the set</td>
+      <td>exp1/depth.py</td></tr>
+  <tr><td>Overlap of two spaces</td><td>Whether two sets of $k$ coordinates on the same tokens vary along the same directions.<br>$\mathrm{ov}_k(A, B) = \lVert U_A^\top U_B \rVert_F^2 / k$</td>
+      <td>$k$: the number of modes compared (not a mode's index); $A$, $B$: the tokens' first $k$ coordinates in two embeddings, each column centred; $U$: an orthonormal basis of each one's directions; layers together: each layer's rows centred separately, then stacked; reported only when both give $k$ independent directions</td>
+      <td>exp1/depth.py</td></tr>
+  <tr><td>Token support, document share, depth weight</td><td>How evenly a mode spreads over tokens; how much of it is a difference between texts; how much sits at each layer.<br>$w_l = \sum_i f_l(i)^2$, support $= 1 / (N \sum_i p_i^2)$ with $p_i = \sum_l f_l(i)^2 / \sum_l w_l$</td>
+      <td>$f_l(i)$: the mode's value for token $i$ at layer $l$; document share: over all layers, the part of the mode's total square explained by the texts' averages (each weighted by its number of tokens)</td>
+      <td>exp1/depth.py</td></tr>
+  <tr><td>Radius and shift of a placed group</td><td>Where a group of placed tokens sits relative to the set's own tokens.<br>radius $= \sqrt{\overline{y^2}_\text{group} / \overline{y^2}_\text{set}}$; shift: $\lVert \bar y_\text{group} \rVert$ / the set's radius, per layer, then root mean square over layers</td>
+      <td>$y$: coordinates in the first 8 modes; the radius pools all layers</td>
+      <td>exp1/depth.py</td></tr>
+  <tr><td>Reordering references</td><td>The same overlap after one model's tokens are reordered: within each word piece (and within the group), or freely; 20 reorderings each.</td>
+      <td>a reordering moves a token's values at all layers together; a token in the set is never exchanged with a placed one</td>
+      <td>exp1/depth.py</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="x-d1-depth-caveats">Caveats</h3>
+<ul class="x-caveats">
+  <li><b>Near-tied modes.</b> A cutoff at <i>k</i> modes is flagged when mode <i>k</i> and the next have smoothness scores (eigenvalues) within 1% of each other: such modes can mix under small changes in the data, so a cut between them may be arbitrary. The 1% line is the spec's display rule, not a proof. Of the 136 comparison records in the release (both strengths, all groups of tokens), 18 are flagged at 16 modes and 126 at 64. Flagged values are drawn open and left out of the ranges quoted for questions 2 and 3. The flags apply to the embeddings built over all layers; question 1's summaries include modes inside near-tied groups, and the layer-by-layer curves are not flagged.</li>
+  <li><b>Some per-layer overlaps are not defined.</b> At t*, 18 of 918 per-layer values of the between-model overlap (in doc02 and pairB) are not reported, because at that layer, on those tokens, one model's first 16 coordinates do not give 16 independent directions (one is tiny next to the largest). At t*/16 it is 563 of 918, in all 11 sets; with the looser tie, modes tend to concentrate in fewer layers.</li>
+  <li><b>t* differs a lot between sets.</b> It is computed for each set and model: from 4.33 to 20.7 in Pythia-1b and from 2.22 to 23.1 in OLMo-1B. The two lowest in each model are doc02 and pairB, the same two sets whose per-layer overlaps are undefined at t*. Sets are therefore compared at different absolute strengths.</li>
+  <li><b>The reordering references are not chance levels.</b> A word piece that occurs once cannot move, and a random reordering leaves some tokens in place, so the word-piece reference mixes matched and reordered tokens; it is not an estimate of how much agreement the word piece causes. Where under 10% of a group can move, it says little (an open diamond in the figures).</li>
+  <li><b>One sample of each set, two models, 32 texts.</b> There are no error bars across samples: lines in the figures span modes or reorderings. The texts are the beginnings of long Pile documents, as in Stage A.</li>
+  <li><b>Not done.</b> No memory kernel: tokens are compared by their activations at each layer, with no extra comparison of their pasts as in Stage A (the activations themselves reflect earlier text). The site data and the Depth embedding tab carry the first 16 of the 64 modes kept. The looser strength t*/16 is summarised only in question 1 and the caveats; the Depth embedding tab shows both.</li>
+</ul>
+
+<details class="x-more">
+  <summary>Design choices (from the spec, SPEC_DEPTH.md) <span class="x-count">(4)</span></summary>
+  <div class="x-tablewrap">
+  <table class="x-decisions">
+    <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>Links per token</td><td>linked if either is within the other's 15th-nearest distance, ties kept</td><td>a perplexity rule; exactly 15 links with ties broken by storage order</td></tr>
+    <tr><td>2</td><td>Origin of the angles</td><td>zero: nothing removed, the same whatever the sample</td><td>removing the sample's average, which changes with the set</td></tr>
+    <tr><td>3</td><td>Coupling strength</td><td>t* (a crossing point) and t*/16</td><td>a single strength, or one chosen to optimise something</td></tr>
+    <tr><td>4</td><td>Modes compared</td><td>first 16 on this page (scores for 8 and 64 in the tab)</td><td>64, a cutoff flagged in most comparisons</td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<p class="x-links"><a href="#depth">Depth embedding tab</a> · <a href="https://github.com/CharlesR-W/TransformerModes/blob/main/SPEC_DEPTH.md">Spec: SPEC_DEPTH.md</a> · <a href="https://github.com/CharlesR-W/TransformerModes/blob/main/exp1/depth.py">Code: depth.py</a> · <a class="x-top" href="#experiments">All experiments</a></p>
+</section>
+
+    </article>
+  </section>
+  <section class="tab-panel" id="tab-method" data-tab="method" hidden>
+    <header class="page-head"><h1>Method</h1></header>
+    <article class="prose">
+<p class="lede">Two language models read the same 32 texts once, and every hidden state is stored.
+For each token we ask where its most similar tokens are, when similarity compares two tokens' recent pasts. Stage A
+(this site) counts where those similar tokens sit and checks whether they share the model's next-token predictions.
+Stage B has since been redesigned around independent chunks of text, one per document; it is written up and reviewed,
+but nothing of it has been run.</p>
+
+<p class="m-callout"><b>On this page:</b> <a href="#method/why">why neighbours first</a> ·
+<a href="#method/models">models and extraction</a> · <a href="#method/texts">texts and tokens</a> ·
+<a href="#method/similarity">similarity</a> · <a href="#method/census">what was measured</a> ·
+<a href="#method/controls">controls</a> · <a href="#method/timescales">reference timescales</a> ·
+<a href="#method/check">how to check there is nothing odd going on</a> · <a href="#method/decisions">decisions</a> ·
+<a href="#method/deferred">deferred</a> · <a href="#method/spending">spending</a></p>
+
+<h2 id="why">Why measure neighbours first</h2>
+<p class="m-lead">The long-term aim is a map of what a language model does to a text, layer by layer. Each token is a point. Two points are linked when the model's hidden states there are similar, and the
+map is the main patterns of that graph. The owner asked that similarity should include each token's recent past, not
+only its current state. Here that is called <b>memory</b>: how far back the comparison looks, with older positions
+counting less. A free pilot on a small model (pythia-160m) found that with memory, a token's nearest
+neighbours moved into its own text and closer to it. The median distance to same-text neighbours (one average removed,
+range over the pilot's three layers) was 168–204 positions with no memory, 110–159 at memory 8, 26–60 at memory 64
+and 16–17 at the whole past. A map built on such links might say little more than
+where in which text a token sits. So Stage A builds no map. It measures where neighbours are, and whether they share
+the model's next-token predictions, on two larger models and texts from the Pile.</p>
+<p>The pilot used four Wikipedia articles, two Python standard-library files and two licence texts,
+1,023 tokens each. It looked at layers 3, 6 and 9, and at each token's 64 nearest neighbours
+from position 128 on. Whether a map built on such neighbours would be mostly about position
+within each text was not measured.</p>
+<figure class="live" data-live="table" data-src="assets/x/method.json#pilot">
+  <div class="live-body"></div>
+  <figcaption><b>Plotted:</b> the small pilot (exp1/local_pilot.json), on other texts and a smaller model than Stage
+  A. For each memory: the share of a token's 64 neighbours in its own text, with one average removed, with each text's
+  own average removed, and with each text's own average removed and nearby tokens (within 64 positions) barred; and
+  how often a neighbour has the same most likely next token. There are no stand-ins here, so the last column is not
+  Stage A's prediction check.</figcaption>
+</figure>
+<p>Memory 2 was added between none and 8 to fill the gap, not because of any finding.</p>
+
+<h2 id="models">Models and extraction</h2>
+<p class="m-lead">Nothing is trained. Two models of about a billion parameters, Pythia-1b and OLMo-1B, each read every
+text once. Their tokenizers give identical ids on every accepted text, and the run stops if they do not; only their
+end-of-text ids differ. From that one pass we keep, at every position, the hidden state after each of the 16 blocks
+and the model's 20 most likely next tokens. The analysis uses the states after blocks 2, 4, ..., 16. The main figures
+show layer 8, the state after 8 of the 16 blocks. Pythia's training held out the Pile test split; OLMo's training data
+may include these texts.</p>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th></th><th>Pythia</th><th>OLMo</th></tr></thead>
+  <tbody>
+  <tr><td>Model</td><td><code>EleutherAI/pythia-1b</code></td><td><code>allenai/OLMo-1B-0724-hf</code></td></tr>
+  <tr><td>Shape</td><td>16 blocks, width 2,048</td><td>16 blocks, width 2,048</td></tr>
+  <tr><td>End-of-text token (read at position 0)</td><td>id 0</td><td>id 50279</td></tr>
+  <tr><td>Training data</td><td>the Pile (its test split held out)</td><td>Dolma 1.7 (not guaranteed to exclude these texts)</td></tr>
+  </tbody>
+</table></div>
+<p>One forward pass per text and model in float32, eager attention, TF32 off. "Layer $k$" is the raw hidden state at
+the output of block $k$: after block $k$, before block $k+1$. Layer 16 is before the final normalisation and output
+head, and layer 0 is the output of the token embedding. On the first text, layers 1 to 15 were checked equal, bit for
+bit, to the library's own hidden states. A causal check confirms that changing the second half of a text leaves the
+first half's states unchanged (to one part in 100,000). Also stored per position: the top 20 next-token predictions
+with their probabilities under the full softmax (not renormalised over the 20), and per-head attention summaries
+(never the full attention). Texts that contain special or placeholder strings are rejected.</p>
+
+<h2 id="texts">Texts and tokens</h2>
+<p class="m-lead">Each text is the first 2,047 tokens of a long, mostly ASCII document from
+the Pile's test split. There are 32 texts from 10 Pile sources, at
+most four from each. Before each text, the model reads its own end-of-text token at position 0; that position is left
+out of every average and every comparison. The first 255 text tokens are part of later tokens'
+histories, but are never selected as queries or neighbours. That leaves 57,344 analysed tokens, from position
+256 to the end of each text. Fixed samples of them are the queries for the prediction
+check, the graph-weight test and the audit.</p>
+<p>The texts are a capped sample of the beginnings of long, mostly ASCII Pile test documents. A document in the Pile's test file was eligible if it contains
+no special or placeholder strings, is at least 95% ASCII and is at least 2,048 tokens long. The eligible documents
+were shuffled with a fixed seed and taken in that order, keeping the first 2,047 tokens of
+each. A document was skipped if more than 30% of those tokens are whitespace only, if more than 10% of its 32-token
+passages repeat an earlier one, if it shares a 32-token passage with an accepted text, or if its source already has
+four accepted texts. 32 texts from 10 sources were accepted.
+Four more documents, in two pairs from different sources, make the 4 spliced texts (see
+<a href="#method/controls">Controls</a>).</p>
+<p>A token is named by its text and position. Positions 1 to 255 are read by the model, count in
+the averages that are removed, and are part of every later token's past, but they are never queries or candidate
+neighbours.</p>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th>Set</th><th>Tokens</th><th>Used for</th></tr></thead>
+  <tbody>
+  <tr><td>analysed tokens</td><td>positions 256 to 2,047 of every text (57,344 in all)</td><td>every token's 64 neighbours (E1)</td></tr>
+  <tr><td>last 512</td><td>the last 512 positions of every text</td><td>the candidates of the graph-weight test (E3)</td></tr>
+  <tr><td>query sample</td><td>per text, 64 positions from the last 512 and 32 from earlier, drawn with a fixed seed. Two thirds of it is in the last 512 positions, so it is not uniform over positions</td><td>the prediction check (E2); its 64 late positions per text are also the graph-weight test's queries</td></tr>
+  <tr><td>audit queries</td><td>one of each text's late queries, drawn with another seed (32 in all)</td><td>the independent audit</td></tr>
+  </tbody>
+</table></div>
+<p>Of 180,378 documents in the test file, 23,350 were eligible, and
+64 were examined in the shuffled order before the texts and the four splice sources were
+all found. The probe file's SHA-256 begins <code>e6beef6cf07ad0a0</code>; the census groups and the viewer
+export record the same hash.</p>
+<details class="m-more">
+  <summary>Why documents were rejected, by source</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#rejections">
+    <div class="live-body"></div>
+    <figcaption>From analysis/probe_summary.json (counts).</figcaption>
+  </figure>
+</details>
+<details class="m-more">
+  <summary>The 32 texts and the spliced texts</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#documents">
+    <div class="live-body"></div>
+    <figcaption><b>Plotted:</b> one row per text: its Pile source, its line in the test file, the start of its
+    SHA-256, and how it begins; spliced texts list their segments.</figcaption>
+  </figure>
+</details>
+
+<h2 id="similarity">Similarity</h2>
+<p class="m-lead">Every result here depends on how the similarity of two tokens is defined. Four choices set it: how
+far back into each token's past the comparison reaches (memory); whether vectors are compared by angle (cosine) or by
+the distance between histories with vector lengths kept (the "dot" setting); which average is removed, and whether some tokens are barred as neighbours; and how exact ties are
+broken. The same comparison is also run on text-only inputs, vectors that know only which token is where, to show
+what the token sequence and the formula give by themselves.</p>
+<h3>Memory: two pasts lined up at their ends</h3>
+<p class="m-lead">To compare token $t$ with token $t'$, line up their pasts so that the two tokens sit at the right-hand
+end. Compare $t$ with $t'$, then $t-1$ with $t'-1$, then $t-2$ with $t'-2$, and so on, and add up these step
+similarities with weights that fade going back. Memory $m$ sets how fast they fade: roughly, the last $m$ tokens
+count. "None" compares only the two current states, each of which already reflects earlier text through attention.
+"Whole" weights every earlier position equally. Each step pairs two positions the same distance apart, so two
+adjacent tokens are not similar merely because their pasts overlap.</p>
+<p>With $y_u$ the hidden state at position $u$ after the average is removed (and, when comparing by angle, scaled to
+unit length; $y_u = 0$ before position 1), the similarity of tokens $t$ and $t'$ is:</p>
+<p>$$K_a(t,t') = \sum_{s \ge 0} a^s\, \langle y_{t-s},\, y_{t'-s} \rangle = \langle y_t, y_{t'} \rangle + a\, K_a(t-1,\, t'-1).$$</p>
+<p>Memory $m$ sets $a = 1 - 1/m$: none ($a = 0$, the current token only), 2 ($a = 0.5$), 8 ($0.875$), 64
+($0.984375$) and the whole past ($a = 1$). <b>Compared by angle (cosine)</b>, the viewer's setting, the vectors are
+normalised twice: each token's vector to unit length before the sum, so every token counts equally, and then the
+weighted past, $d = 1 - K_a(t,t')/\sqrt{K_a(t,t)K_a(t',t')}$. <b>With lengths kept</b> (the "dot" setting), louder vectors
+count more, and the distance is half the squared distance between the two weighted histories, scaled: $\big[(K_a(t,t) + K_a(t',t'))/2 - K_a(t,t')\big]/\bar K$, with
+$\bar K$ the mean of $K_a(t,t)$ over the analysed tokens. Three properties matter when reading results. Neighbours
+come in runs: $K(t,t')$ and $K(t+1,t'+1)$ share all but one term, so a chance agreement between two pasts persists
+along the alignment. At the whole past, pasts of different lengths are compared only over the shorter one: compared by
+angle, tokens at positions $t &lt; t'$ can be at most $\sqrt{t/t'}$ similar, so neighbours sit at similar positions
+even for text with no structure; with lengths kept, the earliest analysed tokens end up close to everyone. And
+the recursion is computed exactly, in float64, never through a closed form that overflows.</p>
+<h3>What is removed, and which tokens are barred</h3>
+<p class="m-lead">Before comparing, an average hidden state is removed, so that what every token shares does not swamp
+the comparison. The main setting removes one average, taken over all 32 texts, and lets every
+other analysed token be a neighbour. Two kinds of contrast are also run: removing each text's own average instead,
+and barring either nearby tokens (same text, within 64 positions) or the token's whole own text. These contrasts are
+not corrections. A bar sets the barred share to zero by rule, so it says nothing about the model there.</p>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th>Choice</th><th>What it does</th><th>The question it answers</th></tr></thead>
+  <tbody>
+  <tr><td>one average removed</td><td>subtract the average state over all 32 texts, positions 1 to 2,047 (the first 255 included)</td><td>which passages does this state resemble, as the model holds it?</td></tr>
+  <tr><td>each text's own average removed</td><td>subtract the average over the token's own text, all its positions</td><td>which passages resemble it once each whole text's average is removed? It looks ahead (it uses later tokens), removes topic along with the offset, and makes two positions of one text slightly anti-correlated</td></tr>
+  <tr><td>nearby tokens barred</td><td>no neighbour within 64 positions in the same text</td><td>imposed, not found: the within-64 share is zero by rule (the "Theiler window" of recurrence analysis)</td></tr>
+  <tr><td>own text barred</td><td>only tokens of other texts may be neighbours</td><td>imposed: the other-text share is one; shown in Experiments only</td></tr>
+  </tbody>
+</table></div>
+<p>Neither average is the corrected version of the other; they ask different questions and are shown side by side.
+The one average is computed once, from the 32 real texts, and is the same in every comparison,
+including for the spliced texts, which are analysed alone. Each text's own average depends only on that text.</p>
+<h3>Text-only inputs</h3>
+<p class="m-lead">To separate what the model computes from what repeated tokens and the comparison formula give on
+their own, the same pipeline is run on two inputs that know only which token is where. One gives each token id a fixed
+random vector. The other is each model's input embedding (layer 0), before any block runs. Where a model's neighbours
+match these, the pattern could have come from the text alone.</p>
+<p>The random vectors are Gaussian, width 2,048, drawn once with a fixed seed, and the same at every position and in
+both models; they have no layers. Neither model adds a position embedding at the input, so layer 0 also depends only
+on the token id. Both inputs go through the same averaging, scaling and memory sum as the hidden states.</p>
+<h3>Ties</h3>
+<p class="m-lead">Real model states almost never tie. The text-only inputs do: with no memory, two copies of the same
+token are at distance exactly zero, so a frequent token can have hundreds of tied candidates.</p>
+<p>Two candidates are tied if their distances differ by at most one part in $10^{12}$. The 64 neighbours are every
+candidate strictly closer than the 64th distance, plus tied candidates at the cutoff taken in (text, position) order,
+lowest text first. For the text-only inputs with no memory, this order partly reflects how the texts are numbered; the
+size of that effect was not measured. Overlaps between two neighbour lists are computed as the expected overlap under
+random tie-breaking, $\mathbb{E}|A \cap B| = \sum_j P(j \in A)\, P(j \in B)$. The rule for Stage B (below) instead
+uses the largest overlap the ties allow, so a candidate cannot pass by tie-breaking.</p>
+
+<h2 id="census">What was measured</h2>
+<p class="m-lead">Stage A computes no graph patterns. It makes four measurements on the stored hidden states. First,
+for every analysed token and every setting, its 64 nearest neighbours and where they sit: in another text, in the same
+text more than 64 positions away, or within 64 positions. Second, for sampled tokens near the end of each text, how
+the weight of the graph a later stage would have used is spread over those same three places. Third, on a fixed sample
+of tokens, whether neighbours share more of the model's next-token prediction than stand-ins do. Fourth, a rule
+written before any results, which used the graph weights and neighbour lists on those late tokens to choose a
+setting for Stage B. The owner later set its pick
+aside.</p>
+<p><b>Every analysed token, every setting</b> (2 models × 2 ways of comparing × 2 averages × 5 memories × 3 bar rules
+× 8 layers, plus the 2 text-only inputs): the shares of its 64 neighbours in other texts, in the same text more than
+64 positions away, and within 64 positions on either side, each averaged over tokens; each token's median position gap to its
+same-text neighbours, averaged over tokens; the share whose current token is the same as the query's; and the overlap with the text-only
+inputs' lists and with the same setting's list at no memory. Chance levels are the shares among the tokens allowed as
+neighbours. (<a href="#experiments/x-e1-neighbours">E1</a>)</p>
+<p><b>Graph weight on the last 512 positions.</b> In the graph the original Stage B would have built, each token
+spreads a total weight of 1 over all other tokens, more to closer ones:
+$q(j \mid i) \propto \exp(-\beta_i (d_{ij} - \min_j d_{ij}))$, with $\beta_i$ set so that
+$1/\sum_j q(j \mid i)^2 = 64$. That is as concentrated as an even split over 64 tokens, yet much of the weight can
+still sit in a long, thin tail. For the sampled queries in the last 512 positions, against every token in the last 512
+positions of every text, we record the weight on each of the three places; with nearby tokens barred, also the weight
+the unbarred row had put on them. Nothing $N \times N$ is stored and no eigenproblem is solved. (<a
+href="#experiments/x-e3-selection">E3</a>)</p>
+<p><b>The prediction check</b> on the query sample, with neighbours from layers 4, 8, 12 and 16. For a query and one
+of its neighbours, the prediction overlap is the probability both positions give to the same next tokens, within
+their top-20 lists. It is compared with the same overlap for a <b>stand-in</b>: another occurrence of the neighbour's
+token in the neighbour's text, not on the query's neighbour list, chosen at random. If the neighbour is in the query's
+text, the stand-in must also be at a similar distance from the query (1–8, 9–64, 65–512 or over 512 positions). The
+difference is the <b>prediction advantage</b>. Pairs fall into six groups, by where the neighbour sits and whether its
+token is frequent (at least 20 occurrences among the analysed tokens) or rare. A group counts only if at least 200 of
+its pairs, and at least half of them, found a stand-in; the score is the plain average over the groups that count. (<a
+href="#experiments/x-e2-concordance">E2</a>)</p>
+<p><b>The rule for Stage B</b>, written before any results. Each of the 32 candidate
+settings (memory 2, 8, 64 or whole × angle or lengths kept × the two averages × nearby tokens barred or not) is tested
+at each layer on four conditions: at least a quarter of its graph weight on other texts; not too much weight on nearby
+tokens; a neighbour list at most half the same as at no memory; and a list at most half the same as each text-only
+input's. A candidate passes if it meets all four at 5 or more of the
+8 layers, in both models. Passing candidates are ranked by fewest interventions first (one
+average and nothing barred, then one average with nearby tokens barred, then each text's own average, then that with
+nearby tokens barred), then angle before lengths kept, then the smallest overlap with the text-only inputs, then the
+shorter memory. The prediction advantage could add at most one extra example. The rule picked lengths kept (dot) at memory
+64, with one average removed and nothing barred. The owner set this pick aside and redesigned Stage B (see <a
+href="#method/deferred">Deferred</a>).</p>
+
+<h2 id="controls">Controls</h2>
+<p class="m-lead">Three kinds of check sit beside the real texts. Automated tests compared each step with slow direct
+versions and hand-worked cases before any money was spent. Spliced texts, made by cutting two documents into
+alternating segments, test whether neighbours follow their source document beyond what position alone gives.
+Synthetic texts with a planted hidden structure show what a known structure looks like as neighbours.</p>
+<p><b>Tests before any spending</b> (exp1/test_census.py): the memory sum as streamed, against an explicit feature map
+and a direct double loop; the three bar rules against allowed sets written by hand; planted exact ties at the cutoff,
+including 64 taken from 1,024 tied candidates against a set tying all 1,024 (expected overlap 0.0625, largest 1);
+stand-ins never equal to the query, its neighbour or another neighbour, and replayable from their seeds; statistics,
+document resampling and the spliced-text baseline against hand values.</p>
+<p><b>Spliced texts</b> with expected answers: two pairs of documents, each pair from two different sources, cut into
+alternating segments of 384 to 640 tokens or of 48 to 80 tokens, giving 4 spliced texts. Each
+is analysed alone: its candidates are only its own tokens, and the one average of the 32 real
+texts is removed. The expectation: a token's neighbours should come from its own source more often than position
+alone explains, at little or no memory; at memory 64, less so for the short segments.</p>
+<p><b>Synthetic texts</b> with a planted hidden regime, a slow position drift or pure noise, run through the same
+census, so a known structure can be seen as neighbours. Only comparison by angle with one average removed was run on
+them (25 runs), not every combination of comparison and average.</p>
+
+<h2 id="timescales">Reference timescales</h2>
+<p class="m-lead">Two simple scales per layer, for reference beside the memory settings: how far back attention heads
+look, and how quickly hidden states change along a text. Neither measures how much context the model uses.</p>
+<p>Per layer: how far back each attention head looks directly (its attention-weighted mean distance, leaving out
+attention to position 0; the median over heads), and the hidden-state half distance: the first lag at which the mean similarity (by angle) of two states of one text
+falls halfway from its lag-one value to the mean between texts. The half distance was measured at even layers only;
+odd layers were not measured, and every even layer reached halfway within 1,024 tokens. Neither is an effective context
+length. (E1, more figures.)</p>
+
+<h2 id="check">How to check there is nothing odd going on</h2>
+<p class="m-lead">An independent audit recomputes the results from the raw hidden states, with code that shares nothing
+with the pipeline. Its first report found a real bug: an integer overflow had zeroed the prediction overlap for
+neighbours and stand-ins in the later texts. The bug was fixed, the affected steps were re-run, and the audit then
+passed: 1,242 checks, 0 failed. The release uses the audited Stage A outputs, including the corrected
+prediction readout. The pilot (a separate local run) and the design settings are identified separately. You can also click any token in the viewer to see its neighbours, and a browser test checks the pages
+themselves.</p>
+<p><b>An independent audit</b> (exp1/audit_a.py: numpy only, importing nothing from the pipeline) takes
+32 audit queries. For each, it recomputes the complete distance row from the raw hidden
+states by the explicit step-by-step sum, then the bar rules, the 64 neighbours with ties, the graph weights and the
+weight removed by barring nearby tokens. It replays the stand-ins from their seeds. It recomputes the census
+statistics from the stored lists for a sample of tokens, the prediction check from its stored per-document sums, and
+the rule for Stage B. It also compares 1,000 random pairs per pass with values the census saved before it discarded
+its distance blocks. The site does not build as a release unless this report is present and passing.</p>
+<p><b>The audit has failed once, for a real reason.</b> Its first report on these data failed one check,
+<code>readout.document_contributions</code>, in every model and settings group: the prediction check's stored
+per-document sums did not match the audit's own recomputation. The cause was an int32 overflow in the pipeline
+(exp1/readout.py, the lookup key of the prediction overlap), which recorded zero overlap for any neighbour or stand-in
+in texts 24 to 31 and the end of text 23; the small test case could not reach those indices. The fix uses 64-bit keys
+and adds two regression tests; the prediction check, the rule for Stage B and the viewer export were re-run, and the
+audit then passed. Prediction advantages rose; top-1 match rates, the share of pairs with a stand-in and the rule's
+pick did not change. The release uses the audited outputs, including the corrected prediction readout (<a href="#experiments/x-e2-concordance">E2</a>).</p>
+<p class="m-callout">Audit result: <b>passed</b>. 1,242 checks over
+59,697,885 compared values, 0 failed; models
+Pythia-1b, OLMo-1B; run with the spec&#x27;s parameters.<br>
+<span class="m-digest">Snapshot verified: 4,423 files under analysis/ and site/, inventory
+digest <code>96e648df4ac02a6302eaedd4f124b152c29ce9d256eb7c538d0097d2719aae88</code> (SHA-256 of the report's file list). A release build hashes
+every file it reads or copies and refuses to build if any differs from this list.</span></p>
+<figure class="live x-table wide" data-live="table" data-src="assets/x/method.json#audit">
+  <div class="live-body"></div>
+  <figcaption>The audit's checks grouped by what they recompute; open a row's list for every check name. Source:
+  audit_a/report.json.</figcaption>
+</figure>
+<details class="m-more">
+  <summary>What the audit does not reproduce, and what it takes on trust</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#not_reproduced"><div class="live-body"></div><figcaption>From the report, verbatim.</figcaption></figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#conventions"><div class="live-body"></div><figcaption>From the report, verbatim.</figcaption></figure>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#absent"><div class="live-body"></div><figcaption>Settings the audit found absent (0), with the report's notes.</figcaption></figure>
+</details>
+<p><b>By clicking.</b> In the <a href="#viewer">viewer</a>, any token's card lists its nearest neighbours as text, with
+the stretch of past the comparison weighs and the model's predictions beside theirs; each neighbour opens in its own
+text. <b>The selection table</b> in <a href="#experiments/x-e3-selection">E3</a> shows every number behind the rule's
+pick. <b>The page itself</b> is checked in headless Chrome (site/check_browser.py) over every control, a token click
+and its neighbours (compared with the stored rows decoded independently), at desktop and phone widths, failing on any
+console error or external request.</p>
+
+<h2 id="decisions">Design choices (made by the analysis, not the owner)</h2>
+<p class="m-lead">Some choices were not set by the owner, Charles R-W, and were made during the analysis. Each is
+listed with the main alternative that was not taken.</p>
+<div class="tablewrap"><table class="m-table">
+  <thead><tr><th>Decision</th><th>Chosen</th><th>Alternative not taken</th></tr></thead>
+  <tbody>
+  <tr><td>Staging</td><td>measure neighbours first; graph patterns only for what that supports</td><td>graph patterns for every setting</td></tr>
+  <tr><td>Texts</td><td>32, first 2,047 tokens, at most 4 per source</td><td>stretches from inside documents; uniform among long documents</td></tr>
+  <tr><td>Neighbour census</td><td>every analysed token, 64 neighbours, all settings</td><td>sampled tokens</td></tr>
+  <tr><td>Prediction check</td><td>a fixed sample of 3,072 queries, chosen per text and position range, four layers</td><td>every token (about 3.5 billion pairs)</td></tr>
+  <tr><td>Layers</td><td>8 even layers measured, 4 in the viewer</td><td>all 16</td></tr>
+  <tr><td>Memory settings</td><td>none, 2, 8, 64, whole</td><td>lengths derived from the models</td></tr>
+  <tr><td>Averages and bars</td><td>one average or each text's own average, × nothing barred, nearby tokens (64 positions) barred, or own text barred</td><td>a separate average per position; bars that grow with memory</td></tr>
+  <tr><td>Rule for Stage B</td><td>a test on the graph weight Stage B would use, fewest interventions first; prediction advantage adds at most one example (the owner later set the pick aside)</td><td>ranking by prediction advantage</td></tr>
+  <tr><td>Viewer</td><td>compared by angle, 4 layers, 3 combinations of average and bar, 8 neighbours shown per token</td><td>every setting (over 1 GB)</td></tr>
+  <tr><td>Viewer colour</td><td>where neighbours sit, in one background: lightness for the own-text share, hue for nearby versus far</td><td>the other-text share alone on one sequential scale</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="deferred">Deferred</h2>
+<p class="m-lead">Several extensions were left out of Stage A; they are listed below. The Stage B planned when Stage A
+ran has been replaced. After seeing Stage A's results, the owner set the rule's pick aside and asked for a new design,
+described at the end of this section. That design has been written up and reviewed, but none of it has been run.</p>
+<ul>
+  <li><b>Keeping only each token's nearest neighbours</b> in the graph, instead of weights on every token: on a
+  synthetic graph this was measured to shift the result (SPEC.md), so the planned graph kept every link.</li>
+  <li>Model-derived lag weights; a recurrent random sketch; attention-weighted links across layers; a
+  training-checkpoint axis; a width sweep; bars that grow with memory; mixing angle and lengths-kept comparison; longer
+  contexts; more models.</li>
+  <li>The owner's later list: a sentence-embedding or vector-database baseline on the same texts, and the Hankel
+  predictive-state construction of Golowich, Liu and Shetty.</li>
+</ul>
+<p><b>Stage B as now designed</b> (SPEC_B.md) uses independent chunks instead of long texts. Each of 2,048 Pile test
+documents not used in Stage A is cut once at a random position. The model reads the document up to the cut, and the
+chunk is the last 64 tokens up to and including the cut. No two chunks share a document, so the chains of neighbours
+along one text seen in Stage A cannot form. One average is removed, chunks are compared by angle (the lengths-kept "dot" setting is
+deferred), and nothing is barred. A chunk is summarised three ways: its state at the cut (the main one), its recent
+past at memory 8, and the average of its 64 states. The model's next-token prediction at the cut is built into the
+graph, and the main test asks whether cross-layer patterns pay a smaller prediction-disagreement penalty with the
+correct chunk-prediction pairing than with shuffled pairings. If run, it would add a "Through depth" tab and entries E4 to E6. Nothing of it has been run.</p>
+
+<h2 id="spending">Spending</h2>
+<p class="m-lead">Stage A cost about $10.31 of GPU time, estimated from run times and
+published rates. The spending cap was raised twice: once when a timing pilot found each pass slower than planned, and
+once to re-run the prediction check after the audit's bug fix.</p>
+<p class="m-note">The cap was $8 at approval. The owner raised it to
+$11 after the timing pilot measured 63 s per census
+pass, more than planned, and to $13 for the prediction-check re-run after the fix described
+above. The census was stopped once by the Modal workspace's spend limit and resumed from the settings groups already
+saved (4 census attempts). The prediction check took
+4 attempts: twice a time limit set too short, once a coordinator limit, then
+the re-run after the fix. The audit took 3: a 30-minute limit reached during its
+inventory step, then the genuine failure, then the pass (README run log). The ledger's figures are estimates from run
+times and published rates, not Modal's bill. The viewer's data come to 282 MB in
+4,272 files.</p>
+<details class="m-more">
+  <summary>By unit</summary>
+  <figure class="live x-table" data-live="table" data-src="assets/x/method.json#ledger"><div class="live-body"></div><figcaption>Source: ledger/attempts. "Not finished" counts attempts that stopped or reported failure: for the audit, the run that hit its time limit and the run that found the overflow; the last audit attempt passed.</figcaption></figure>
+</details>
+
+    </article>
+  </section>
+</main>
+<footer class="foot">
+  <div>Built 2026-11-26. A static page: no tracking, no external requests. By Charles R-W.</div>
+  <div>Type: Source Serif 4, Inter, JetBrains Mono (SIL OFL). Maths: KaTeX (MIT).</div>
+</footer>
+<div id="tooltip" class="tooltip" hidden></div>
+<script defer src="vendor/katex/katex.min.js"></script>
+<script defer src="vendor/katex/auto-render.min.js"></script>
+<script type="module" src="js/main.js?v=8f14246563"></script>
+</body>
+</html>
