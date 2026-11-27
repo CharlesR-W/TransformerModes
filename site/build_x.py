@@ -18,7 +18,10 @@ XDIR = HERE / "content" / "experiments"
 ID = re.compile(r"[a-z][a-z0-9-]*")
 FACT = re.compile(r"\{\{\s*fact:([^{}]+)\}\}")
 LIVE_KINDS = ("lines", "heatmap", "bars", "dots", "hist", "stack", "points", "table", "agreement", "paired")
-GROUPS = {"stage-a": "Stage A: the neighbour census"}
+GROUPS = {"stage-a": "Stage A: the neighbour census", "depth": "Depth embedding"}
+# An entry with "requires": "<name>" is included only when the build wrote assets/x/<name>.facts.json (D1 needs the
+# depth pack: build_site.py --depth). The lede addition _lede_<name>.html follows the same rule.
+REQUIRES = {"depth"}
 SHOW_CARDS = False
 
 
@@ -48,6 +51,7 @@ def manifest():
         require(isinstance(xid, str) and ID.fullmatch(xid) and xid not in seen, path, f"bad or repeated id {xid!r}")
         require(isinstance(e.get("title"), str) and e["title"].strip(), path, f"{xid}: missing title")
         require(e.get("group") in GROUPS, path, f"{xid}: unknown group {e.get('group')!r}")
+        require(e.get("requires") in (None, *REQUIRES), path, f"{xid}: unknown requirement {e.get('requires')!r}")
         seen.add(xid)
     return entries
 
@@ -188,15 +192,26 @@ def read_entry(entry, xdir, facts):
     return text, parsed, card
 
 
+def available(entry, xdir):
+    need = entry.get("requires")
+    return need is None or (Path(xdir) / f"{need}.facts.json").is_file()
+
+
 def experiments_html(xdir, facts):
     entries = []
     for e in manifest():
+        if not available(e, xdir):
+            continue
         src = XDIR / f"{e['id']}.html"
         require(src.is_file(), src, "experiment fragment missing")
         text, _, card = read_entry(e, xdir, facts)
         entries.append((e, text, card))
     lede = XDIR / "_lede.html"
     parts = [fact_sub(lede.read_text(encoding="utf-8"), facts, lede) if lede.is_file() else ""]
+    for need in sorted(REQUIRES):
+        extra = XDIR / f"_lede_{need}.html"
+        if extra.is_file() and (Path(xdir) / f"{need}.facts.json").is_file():
+            parts.append(fact_sub(extra.read_text(encoding="utf-8"), facts, extra))
     # The landing (_lede.html) now carries its own three findings, each linking to its entry, so the "At a glance"
     # cards are no longer drawn; each generator's card is still validated by read_entry. Set SHOW_CARDS to bring them back.
     cards = {g: [] for g in GROUPS}

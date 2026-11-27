@@ -1,0 +1,227 @@
+    <div class="dp" id="dp" data-state="loading">
+      <header class="dp-head">
+        <h1>Tokens moving through the layers, in one shared space</h1>
+        <p>Each dot is one token of one text. Its position is two of its coordinates in an embedding built from all
+        {{fact:x.depth.layers}} layers of a model at once, so every layer is drawn in the same space and the same token is the
+        same dot at every layer. Depth plays the role of time: move the layer slider, or press <b>Play</b>, and watch the
+        tokens move from the input (layer 0) to the last block (layer {{fact:x.depth.last_layer}}).</p>
+      </header>
+      <details class="primer dp-primer" id="dp-primer" open>
+        <summary><span>Primer: what a dot is, what the axes and controls mean</span><span class="primer-hint">every index and selector in a sentence · click to fold</span></summary>
+        <div class="primer-grid">
+          <section class="pc" id="dp-p-dot">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-path"><path d="M14 28C50 30 62 10 96 14S150 30 186 12"/></g><g class="dp-pf-dots"><circle cx="14" cy="28" r="3.2" style="opacity:.3"/><circle cx="96" cy="14" r="3.2" style="opacity:.6"/><circle cx="186" cy="12" r="3.6"/></g><text x="2" y="39">layer 0</text><text x="150" y="39">layer {{fact:x.depth.last_layer}}</text></svg>
+            <h3>A dot is a token</h3>
+            <p>One dot is one <b>token</b>: one position in one text (a word or a piece of a word, as the model splits
+            text). Hover over a dot (tap on a phone) to read the token with the {{fact:x.depth.context}} tokens before and
+            after it and the text it comes from. A token keeps its dot at every layer, so the slider moves dots, it
+            never swaps them.</p>
+          </section>
+          <section class="pc" id="dp-p-layer">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="blocks"><rect x="2" y="8" width="9" height="18" class="on"/><rect x="13" y="8" width="9" height="18"/><rect x="24" y="8" width="9" height="18"/><rect x="35" y="8" width="9" height="18"/><rect x="46" y="8" width="9" height="18"/><rect x="57" y="8" width="9" height="18"/><rect x="68" y="8" width="9" height="18"/><rect x="79" y="8" width="9" height="18"/><rect x="90" y="8" width="9" height="18"/><rect x="101" y="8" width="9" height="18"/><rect x="112" y="8" width="9" height="18"/><rect x="123" y="8" width="9" height="18"/><rect x="134" y="8" width="9" height="18"/><rect x="145" y="8" width="9" height="18"/><rect x="156" y="8" width="9" height="18"/><rect x="167" y="8" width="9" height="18"/><rect x="178" y="8" width="9" height="18"/></g><text x="2" y="38">layer 0: input</text><text x="140" y="38">block {{fact:x.depth.blocks}}</text></svg>
+            <h3>Layer: the slider and Play</h3>
+            <p>Each model reads a token through {{fact:x.depth.layers}} <b>layers</b>, numbered 0 to {{fact:x.depth.last_layer}}:
+            layer 0 is the token's input vector and layer <i>l</i> the output of block <i>l</i> of {{fact:x.depth.blocks}}. The
+            slider picks the layer; ← and → step one layer; <b>Play</b> runs from 0 to {{fact:x.depth.last_layer}}. Between two
+            layers dots are drawn part of the way along a straight line, for the eye only: nothing was computed in
+            between. The bars above the slider show how much of the two plotted modes sits at each layer.</p>
+          </section>
+          <section class="pc pc-wide" id="dp-p-modes">
+            <svg class="pc-fig" viewBox="0 0 260 40" aria-hidden="true"><path class="axis" d="M8 34h96M8 34V4"/><text x="76" y="30">mode x</text><text x="12" y="10">mode y</text><g class="dp-pf-dots"><circle cx="30" cy="22" r="2.2"/><circle cx="42" cy="16" r="2.2"/><circle cx="60" cy="24" r="2.2"/><circle cx="78" cy="12" r="2.2"/><circle cx="88" cy="20" r="2.2"/></g><g class="dp-pf-stack"><rect x="130" y="6" width="120" height="6"/><rect x="130" y="15" width="120" height="6"/><rect x="130" y="24" width="120" height="6"/></g><text x="130" y="39">modes 1, 2, …</text></svg>
+            <h3>The two axes are two modes</h3>
+            <p>The embedding gives every token {{fact:x.depth.modes_kept}} coordinates at every layer, called
+            <b>modes</b> and numbered <i>k</i> = 1, 2, …; this page carries the first {{fact:x.depth.modes_shown}}. A mode is
+            one pattern over all (token, layer) pairs at once, computed from which tokens lie close to which: at each
+            layer every token is linked to its {{fact:x.depth.knn}} nearest by the angle between their activation vectors, and
+            each layer is tied to the next. Mode 1 is the smoothest pattern (it changes least between linked tokens and
+            between neighbouring layers), and each later mode is a little less smooth.
+            Because a mode spans every layer, its value at layer 5 and at layer 6 are the same coordinate, which is what
+            lets a dot move continuously. Choose the two plotted modes under <b>Axes</b>. The sign of a mode is
+            arbitrary (flipping it mirrors the plot). Each axis is scaled to its own mode and kept the same at every
+            layer; a few far-out tokens are drawn on the frame's edge and counted (see <b>Axis limits</b>).</p>
+          </section>
+          <section class="pc" id="dp-p-set">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-doc"><rect x="4" y="6" width="40" height="26"/><rect x="52" y="6" width="40" height="26"/><rect x="100" y="6" width="40" height="26"/></g><g class="dp-pf-dots"><circle cx="14" cy="14" r="2"/><circle cx="30" cy="24" r="2"/><circle cx="62" cy="20" r="2"/><circle cx="80" cy="12" r="2"/><circle cx="112" cy="26" r="2"/><circle cx="128" cy="14" r="2"/></g><text x="150" y="22">a sample</text></svg>
+            <h3>Construction set</h3>
+            <p>The tokens an embedding is built from: a fixed sample of positions from one or more texts. The dots are
+            this set's tokens. Each set is built separately for each model, so changing the set changes the space. The
+            texts are the {{fact:x.depth.texts}} Pile documents of the Viewer, numbered c00 to c31, and {{fact:x.depth.random_sequences}}
+            sequences of random tokens, {{fact:x.depth.first_random}} to {{fact:x.depth.last_random}}. The sets:</p>
+            {{DEPTH_SETS}}
+          </section>
+          <section class="pc" id="dp-p-placed">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-dots"><circle cx="30" cy="20" r="2.4"/><circle cx="44" cy="12" r="2.4"/><circle cx="58" cy="26" r="2.4"/><circle cx="72" cy="16" r="2.4"/></g><g class="dp-pf-ring"><circle cx="120" cy="18" r="4"/><circle cx="146" cy="26" r="4"/></g><path class="arrow" d="M100 18h-14m4-3-4 3 4 3"/><text x="104" y="38">placed tokens</text></svg>
+            <h3>Placed tokens: panels and paths</h3>
+            <p>A token outside the set can still be given coordinates: it is compared with the set's tokens at every
+            layer and placed where its links put it, without changing the embedding. Because the layers are tied, its
+            position at one layer also depends on its other layers. A <b>panel</b> is a fixed sample placed into every set:
+            <i>natural</i> ({{fact:x.depth.panel.natural_per_text}} tokens from each of the {{fact:x.depth.texts}} documents, {{fact:x.depth.panel.natural}}
+            in all), <i>random</i> ({{fact:x.depth.panel.random}} from the random sequences, including {{fact:x.depth.unseen_random}}, which no set uses) and
+            <i>shuffled</i> ({{fact:x.depth.panel.shuffled}} from documents {{fact:x.depth.shuffled_sources}} with their tokens put in random order,
+            {{fact:x.depth.first_shuffled}} to {{fact:x.depth.last_shuffled}}). Each panel token is marked as <b>in the set</b> (its
+            coordinates are the set's own), a <b>new position of a text in the set</b>, or <b>a text the set never saw</b>. A
+            <b>path</b> is every token of one text joined in reading order ({{fact:x.depth.paths}}; for d32 and rand only).</p>
+          </section>
+          <section class="pc" id="dp-p-strength">
+            <svg class="pc-fig" viewBox="0 0 200 40" aria-hidden="true"><g class="dp-pf-chain"><rect x="4" y="10" width="20" height="16"/><rect x="44" y="10" width="20" height="16"/><rect x="84" y="10" width="20" height="16"/><rect x="124" y="10" width="20" height="16"/></g><path class="dp-pf-spring" d="M24 18h20M64 18h20M104 18h20"/><text x="150" y="22">tie between</text><text x="150" y="32">layers</text></svg>
+            <h3>Coupling strength</h3>
+            <p>How strongly each layer is tied to the next. <b>t*</b> is the strength at which the first pattern that
+            varies only along depth (the same for every token) and the first pattern that varies across tokens get the
+            same smoothness score: a crossing point, not a best value. <b>t*/16</b> is a sixteenth of it, a much looser tie under
+            which a mode can change more from layer to layer. t* is found separately for each model and set; its value
+            is in each plot's caption.</p>
+          </section>
+          <section class="pc" id="dp-p-colour">
+            <div class="pc-fig pc-swatches" aria-hidden="true"><span><i class="dp-sw s1"></i>text</span><span><i class="dp-sw dp-sw-ramp"></i>position, frequency</span></div>
+            <h3>Colour</h3>
+            <p>Colour is for reading only; nothing is built from it. <b>Text</b>: the document or random sequence a
+            token comes from (up to {{fact:x.depth.text_colours}} at a time; with more, click names in the key to choose which). <b>Position</b>:
+            where in its text the token sits, from position 1 (pale) to {{fact:x.depth.text_tokens}} (deep).
+            <b>Frequency</b>: how many times the token's id (the same word piece) occurs in the construction set, on a
+            log scale. <b>Panel group</b>: in the set, new position, or unseen text (with a panel shown).</p>
+          </section>
+          <section class="pc" id="dp-p-flags">
+            <div class="pc-fig pc-swatches" aria-hidden="true"><span><i class="dp-flag tie">≈</i>near-tied</span><span><i class="dp-flag wh">×</i>withheld</span></div>
+            <h3>Flags on a mode</h3>
+            <p><b>Near-tied</b>: neighbouring modes whose eigenvalues (their smoothness scores) differ by under
+            {{fact:x.depth.tie_pct}} form a band. Within a band only the band as a whole is meaningful, so a single member's
+            axis and its extreme tokens are marked; the {{fact:x.depth.tie_pct}} line is a display convention, not a proof.
+            <b>Withheld</b>: a mode whose placement equation is too unstable (condition number above
+            {{fact:x.depth.condition}}) gives placed tokens no coordinate, so they are not drawn on that axis.</p>
+          </section>
+          <section class="pc pc-wide" id="dp-p-models">
+            <svg class="pc-fig" viewBox="0 0 260 40" aria-hidden="true"><rect class="dp-pf-box" x="4" y="4" width="100" height="32"/><rect class="dp-pf-box" x="150" y="4" width="100" height="32"/><g class="dp-pf-dots"><circle cx="40" cy="20" r="3"/><circle cx="200" cy="14" r="3"/></g><path class="dp-pf-link" d="M44 20C100 30 150 6 196 14"/><text x="112" y="24">same token</text></svg>
+            <h3>Two models side by side</h3>
+            <p>{{fact:x.depth.model.pythia}} and {{fact:x.depth.model.olmo}} read exactly the same tokens, and each builds its own
+            embedding from its own activations. Their axes are <b>not matched</b>: mode 2 of one need not resemble mode 2
+            of the other, and either may be mirrored. Compare shapes and groupings, not directions. Hovering a token
+            rings the same token in the other plot. How far the two models' spaces agree, as spaces rather than axis by
+            axis, is measured in the charts at the bottom.</p>
+          </section>
+          <section class="pc pc-wide" id="dp-p-index">
+            <div class="pc-fig dp-pf-keys" aria-hidden="true"><code>l</code><code>k</code><code>p</code><code>c07</code><code>r2</code><code>s1</code></div>
+            <h3>Every index on this page</h3>
+            <p><b>l</b>: layer, 0 to {{fact:x.depth.last_layer}}. <b>k</b>: mode, 1 to {{fact:x.depth.modes_shown}} here (of
+            {{fact:x.depth.modes_kept}} computed). <b>p</b>: position of a token in its text, 1 to {{fact:x.depth.text_tokens}}.
+            <b>c00</b> to <b>c31</b>: the Pile documents. <b>{{fact:x.depth.first_random}}</b> to <b>{{fact:x.depth.last_random}}</b>: random
+            sequences (ids drawn uniformly from the word pieces the documents use). <b>{{fact:x.depth.first_shuffled}}</b> to
+            <b>{{fact:x.depth.last_shuffled}}</b>: documents {{fact:x.depth.shuffled_sources}} with their tokens shuffled.
+            <b>Depth weight</b> of a mode at a layer: the share of the mode that sits at that layer (the shares add up to
+            1 over the layers). <b>Eigenvalue</b>: a mode's smoothness score (smaller is smoother).</p>
+          </section>
+        </div>
+      </details>
+
+      <div class="dp-grid">
+        <section class="dp-stage" aria-label="Plot">
+          <div class="dp-transport" id="dp-transport">
+            <button type="button" id="dp-play" class="dp-primary" aria-label="Play through the layers">▶ Play</button>
+            <div class="dp-where">
+              <div class="dp-layerhead" id="dp-layerhead" aria-live="polite">–</div>
+              <div class="dp-layersub" id="dp-layersub"></div>
+            </div>
+            <button type="button" class="dp-jump" id="dp-jump">Options ↓</button>
+            <div class="dp-track">
+              <div class="dp-occ-cap" id="dp-occ-cap"></div>
+              <canvas id="dp-occ" aria-hidden="true"></canvas>
+              <input type="range" id="dp-depth" min="0" max="16" step="0.01" value="0" aria-label="Layer">
+            </div>
+          </div>
+
+          <div class="dp-card dp-main">
+            <div class="dp-key">
+              <div id="dp-what" class="dp-what"></div>
+              <div id="dp-legend" class="dp-legend"></div>
+              <p class="dp-hint"><span class="mouse-only">Hover a dot to read its token in context. Keys: ← → step a layer, Space plays.</span><span class="touch-only">Tap a dot to read its token in context.</span></p>
+            </div>
+            <p class="dp-unmatched" id="dp-unmatched" hidden><b>Axes not matched between the models.</b> Each plot uses its own
+            model's modes; mode numbers and signs do not correspond. Hovering a token rings the same token in the other plot.</p>
+            <div class="dp-plots" id="dp-plots"></div>
+            <div id="dp-status" class="dp-status" role="status">loading…</div>
+          </div>
+
+          <div class="dp-card" id="dp-strip-card">
+            <div class="dp-cardhead">Every layer at a glance <span class="dp-hint">(same axes and colours as above; click one to go to it)</span></div>
+            <div id="dp-strips"></div>
+          </div>
+
+          <div class="dp-card" id="dp-modes-card">
+            <div class="dp-cardhead dp-cardrow"><span>The modes: where each one sits along depth</span>
+              <span class="dp-seg dp-modesel" id="dp-modes-model" role="radiogroup" aria-label="Model for the mode table"></span></div>
+            <p class="dp-hint" id="dp-modes-hint"></p>
+            <div class="dp-tablewrap"><table class="dp-modes" id="dp-modes"></table></div>
+          </div>
+
+          <div class="dp-card" id="dp-ext-card">
+            <div class="dp-cardhead" id="dp-ext-head">Tokens at the extremes of a mode</div>
+            <p class="dp-hint" id="dp-ext-hint"></p>
+            <div class="dp-ext" id="dp-ext"></div>
+          </div>
+
+          <div class="dp-card dp-slot" id="dp-agree-card">
+            <div class="dp-cardhead dp-cardrow"><span>How far the two models' spaces agree <span class="dp-slot-tag">charts slot</span></span>
+              <span class="dp-seg" id="dp-agree-k" role="radiogroup" aria-label="Number of modes compared"></span></div>
+            <p class="dp-hint">Each chart compares whole spaces: the first <i>k</i> modes of one embedding against the first
+            <i>k</i> of another, on the same tokens, as a number from 0 (no shared direction) to 1 (the same space). It
+            ignores how the axes are rotated or mirrored inside the space, so unmatched axes do not matter here. The
+            set and strength are the ones chosen above.</p>
+            <div class="dp-charts" id="dp-agree"></div>
+          </div>
+          <details class="dp-card dp-notes">
+            <summary>Display choices made for this page, and how to check them</summary>
+            <div class="dp-tablewrap"><table class="dp-modes dp-choices">
+              <thead><tr><th>Choice</th><th>Here</th><th>Alternative</th><th>How to check</th></tr></thead>
+              <tbody>
+                <tr><td>Axis limits</td><td>each axis holds {{fact:x.depth.axis_pct}} of its mode's coordinates over all layers; the few tokens beyond are drawn on the frame's edge as open circles and counted on the plot</td><td>every token inside, one scale for both axes (the plain view); or each layer scaled on its own</td><td>choose under <i>Axis limits</i>; hover shows a clipped token's real coordinates; the depth-weight bars show how much of each mode sits at each layer</td></tr>
+                <tr><td>Scale</td><td>linear: a coordinate's distance from the axis is drawn to scale</td><td>square root, which spreads tokens crowded near zero when a few tokens sit far out</td><td>tick <i>Spread out the crowded centre</i>; hover shows the unchanged coordinates</td></tr>
+                <tr><td>Between layers</td><td>dots drawn on straight lines between neighbouring layers</td><td>jumps from layer to layer</td><td>the slider stops on whole layers with ← and →</td></tr>
+                <tr><td>Modes carried</td><td>the first {{fact:x.depth.modes_shown}} of {{fact:x.depth.modes_kept}}, to keep the page small</td><td>all {{fact:x.depth.modes_kept}}</td><td>the release data hold all {{fact:x.depth.modes_kept}}</td></tr>
+                <tr><td>Precision</td><td>each coordinate stored as a whole number from −{{fact:x.depth.quant_steps}} to {{fact:x.depth.quant_steps}} on a square-root scale, with one scale per layer and mode, so small values keep fine steps and large ones coarser steps (at most about 1/{{fact:x.depth.quant_steps}} of the layer's largest value)</td><td>full precision</td><td>the audit re-encodes the release and compares every byte</td></tr>
+                <tr><td>Text colours</td><td>{{fact:x.depth.text_colours}} at a time; the rest grey</td><td>one colour per text</td><td>click names in the key; hover names every token's text</td></tr>
+                <tr><td>Placed tokens shown</td><td>the set's own tokens turn grey</td><td>both in colour</td><td>choose <i>none</i> under <i>Placed tokens</i></td></tr>
+              </tbody>
+            </table></div>
+          </details>
+          <div id="dp-tip" class="dp-tip" role="status"></div>
+        </section>
+
+        <aside class="dp-ctl" id="dp-controls" aria-label="Depth embedding controls" tabindex="-1">
+          <section class="dp-group">
+            <h2>Embedding</h2>
+            <div class="dp-field">Model
+              <div class="dp-seg" role="radiogroup" aria-label="Model" id="dp-model"></div></div>
+            <label class="dp-field">Construction set<select id="dp-set"></select></label>
+            <p class="dp-hint" id="dp-set-hint"></p>
+            <div class="dp-field">Coupling strength
+              <div class="dp-seg" role="radiogroup" aria-label="Coupling strength" id="dp-strength"></div></div>
+          </section>
+          <section class="dp-group">
+            <h2>Axes</h2>
+            <div class="dp-axes">
+              <label class="dp-field">x: mode<select id="dp-ax"></select></label>
+              <label class="dp-field">y: mode<select id="dp-ay"></select></label>
+            </div>
+            <p class="dp-hint" id="dp-axes-hint"></p>
+            <label class="dp-field">Axis limits<select id="dp-lim"></select></label>
+            <label class="dp-check"><input type="checkbox" id="dp-fix" checked> <span>Same axis limits at every layer <span class="dp-hint">(off: each layer is scaled on its own)</span></span></label>
+            <label class="dp-check"><input type="checkbox" id="dp-sq"> <span>Spread out the crowded centre <span class="dp-hint">(square-root scale: each coordinate drawn at the square root of its distance from the axis, sign kept; order is unchanged, distances are not)</span></span></label>
+          </section>
+          <section class="dp-group">
+            <h2><label for="dp-color">Colour</label></h2>
+            <select id="dp-color">
+              <option value="text">text (document or sequence)</option>
+              <option value="pos">position in the text</option>
+              <option value="freq">frequency of the token in the set</option>
+              <option value="cohort">panel group (with a panel shown)</option>
+            </select>
+            <p class="dp-hint" id="dp-color-hint"></p>
+          </section>
+          <section class="dp-group">
+            <h2><label for="dp-over">Placed tokens</label></h2>
+            <select id="dp-over"></select>
+            <p class="dp-hint" id="dp-over-hint"></p>
+          </section>
+          <button type="button" class="dp-back" id="dp-back">↑ Back to plot</button>
+        </aside>
+      </div>
+    </div>

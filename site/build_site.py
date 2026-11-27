@@ -13,6 +13,21 @@ Release builds (no --dev) fail unless the independent audit report is present, p
 parameters; the data are not the development fixture; both models are present; the manifest's file inventory matches
 the files on disk; and no answer placeholder is left (--allow-placeholders lifts only the last). With --dev every
 page carries a "development fixture, not results" banner and these problems are listed in it instead.
+
+Entry D1 of the Experiments tab (content/experiments/d1-depth.html, facts and charts by xsite/gen_d1.py) is built with the
+tab, from the copied pack and from the placement measures in the release (--depth-release, default DEPTH_DIR's parent:
+units/<model>/<set>/tstar/facts.json, each checked against its done.json and the outputs hash meta.json records).
+
+The "Depth embedding" tab is built only with --depth DEPTH_DIR, the output of exp1/pack_depth.py (for example
+/data/tm_depth/site_depth). It is copied to OUT/dd/ and its facts.json becomes assets/x/depth.facts.json
+({{fact:x.depth.<name>}}). Any build refuses if what the tab adds (dd/ plus depth_tab.html, js/depth.js,
+css/depth.css) exceeds the cap the pack records (150 MB). A release build also refuses unless the pack is complete
+(all 22 units, every panel, path and aggregate), was made from the current pipeline code and spec, matches its own
+inventory, and the depth audit report (--depth-audit, default DEPTH_DIR/../audit_depth/report.json) has passed is
+true, a non-empty checks list, and an sha256 inventory whose files are exactly the pack's, keyed
+"<DEPTH_DIR name>/<path>" (for example "site_depth/u/pythia/d32/tstar/set.bin"), with the same hashes.
+
+    TMPDIR=/var/tmp uv run --with numpy python site/build_site.py /var/tmp/tm_release --dev --depth /data/tm_depth/site_depth
 """
 from __future__ import annotations
 
@@ -139,9 +154,83 @@ def release_problems(data: Path):
     return problems
 
 
+DEPTH_ASSETS = ("depth_tab.html", "js/depth.js", "css/depth.css")
+DEPTH_CAP_BYTES = 150_000_000      # SPEC_DEPTH.md section 8: what the Depth embedding tab adds to the site
+
+
+def depth_problems(depth: Path, audit_path: Path):
+    """Everything that makes the packed depth data unfit to publish (empty list = fit), and the audit report read."""
+    problems = []
+    meta = build_x.read_json(depth / "meta.json")
+    if not meta.get("complete"):
+        miss = meta.get("missing_units", [])
+        problems.append(f"the depth pack is partial: {len(miss)} of {len(meta.get('units', {}))} embeddings missing"
+                        + (f" ({', '.join(miss[:4])}{' …' if len(miss) > 4 else ''})" if miss else ""))
+        if meta.get("incomplete_units"):
+            problems.append(f"depth units packed without some panels or paths: {', '.join(meta['incomplete_units'])}")
+        if meta.get("stale_units"):
+            problems.append(f"depth units built with other pipeline code or spec than the current: {', '.join(meta['stale_units'])}")
+        absent = [k for k, v in meta.get("aggregates", {}).items() if not v]
+        if absent:
+            problems.append(f"depth aggregates not computed yet: {', '.join(absent)}")
+    try:
+        sys.path.insert(0, str(ROOT / "exp1"))
+        import pack_depth  # noqa: PLC0415
+        if meta.get("code_sha256") != pack_depth.code_hash() or meta.get("spec_sha256") != pack_depth.file_hash(pack_depth.SPEC):
+            problems.append("the depth pack was made from other pipeline code or another SPEC_DEPTH.md than the current ones")
+    finally:
+        if sys.path and sys.path[0] == str(ROOT / "exp1"):
+            sys.path.pop(0)
+    listed = meta.get("files", {})
+    on_disk = {p.relative_to(depth).as_posix(): p for p in sorted(depth.rglob("*")) if p.is_file() and p.name != "meta.json"}
+    bad = sorted(set(on_disk) ^ set(listed)) + sorted(k for k in on_disk if k in listed and sha256_file(on_disk[k]) != listed[k]["sha256"])
+    if bad:
+        problems.append(f"{len(bad)} depth file(s) differ from the pack's own inventory: {', '.join(bad[:5])}")
+    if not audit_path.is_file():
+        problems.append(f"the independent depth audit report {audit_path} is missing")
+        return problems, None
+    report = build_x.read_json(audit_path)
+    if report.get("passed") is not True or not report.get("checks"):
+        problems.append("the independent depth audit did not pass")
+    inv = report.get("inventory")
+    if not isinstance(inv, dict) or inv.get("algorithm") != "sha256" or not isinstance(inv.get("files"), dict):
+        problems.append("the depth audit report has no sha256 inventory, so it cannot vouch for the site data")
+        return problems, report
+    prefix = depth.name + "/"
+    audited = {k[len(prefix):]: v for k, v in inv["files"].items() if k.startswith(prefix)}
+    everything = {**{k: sha256_file(p) for k, p in on_disk.items()}, "meta.json": sha256_file(depth / "meta.json")}
+    diff = sorted(set(everything) ^ set(audited)) + sorted(k for k in everything if k in audited and audited[k] != everything[k])
+    if diff:
+        problems.append(f"{len(diff)} depth site file(s) not as the audit verified them: {', '.join(diff[:5])}")
+    if inv.get("digest") is not None and inv["digest"] != canonical_digest(inv["files"]):
+        problems.append("the depth audit inventory's digest does not match its own file list")
+    return problems, report
+
+
+def depth_sets_table(meta):
+    """The primer's table of construction sets, from the pack's meta.json (never typed)."""
+    esc = build_x.html.escape
+    rows = []
+    for s in meta["sets"]:
+        ctx = s["contexts"]
+        texts = ctx[0] if len(ctx) == 1 else f"{ctx[0]}–{ctx[-1]}" if len(ctx) > 2 else f"{ctx[0]}, {ctx[1]}"
+        per = s["n"] // len(ctx)
+        rows.append(f'<tr><td>{esc(s["key"])}</td><td>{esc(texts)}</td><td class="n">{len(ctx)}</td><td class="n">{per:,}</td><td class="n">{s["n"]:,}</td></tr>')
+    return ('<table class="dp-sets"><thead><tr><th>set</th><th>texts</th><th>count</th><th>each</th><th>tokens</th></tr></thead><tbody>'
+            + "".join(rows) + "</tbody></table>")
+
+
 class Builder:
-    def __init__(self, data: Path, out: Path, dev: bool, allow_placeholders: bool, note: str | None = None):
+    def __init__(self, data: Path, out: Path, dev: bool, allow_placeholders: bool, note: str | None = None,
+                 depth: Path | None = None, depth_audit: Path | None = None, depth_release: Path | None = None):
         self.data, self.dev, self.allow, self.note = data.resolve(), dev, allow_placeholders, note
+        self.depth = depth.resolve() if depth else None
+        self.depth_audit = (depth_audit or (self.depth.parent / "audit_depth" / "report.json")) if self.depth else None
+        if self.depth:
+            require((self.depth / "meta.json").is_file(), self.depth, "no meta.json: not the output of exp1/pack_depth.py")
+            self.depth_release = (depth_release or self.depth.parent).resolve()
+            require((self.depth_release / "units").is_dir(), self.depth_release,
+                    "no units/: not the release exp1/depth.py wrote (entry D1 reads its placement measures; pass --depth-release)")
         requested = out.absolute()
         self.out = out.resolve()
         if (requested.is_symlink() or self.out in (ROOT, HERE) or self.out in ROOT.parents or self.out.is_file()
@@ -152,6 +241,10 @@ class Builder:
     def run(self):
         t0 = time.time()
         problems = release_problems(self.data)
+        self.depth_report = None
+        if self.depth:
+            dp, self.depth_report = depth_problems(self.depth, self.depth_audit)
+            problems += [f"Depth embedding: {p}" for p in dp]
         if problems and not self.dev:
             raise BuildError("not fit for a release build:\n  - " + "\n  - ".join(problems) + "\n(use --dev for a development build)")
         self.problems = problems
@@ -170,12 +263,27 @@ class Builder:
         self.check_copies(manifest)
         xdir = self.out / "assets" / "x"
         xdir.mkdir(parents=True)
+        if self.depth:
+            self.copy_depth(xdir)
+        else:
+            for name in DEPTH_ASSETS[1:]:
+                (self.out / name).unlink()
         for name in GENERATORS:
             t = time.time()
             module = __import__(name)
             module.run(self.data, xdir)
             log(f"{name}: {time.time() - t:.1f} s")
+        if self.depth:
+            t = time.time()
+            import gen_d1  # noqa: PLC0415
+            try:
+                gen_d1.run_depth(self.out / "dd", self.depth_release, xdir)
+            except gen_d1.ClaimError as e:
+                raise BuildError(str(e)) from e
+            log(f"gen_d1 (Experiments entry D1, from dd/ and {self.depth_release}): {time.time() - t:.1f} s")
         self.assemble(xdir)
+        if self.depth:
+            self.check_depth_size()
         for css in (self.out / "css").rglob("*.css"):
             build_x.check_css(css.read_text(encoding="utf-8"), css)
         files = [p for p in self.out.rglob("*") if p.is_file()]
@@ -190,6 +298,40 @@ class Builder:
                for rel in ["site/" + p.relative_to(self.out / "d").as_posix()] if listed.get(rel) != sha256_file(p)]
         if bad:
             raise BuildError(f"{len(bad)} copied viewer file(s) do not match the audit inventory: {', '.join(bad[:5])}")
+
+    def copy_depth(self, xdir):
+        """Copy the pack to dd/; a release checks the copy (not the source) against the one passing report read
+        before the build, and the page is then made from the copy only."""
+        shutil.copytree(self.depth, self.out / "dd")
+        dd = self.out / "dd"
+        if not self.dev:
+            report = self.depth_report
+            require(report is not None and report.get("passed") is True and report.get("checks"), self.depth_audit, "depth audit did not pass")
+            prefix = self.depth.name + "/"
+            audited = {k[len(prefix):]: v for k, v in report["inventory"]["files"].items() if k.startswith(prefix)}
+            copied = {p.relative_to(dd).as_posix(): sha256_file(p) for p in sorted(dd.rglob("*")) if p.is_file()}
+            bad = sorted(set(copied) ^ set(audited)) + sorted(k for k in copied if k in audited and audited[k] != copied[k])
+            if bad:
+                raise BuildError(f"{len(bad)} copied depth file(s) do not match the depth audit inventory: {', '.join(bad[:5])}")
+        self.depth_meta = build_x.read_json(dd / "meta.json")
+        shutil.copy2(dd / "facts.json", xdir / "depth.facts.json")
+
+    def check_depth_size(self):
+        """The bytes the tab adds to the published site, measured on the output: dd/, the facts copy, its script and
+        style, and its markup in index.html."""
+        page = (self.out / "index.html").read_text(encoding="utf-8")
+        a = page.index('<section class="tab-panel" id="tab-depth"')
+        b = page.index('<section class="tab-panel"', a + 10)
+        parts = {"dd/": sum(p.stat().st_size for p in (self.out / "dd").rglob("*") if p.is_file()),
+                 "assets/x/depth.facts.json": (self.out / "assets" / "x" / "depth.facts.json").stat().st_size,
+                 "js/depth.js": (self.out / "js" / "depth.js").stat().st_size, "css/depth.css": (self.out / "css" / "depth.css").stat().st_size,
+                 "index.html (tab markup)": len(page[a:b].encode("utf-8"))}
+        added = sum(parts.values())
+        if added > DEPTH_CAP_BYTES:
+            raise BuildError(f"the Depth embedding tab adds {added / 1e6:.1f} MB, above the {DEPTH_CAP_BYTES / 1e6:g} MB cap")
+        m = self.depth_meta
+        log(f"depth: the tab adds {added:,} bytes ({added / 1e6:.2f} MB; cap {DEPTH_CAP_BYTES / 1e6:g} MB); "
+            f"{sum(u['status'] == 'packed' for u in m['units'].values())} of {len(m['units'])} embeddings packed")
 
     def stamp(self):
         """Version the site's own scripts and styles so a browser never mixes a cached old module with new HTML."""
@@ -222,7 +364,14 @@ class Builder:
         facts = build_x.load_facts(xdir)
         experiments, _ = build_x.experiments_html(xdir, facts)
         page = (HERE / "index.html").read_text(encoding="utf-8")
-        for key, val in (("{{VIEWER}}", (HERE / "viewer_tab.html").read_text(encoding="utf-8")),
+        if self.depth:
+            panel = (HERE / "depth_tab.html").read_text(encoding="utf-8").replace("{{DEPTH_SETS}}", depth_sets_table(self.depth_meta))
+            depth = (('{{DEPTH_PANEL}}', f'  <section class="tab-panel" id="tab-depth" data-tab="depth" hidden>\n{panel}  </section>\n'),
+                     ('{{DEPTH_TAB_LINK}}', '      <a role="tab" href="#depth" data-tab="depth"><span class="tab-long">Depth embedding</span><span class="tab-short">Depth</span></a>\n'),
+                     ('{{DEPTH_CSS}}', '<link rel="stylesheet" href="css/depth.css">\n'))
+        else:
+            depth = (("{{DEPTH_PANEL}}", ""), ("{{DEPTH_TAB_LINK}}", ""), ("{{DEPTH_CSS}}", ""))
+        for key, val in (*depth, ("{{VIEWER}}", (HERE / "viewer_tab.html").read_text(encoding="utf-8")),
                          ("{{CONTENT_EXPERIMENTS}}", experiments),
                          ("{{CONTENT_METHOD}}", (HERE / "content" / "method.html").read_text(encoding="utf-8")),
                          ("{{DEV_BANNER}}", self.banner()),
@@ -248,9 +397,13 @@ def main():
     ap.add_argument("--dev", action="store_true", help="development build: banner on every page, release checks become notes")
     ap.add_argument("--allow-placeholders", action="store_true", help="release build with answer placeholders left in")
     ap.add_argument("--dev-note", help="with --dev on fetched data: one plain sentence for the banner saying why this is not a release")
+    ap.add_argument("--depth", type=Path, help="packed Depth embedding data (exp1/pack_depth.py output); adds the tab")
+    ap.add_argument("--depth-audit", type=Path, help="depth audit report (default DEPTH/../audit_depth/report.json)")
+    ap.add_argument("--depth-release", type=Path, help="the release exp1/depth.py wrote (units/<model>/<set>/), read for entry D1's "
+                    "placement measures, each file checked against the hashes the pack recorded (default: DEPTH's parent)")
     a = ap.parse_args()
     try:
-        Builder(a.data, a.out, a.dev, a.allow_placeholders, a.dev_note).run()
+        Builder(a.data, a.out, a.dev, a.allow_placeholders, a.dev_note, a.depth, a.depth_audit, a.depth_release).run()
     except (BuildError, OSError, KeyError, ValueError) as e:
         ap.exit(1, f"build failed: {e}\n")
 

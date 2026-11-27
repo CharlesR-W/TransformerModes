@@ -1,0 +1,14 @@
+<div class="xp-lede xp-lede-depth">
+<h2>A second study: tokens through the layers</h2>
+<p>A separate study builds, for fixed samples of these texts, one space that holds all {{fact:x.depth.layers}} layers of a
+model at once, so that the same token can be followed from the input to the last block. It asks what the main patterns
+of that space look like, how they change with the sample, whether the two models agree, and where tokens of another
+kind (random or shuffled) land. It uses no memory kernel and describes these fixed samples; it is not a test.</p>
+<p class="xp-finding"><strong>The two models give the same tokens similar spaces; much of the overlap survives scrambling which occurrence of each word piece is matched with which.</strong>
+On a set's own tokens, the two models' first {{fact:x.d1-depth.k}} patterns overlap {{fact:x.d1-depth.q3.own.min}} to
+{{fact:x.d1-depth.q3.own.max}} (1 = the same space, 0 = nothing shared). Reordering the occurrences within each word
+piece in one model, which leaves some tokens matched, still gives {{fact:x.d1-depth.q3.sameid.min}} to
+{{fact:x.d1-depth.q3.sameid.max}} in the document sets; reordering all tokens freely gives at most
+{{fact:x.d1-depth.q3.free.max}}. <a href="#experiments/x-d1-depth">D1: Depth embedding of tokens →</a>
+· <a href="#depth">Depth embedding tab</a></p>
+</div>

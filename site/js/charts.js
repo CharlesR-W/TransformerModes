@@ -324,18 +324,19 @@ export function dotChart(container, o) {
       if (!Number.isFinite(v)) return;
       const cy = rowY[i] + off(si), cx = X(v);
       if (s.lo && Number.isFinite(s.lo[i])) el("line", { x1: X(s.lo[i]), x2: X(s.hi[i]), y1: cy, y2: cy, stroke: s.color, "stroke-width": 1.4, opacity: .7 }, gg);
-      const st = s.hollow ? { fill: css("--surface", "#fff"), stroke: s.color, "stroke-width": 1.6 } : { fill: s.color, stroke: css("--surface", "#fff"), "stroke-width": 1.2 };
+      const hol = Array.isArray(s.hollow) ? s.hollow[i] : s.hollow;   // per point (an array) or for the whole series
+      const st = hol ? { fill: css("--surface", "#fff"), stroke: s.color, "stroke-width": 1.6 } : { fill: s.color, stroke: css("--surface", "#fff"), "stroke-width": 1.2 };
       const mk = s.marker || "circle", r = 4.5;
       const shape = mk === "diamond" ? el("path", { d: `M${cx},${cy - r * 1.25}L${cx + r * 1.1},${cy}L${cx},${cy + r * 1.25}L${cx - r * 1.1},${cy}Z`, ...st }, gg)
         : mk === "triangle" ? el("path", { d: `M${cx},${cy - r * 1.2}L${cx + r * 1.1},${cy + r * .8}L${cx - r * 1.1},${cy + r * .8}Z`, ...st }, gg)
         : mk === "square" ? el("rect", { x: cx - r * .9, y: cy - r * .9, width: r * 1.8, height: r * 1.8, ...st }, gg)
         : el("circle", { cx, cy, r, ...st }, gg);
-      shape.addEventListener("pointermove", ev => showTip(ev.clientX, ev.clientY, tipRows(String(o.rows[i]), [{ name: s.name, value: vfmt(v) + (s.lo && Number.isFinite(s.lo[i]) ? ` (${vfmt(s.lo[i])} to ${vfmt(s.hi[i])})` : ""), color: s.color }])));
+      shape.addEventListener("pointermove", ev => showTip(ev.clientX, ev.clientY, tipRows(String(o.rows[i]), [{ name: s.name, value: vfmt(v) + (s.lo && Number.isFinite(s.lo[i]) ? ` (${vfmt(s.lo[i])} to ${vfmt(s.hi[i])})` : "") + (hol && o.hollow_note ? ` · open: ${o.hollow_note}` : ""), color: s.color }])));
       shape.addEventListener("pointerleave", hideTip);
     });
     return gg;
   });
-  if (ns > 1 && o.legend !== false) wrap.append(legend(o.series.map(s => ({ ...s, marker: s.marker || "circle" })), groups));
+  if (ns > 1 && o.legend !== false) wrap.append(legend(o.series.map(s => ({ ...s, marker: s.marker || "circle", hollow: Array.isArray(s.hollow) ? false : s.hollow })), groups));
   return { svg, X };
 }
 

@@ -1,5 +1,6 @@
 [
   {"id": "e1-neighbours", "group": "stage-a", "title": "Where are a token's most similar tokens?"},
   {"id": "e2-concordance", "group": "stage-a", "title": "Do similar tokens agree about what comes next?"},
-  {"id": "e3-selection", "group": "stage-a", "title": "What did this decide for the next stage?"}
+  {"id": "e3-selection", "group": "stage-a", "title": "What did this decide for the next stage?"},
+  {"id": "d1-depth", "group": "depth", "requires": "depth", "title": "Depth embedding of tokens"}
 ]

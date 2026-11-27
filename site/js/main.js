@@ -1,7 +1,8 @@
-// Page shell (adapted from the DepthEmbedding site): hash router (#viewer?<state>, #experiments/<entry>, #method/<id>),
-// maths, heading anchors, and lazy live charts in Experiments and Method (js/live.js).
-const TABS = ["viewer", "experiments", "method"];
-let viewer = null;
+// Page shell (adapted from the DepthEmbedding site): hash router (#viewer?<state>, #depth?<state>, #experiments/<entry>,
+// #method/<id>), maths, heading anchors, and lazy live charts in Experiments and Method (js/live.js).
+// The tabs are the panels the build included (the Depth embedding tab only when it was built with --depth).
+const TABS = [...document.querySelectorAll(".tab-panel")].map(p => p.dataset.tab);
+let viewer = null, depth = null;
 
 function resolveHash() {
   const raw = decodeURIComponent(location.hash.slice(1));
@@ -31,6 +32,16 @@ async function route() {
     else await viewer.layout();
     if (anchor) scrollToAnchor(anchor);
     document.getElementById("vw").dataset.state = "ready";
+    return;
+  }
+  if (tab === "depth") {
+    document.title = "Depth embedding · TransformerModes";
+    if (!depth) {
+      const { DepthView } = await import("./depth.js");
+      depth = window.__depth = new DepthView(document.getElementById("dp"));
+    }
+    await depth.show(query);
+    if (anchor) scrollToAnchor(anchor);
     return;
   }
   document.title = `${tab[0].toUpperCase()}${tab.slice(1)} · TransformerModes`;
@@ -75,7 +86,7 @@ function xpView(id, anchor) {
   nav.hidden = view !== "entry";
   if (entry) {
     const i = list.indexOf(entry), pv = list[i - 1], nx = list[i + 1];
-    nav.querySelector(".x-where").innerHTML = `<b>Stage A</b> <span>${i + 1} of ${list.length}</span>`;
+    nav.querySelector(".x-where").innerHTML = `<b>${escH(entry.el.dataset.group || "Stage A")}</b> <span>${i + 1} of ${list.length}</span>`;
     for (const [a, e, dir] of [[nav.querySelector(".x-prev"), pv, "Previous"], [nav.querySelector(".x-next"), nx, "Next"]]) {
       a.hidden = !e;
       if (!e) continue;
@@ -129,7 +140,7 @@ async function renderFigure(f) {
 function maths() {
   window.renderMathInElement(document.body, {
     delimiters: [{ left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true }, { left: "$", right: "$", display: false }, { left: "\\(", right: "\\)", display: false }],
-    ignoredClasses: ["no-math", "tooltip", "vw"], throwOnError: false,
+    ignoredClasses: ["no-math", "tooltip", "vw", "dp"], throwOnError: false,
   });
 }
 function anchors() {

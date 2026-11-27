@@ -6,7 +6,8 @@
 import { h, lineChart, heatmap, barChart, dotChart, histChart, stackChart, pointChart, tableChart, agreementChart, pairedChart } from "./charts.js";
 
 const css = (v, d) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || d;
-const ROLE = { other: "--o-other", far: "--o-far", near: "--o-near", corpus: "--c-corpus", own: "--c-own", ink: "--fg", mute: "--mute", mute2: "--mute-2", wash: "--line", accent: "--accent" };
+// pythia / olmo: the two models in entry D1, the colours the Depth embedding tab gives them (css/depth.css)
+const ROLE = { other: "--o-other", far: "--o-far", near: "--o-near", corpus: "--c-corpus", own: "--c-own", ink: "--fg", mute: "--mute", mute2: "--mute-2", wash: "--line", accent: "--accent", pythia: "--dp-cat-1", olmo: "--dp-cat-2" };
 const colour = (name, i = 0) => name && ROLE[name] ? css(ROLE[name], "#888") : name && name.startsWith("#") ? name : css(["--fg", "--mute", "--mute-2"][i % 3], "#555");
 const hexRgb = x => { const v = parseInt(x.replace("#", ""), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; };
 const mix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
@@ -58,8 +59,11 @@ function legendFor(kind, o) {
       items.push(h("span", { class: "k" }, h("i", { class: "box", style: { width: "6px", opacity: ".6", background: colour("ink") } }), "Narrow: same tokens, random vectors"));
     }
   }
+  if (kind === "dots" && o.panels && o.legend !== false)          // small multiples of dot charts share one legend above them
+    (first.series || []).forEach((s, i) => { if (s.name) items.push(h("span", { class: "k" }, h("i", { class: `mk ${s.marker || "circle"}`, style: { "--c": colour(s.color, i) } }), s.name)); });
   if (["lines", "points", "agreement", "paired"].includes(kind)) {
     (first.series || []).forEach((s, i) => {
+      if (!s.name) return;                     // unnamed series (e.g. a bundle of grey lines named once) carry no key
       const c = colour(s.color, i);
       const key = kind === "paired" ? h("i", { class: `mk ${i ? "square" : "circle hollow"}`, style: { "--c": c } })
         : kind === "points" ? h("i", { class: `mk ${s.marker || "circle"}`, style: { "--c": c } })

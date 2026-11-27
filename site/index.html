@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/viewer.css">
 <link rel="stylesheet" href="css/experiments.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='5' width='4' height='6' rx='1' fill='%2392b9eb'/%3E%3Crect x='6' y='5' width='4' height='6' rx='1' fill='%23f69b7a'/%3E%3Crect x='11' y='5' width='4' height='6' rx='1' fill='%23d3d2cc'/%3E%3C/svg%3E">
+{{DEPTH_CSS}}<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='5' width='4' height='6' rx='1' fill='%2392b9eb'/%3E%3Crect x='6' y='5' width='4' height='6' rx='1' fill='%23f69b7a'/%3E%3Crect x='11' y='5' width='4' height='6' rx='1' fill='%23d3d2cc'/%3E%3C/svg%3E">
 </head>
 <body data-tab="experiments">
 <a class="skip" href="#main">Skip to content</a>
@@ -29,7 +29,7 @@
     <a class="tabs-home" href="#viewer" title="TransformerModes">TransformerModes</a>
     <div class="tablist" role="tablist">
       <a role="tab" href="#viewer" data-tab="viewer">Viewer</a>
-      <a role="tab" href="#experiments" data-tab="experiments">Experiments</a>
+{{DEPTH_TAB_LINK}}      <a role="tab" href="#experiments" data-tab="experiments">Experiments</a>
       <a role="tab" href="#method" data-tab="method">Method</a>
     </div>
   </div>
@@ -38,7 +38,7 @@
   <section class="tab-panel" id="tab-viewer" data-tab="viewer" hidden>
 {{VIEWER}}
   </section>
-  <section class="tab-panel" id="tab-experiments" data-tab="experiments">
+{{DEPTH_PANEL}}  <section class="tab-panel" id="tab-experiments" data-tab="experiments">
     <header class="page-head xp-head"><h1>Experiments</h1></header>
     <article class="xp">
 {{CONTENT_EXPERIMENTS}}

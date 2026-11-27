@@ -312,3 +312,8 @@ table.x-decisions.x-groups tbody > tr > :nth-child(n+2) { font-weight: 400; }
 .xp h4.x-subhead { font: 620 14px/1.35 var(--sans); margin: 16px 0 6px; }
 .xp .e2-example p.e2-ex-variant { font-size: 13px; color: var(--ink-2); margin: 10px 0 0; }
 .chart-wrap text.coverage-group.sub { fill: var(--mute); font-style: italic; }
+
+/* entry D1: the sentence a figure should leave the reader with, under each lead figure */
+.xp p.x-read { font: 14px/1.5 var(--sans); color: var(--ink-2); margin: -4px 0 18px; }
+.xp p.x-read b { font-weight: 620; color: var(--fg); }
+.xp .xp-lede-depth { margin-top: 26px; }

@@ -47,6 +47,32 @@ over 25 minutes for the viewer data (use `modal volume get tm-exp1 <dir>` instea
 participation-ratio rows have very flat tails on these activations, so "walk weight" and "the 64 nearest" give very
 different pictures of the same graph.
 
+### Depth embedding of tokens (2026-11-26)
+
+DepthEmbedding's construction on tokens, for 11 construction sets in both models, with Nystrom placement of three
+fixed panels into every embedding. Spec `SPEC_DEPTH.md` v3.1 (three reviews in `reviews/depth_spec_review*.md`) plus
+`SPEC_DEPTH_ADDENDUM.md` (site encoding; solves moved to Modal). Published: the "Depth embedding" tab and
+Experiments entry D1.
+
+- Code: `exp1/depth.py`, `depth_dm.py` (pipeline), `depth_inputs.py`, `extract_depth.py`, `modal_depth.py`
+  (synthetic sequences), `modal_depth_run.py` (Modal CPU run), `pack_depth.py` (site data), `audit_depth.py`
+  (independent audit, own code), `site/xsite/gen_d1.py` (entry D1's numbers).
+- Run: extractions 2 L4 units, 86 s and 96 s; 22 units plus `cross` and `controls` on Modal CPU. Estimated spend
+  from run time at the recorded rates, never reconciled against Modal's bill: $0.11 + $0.74 = $0.85 (maximum
+  approved: $1 and $5). Ledgers on the Volume: `ledger/depth.json`, `ledger/depth_run.json`.
+- Data: Volume `tm-exp1`, `acts_depth/` and `depth/`; fetched copy and pack at `/data/tm_depth_modal/` (pack
+  `site_depth/`, audit `audit_depth/report.json`: 13,287 required checks, none failed).
+- **The local copy `/data/tm_acts/depth_acts/` is corrupt** (zero-filled rows in s1 to s3 and a bad hash for
+  OLMo's s0, from downloads made while the VPS was overloaded). The release never used it. Refetch from the
+  Volume before any local recomputation; good copies of those 8 files are in
+  `/data/tm_depth_modal/audit_depth/acts_fetch/`.
+- Release build: `python site/build_site.py <Stage A dir> --depth /data/tm_depth_modal/site_depth
+  --depth-release /data/tm_depth_modal`.
+- Known gaps: one sample of each set (no variation across fresh samples measured); the within-id permutation
+  reference leaves many tokens matched to their own occurrence (the "uninformative" flag only catches a movable
+  share under 10%); standalone per-layer curves carry no near-tie flags; the final D1 text was not re-read by the
+  reviewer of its draft; unspecified conventions the auditor had to infer are listed in its report.
+
 ## Later (owner's list)
 
 - **A retrieval-style baseline.** Embed the same contexts with a sentence-embedding model (SentenceTransformers or
