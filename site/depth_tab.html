@@ -32,8 +32,9 @@
             <p>The embedding gives every token {{fact:x.depth.modes_kept}} coordinates at every layer, called
             <b>modes</b> and numbered <i>k</i> = 1, 2, …; this page carries the first {{fact:x.depth.modes_shown}}. A mode is
             one pattern over all (token, layer) pairs at once, computed from which tokens lie close to which: at each
-            layer every token is linked to its {{fact:x.depth.knn}} nearest by the angle between their activation vectors, and
-            each layer is tied to the next. Mode 1 is the smoothest pattern (it changes least between linked tokens and
+            layer two tokens are linked if either is among the other's {{fact:x.depth.knn}} nearest by the angle between their
+            activation vectors, ties included (so a token can have far more than {{fact:x.depth.knn}} links), and each
+            token is tied to itself at the next layer. Mode 1 is the smoothest pattern (it changes least between linked tokens and
             between neighbouring layers), and each later mode is a little less smooth.
             Because a mode spans every layer, its value at layer 5 and at layer 6 are the same coordinate, which is what
             lets a dot move continuously. Choose the two plotted modes under <b>Axes</b>. The sign of a mode is
